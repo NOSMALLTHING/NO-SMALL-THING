@@ -1,0 +1,55 @@
+.section {
+  padding-block: var(--section-space);
+  background: var(--warm-white);
+  color: var(--black);
+}
+
+.label { color: #625c57; }
+
+.title {
+  margin-block: clamp(2.5rem, 4vw, 4rem) clamp(4rem, 6vw, 6rem);
+  margin-left: -.035em;
+  font-size: clamp(3rem, 6.8vw, 7.5rem);
+  line-height: 1.08;
+  letter-spacing: var(--tracking-heading);
+  font-weight: 400;
+}
+
+.stages {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.progress { height: 1px; background: rgb(8 8 9 / 22%); }
+.progress > span { display: block; width: 100%; height: 100%; background: #985035; transform-origin: left; }
+
+.stage { padding-block: 2rem 1rem; }
+.number { display: block; font-size: clamp(4rem, 7vw, 8rem); font-weight: 400; line-height: 1; letter-spacing: -.065em; }
+.copy { margin-top: clamp(2rem, 3.5vw, 3.5rem); }
+.copy h3 { font-size: clamp(1.5rem, 2.2vw, 2.25rem); line-height: 1.2; letter-spacing: -.04em; }
+.copy p { max-width: 29ch; margin-top: 1rem; color: #514b46; font-size: 1rem; line-height: 1.7; }
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .stages { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 3rem; row-gap: 1rem; }
+  .stage:nth-child(n + 3) { border-top: 1px solid rgb(8 8 9 / 22%); }
+}
+
+@media (max-width: 767px) {
+  .section { padding-block: 5rem; }
+  .title { margin-block: 2.5rem 3rem; font-size: clamp(2.1rem, 8vw, 4rem); line-height: 1.12; }
+  .stages { grid-template-columns: 1fr; gap: 0; }
+  .stage { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 1.5rem; padding-block: 2rem; }
+  .stage + .stage { border-top: 1px solid rgb(8 8 9 / 22%); }
+  .number { font-size: 3.5rem; }
+  .copy { margin-top: .25rem; }
+  .copy h3 { font-size: 1.5rem; }
+  .copy p { font-size: .9375rem; margin-top: .75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress > span { transform: none !important; }
+  .stage { transform: none !important; opacity: 1 !important; clip-path: none !important; }
+}

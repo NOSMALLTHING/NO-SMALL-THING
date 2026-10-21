@@ -1,0 +1,25 @@
+.reel { margin-top: clamp(3rem, 5vw, 5rem); }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+.hint { color: var(--muted); display: flex; align-items: center; gap: .75rem; }
+.hint > span:first-child { font-size: 1.25rem; color: var(--mars-orange); }
+.touchHint { display: none; }
+.navigation { display: flex; align-items: center; gap: 1rem; }
+.navigation > span { color: var(--muted); min-width: 5rem; text-align: center; }
+.navigation button { width: 48px; height: 48px; background: transparent; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; transition: background 240ms, color 240ms; }
+.navigation button svg { width: 18px; height: 18px; transform: rotate(45deg); }
+.navigation button:first-of-type svg { transform: rotate(90deg); }
+.navigation button:hover:not(:disabled) { background: var(--warm-white); color: var(--black); }
+.navigation button:disabled { opacity: .3; cursor: default; }
+.viewport { position: relative; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: var(--mars-orange) var(--charcoal); cursor: grab; padding-block: 1.5rem; }
+.viewport[data-dragging] { scroll-snap-type: none; }
+.viewport[data-interacting] { cursor: grabbing; }
+.viewport[data-interacting] a { cursor: grabbing; }
+.viewport img { user-select: none; -webkit-user-drag: none; }
+.viewport[data-enhanced] { scrollbar-width: none; }
+.viewport[data-enhanced]::-webkit-scrollbar { display: none; }
+.fallback { margin-top: 1rem; color: var(--muted); }
+.progress { margin-top: 1.75rem; height: 1px; background: var(--line); overflow: hidden; }
+.progress span { display: block; height: 100%; background: var(--mars-orange); transition: transform 650ms var(--ease); }
+@media (hover: none) { .mouseHint { display: none; } .touchHint { display: inline; } }
+@media (max-width: 767px) { .mouseHint { display: none; } .touchHint { display: inline; } .navigation { gap: .5rem; } .navigation > span { min-width: 3.5rem; font-size: .5625rem; } .hint { font-size: .5rem; gap: .4rem; } .navigation button { width: 44px; height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .progress span { transition: none; } }

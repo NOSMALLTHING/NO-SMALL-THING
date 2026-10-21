@@ -1,0 +1,55 @@
+.section { padding-block: var(--section-space); background: var(--warm-white); color: var(--black); }
+.label { color: #625c57; }
+.title { margin-top: clamp(2.5rem, 4vw, 4rem); margin-left: -.035em; font-size: clamp(3rem, 6.8vw, 7.5rem); line-height: 1.08; letter-spacing: var(--tracking-heading); }
+.content { margin-top: clamp(4rem, 7vw, 7rem); align-items: start; }
+.invitation { grid-column: 1 / 5; }
+.invitation > p { max-width: 20ch; font-size: clamp(1.5rem, 2.4vw, 2.5rem); line-height: 1.4; letter-spacing: -.035em; }
+.cta { display: inline-flex; align-items: center; justify-content: space-between; gap: 2rem; min-height: 48px; margin-top: 2rem; padding-block: .75rem; border-bottom: 1px solid #8d7f73; font-size: .875rem; }
+.cta svg { width: 18px; height: 18px; }
+.cta:hover { color: #985035; border-color: currentColor; }
+.direct { margin-top: 4rem; display: flex; flex-direction: column; gap: 1rem; }
+.direct > span { color: #625c57; }
+.direct > a { font-size: .9375rem; overflow-wrap: anywhere; min-height: 44px; }
+.direct > a:hover { text-decoration: underline; text-underline-offset: 5px; }
+.formColumn { grid-column: 7 / -1; min-width: 0; }
+.form { color-scheme: light; }
+.formTitle { font-size: 1.5rem; line-height: 1.4; letter-spacing: -.03em; }
+.formNote { margin-top: 1rem; font-size: .8125rem; color: #625c57; line-height: 1.8; max-width: 58ch; }
+.fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; margin-top: 2.5rem; }
+.field { min-width: 0; }
+.fullField { grid-column: 1 / -1; }
+.field label { display: block; font-size: .75rem; margin-bottom: .5rem; }
+.field label > span { color: #985035; }
+.field input, .field select, .field textarea { display: block; width: 100%; min-width: 0; min-height: 48px; border: 0; border-radius: 0; border-bottom: 1px solid #8c847c; padding: .65rem 0; background: transparent; color: var(--black); font-size: 1rem; line-height: 1.5; box-shadow: none; }
+.field select { text-overflow: ellipsis; padding-right: 1.5rem; }
+.field option { background: var(--warm-white); color: var(--black); }
+.field textarea { min-height: 128px; resize: vertical; }
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: 2px solid #985035; outline-offset: 5px; border-color: #985035; }
+.field [aria-invalid="true"] { border-color: #a33828; }
+.error { margin-top: .65rem; color: #a33828; font-size: .75rem; line-height: 1.6; }
+.formBottom { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; margin-top: 2rem; flex-wrap: wrap; }
+.requiredNote { color: #625c57; font-size: .6875rem; }
+.submit { display: inline-flex; align-items: center; justify-content: space-between; gap: 2rem; min-height: 52px; padding: .875rem 1.25rem; border: 1px solid var(--black); background: var(--black); color: var(--warm-white); font-size: .8125rem; transition: background var(--duration), border-color var(--duration); }
+.submit svg { width: 18px; height: 18px; }
+.submit:hover { background: #985035; border-color: #985035; }
+.submit:disabled { opacity: .55; cursor: wait; }
+.status { margin-top: 1.5rem; font-size: .875rem; line-height: 1.7; }
+.status:empty { display: none; }
+.draftActions { display: flex; flex-wrap: wrap; gap: 1rem 2rem; margin-top: 1rem; }
+.draftActions a, .draftActions button { display: inline-flex; align-items: center; gap: .75rem; min-height: 44px; padding: .5rem 0; border: 0; border-bottom: 1px solid #8c847c; background: transparent; font-size: .8125rem; }
+.draftActions svg { width: 16px; height: 16px; }
+.draftHelp { margin-top: 1rem; color: #625c57; font-size: .75rem; overflow-wrap: anywhere; }
+@media (min-width: 768px) and (max-width: 1023px) {
+  .invitation { grid-column: 1 / 4; }
+  .formColumn { grid-column: 5 / -1; }
+  .fields { grid-template-columns: 1fr; }
+}
+@media (max-width: 767px) {
+  .title { font-size: clamp(2.25rem, 8.6vw, 4.25rem); line-height: 1.12; }
+  .content { row-gap: 3.5rem; margin-top: 3rem; }
+  .invitation, .formColumn { grid-column: 1 / -1; }
+  .invitation > p { max-width: 25ch; font-size: 1.5rem; }
+  .direct { margin-top: 2rem; }
+  .fields { grid-template-columns: 1fr; gap: 1.75rem; }
+  .submit { width: 100%; }
+}

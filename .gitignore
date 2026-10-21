@@ -1,4 +1,12 @@
 # Byte-compiled / optimized / DLL files
+node_modules/
+.next/
+out/
+.pnpm-store/
+*.tsbuildinfo
+.env.local
+.env.*.local
+artifacts/
 __pycache__/
 *.py[codz]
 *$py.class
