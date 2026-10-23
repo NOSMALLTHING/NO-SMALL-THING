@@ -14,38 +14,76 @@ export function SiteHeader() {
   const isHome = pathname === "/";
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const reducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (open) {
       dialog.showModal();
+      window.__lenis?.stop();
       const previousOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = previousOverflow; };
+      return () => {
+        document.body.style.overflow = previousOverflow;
+        window.__lenis?.start();
+      };
     }
     if (dialog.open) {
       dialog.close();
+      window.__lenis?.start();
       triggerRef.current?.focus();
     }
   }, [open]);
 
   return <>
-    <header className={`site-header${isHome ? " is-cinematic" : ""}`}>
+    <header className={`site-header${isHome ? " is-cinematic" : ""}${scrolled ? " is-scrolled" : ""}`}>
       <Container className="header-inner">
         <Link href="/" className="brand-name" aria-label="NO SMALL THING — Home">
           <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 180px, 240px" eager />
         </Link>
         <nav className="desktop-nav" aria-label="Main navigation">
-          {navigation.map(item => <Link key={item.href} href={item.href} className={`nav-link ${isActive(item.href) ? "is-active" : ""}`} aria-current={isActive(item.href) ? "page" : undefined}>
-            {item.label}
-          </Link>)}
+          {navigation.map(item => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`nav-link-bracketed ${active ? "is-active" : ""}`}
+                aria-current={active ? "page" : undefined}
+              >
+                <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
+                <span className="bracket-label">{item.label}</span>
+                <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
+              </Link>
+            );
+          })}
         </nav>
-        <button type="button" ref={triggerRef} className="menu-trigger eyebrow" aria-haspopup="dialog" aria-expanded={open} aria-controls="site-menu" onClick={() => setOpen(true)}>
-          MENU <span className="menu-icon" aria-hidden="true"><span /><span /></span>
+        <button
+          type="button"
+          ref={triggerRef}
+          className="menu-trigger-bracketed"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-controls="site-menu"
+          onClick={() => setOpen(true)}
+        >
+          <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
+          <span className="bracket-label">MENU</span>
+          <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
+          <span className="menu-icon" aria-hidden="true"><span /><span /></span>
         </button>
       </Container>
       <noscript><nav className="no-script-nav" aria-label="Navigation without JavaScript">{navigation.map(item => <Link key={item.href} href={item.href}>{item.label}</Link>)}</nav></noscript>
