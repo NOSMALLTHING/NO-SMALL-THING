@@ -52,7 +52,7 @@ export function SiteHeader() {
     <header className={`site-header${isHome ? " is-cinematic" : ""}${scrolled ? " is-scrolled" : ""}`}>
       <Container className="header-inner">
         <Link href="/" className="brand-name" aria-label="NO SMALL THING — Home">
-          <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 180px, 240px" eager />
+          <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 125px, 145px" eager />
         </Link>
         <nav className="desktop-nav" aria-label="Main navigation">
           {navigation.map(item => {
@@ -61,7 +61,7 @@ export function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`nav-link-bracketed ${active ? "is-active" : ""}`}
+                className={`nav-bracket-link ${active ? "is-active" : ""}`}
                 aria-current={active ? "page" : undefined}
               >
                 <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
@@ -83,7 +83,6 @@ export function SiteHeader() {
           <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
           <span className="bracket-label">MENU</span>
           <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
-          <span className="menu-icon" aria-hidden="true"><span /><span /></span>
         </button>
       </Container>
       <noscript><nav className="no-script-nav" aria-label="Navigation without JavaScript">{navigation.map(item => <Link key={item.href} href={item.href}>{item.label}</Link>)}</nav></noscript>
