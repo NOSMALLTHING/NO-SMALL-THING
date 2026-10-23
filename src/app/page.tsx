@@ -1,6 +1,5 @@
 import { HomeHero } from "@/components/home-hero";
-import { BrandIntroduction } from "@/components/brand-introduction";
-import { ProductionServiceAbout } from "@/components/production-service-about";
+import { OurServices } from "@/components/our-services";
 import { SelectedWork } from "@/components/selected-work";
 import { OurApproach } from "@/components/our-approach";
 import { AboutUs } from "@/components/about-us";
@@ -10,8 +9,7 @@ export default function HomePage() {
   return (
     <>
       <HomeHero />
-      <BrandIntroduction />
-      <ProductionServiceAbout />
+      <OurServices />
       <SelectedWork />
       <OurApproach />
       <AboutUs />
