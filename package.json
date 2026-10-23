@@ -13,18 +13,19 @@
     "optimize:assets": "node scripts/optimize-brand.mjs"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "lenis": "^1.3.27",
+    "motion": "^12.23.0",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "motion": "^12.23.0",
-    "tailwindcss": "^4.1.0",
-    "@tailwindcss/postcss": "^4.1.0"
+    "tailwindcss": "^4.1.0"
   },
   "devDependencies": {
-    "typescript": "^5.9.0",
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0"
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.9.0"
   },
   "packageManager": "pnpm@11.25.0"
 }

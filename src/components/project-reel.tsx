@@ -105,7 +105,7 @@ export function ProjectReel({ children, count }: { children: ReactNode; count: n
       <p className={`eyebrow ${styles.hint}`}><span aria-hidden="true">↔</span> <span className={styles.mouseHint}>DRAG TO EXPLORE</span><span className={styles.touchHint}>SWIPE TO EXPLORE</span></p>
       <div className={styles.navigation}><span className="eyebrow" aria-live="polite" aria-atomic="true">{String(active + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}</span><button type="button" aria-label="Previous project" disabled={!ready || active === 0} onClick={() => moveTo(active - 1)}><Arrow direction="down" /></button><button type="button" aria-label="Next project" disabled={!ready || active === count - 1} onClick={() => moveTo(active + 1)}><Arrow /></button></div>
     </div>
-    <div ref={viewport} className={styles.viewport} role="region" aria-roledescription="carousel" aria-label="Selected projects" tabIndex={0} data-interacting={dragging || undefined} data-enhanced={ready || undefined}
+    <div ref={viewport} className={styles.viewport} role="region" aria-roledescription="carousel" aria-label="Selected projects" tabIndex={0} data-interacting={dragging || undefined} data-enhanced={ready || undefined} data-lenis-prevent="true"
       onPointerDown={start} onPointerMove={update} onPointerUp={event => finish(event)} onPointerCancel={event => finish(event, true)}
       onPointerLeave={() => { if (drag.current && !drag.current.moved) { drag.current = null; viewport.current?.removeAttribute("data-dragging"); } }}
       onClickCapture={event => { if (suppressClick.current && event.detail > 0) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
