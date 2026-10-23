@@ -52,7 +52,7 @@ export function SiteHeader() {
     <header className={`site-header${isHome ? " is-cinematic" : ""}${scrolled ? " is-scrolled" : ""}`}>
       <div className="header-bar">
         <Link href="/" className="brand-name" aria-label="NO SMALL THING — Home">
-          <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 110px, 135px" eager />
+          <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 130px, 170px" eager />
         </Link>
         <div className="header-right">
           <nav className="desktop-nav" aria-label="Main navigation">
