@@ -18,7 +18,7 @@ export function SelectedWork({ standalone = false }: { standalone?: boolean }) {
         : "A considered selection of client work and clearly labelled concept studies."}</p>
       <ProjectReel count={projects.length}><ol className={styles.projects} role="list">
         {projects.map((project, index) => <li key={project.slug} className={styles.project}>
-          <Link href={`/work/${project.slug}`} className={styles.projectLink} aria-labelledby={`project-${project.slug}-title project-${project.slug}-action`} aria-describedby={`project-${project.slug}-status project-${project.slug}-summary`}>
+          <Link href={`/work/${project.slug}`} className={styles.projectLink} data-cursor-text="SEE STUDY" data-cursor-project="true" aria-labelledby={`project-${project.slug}-title project-${project.slug}-action`} aria-describedby={`project-${project.slug}-status project-${project.slug}-summary`}>
             <ProjectPreview project={project} labelId={`project-${project.slug}-status`} />
             <div className={`eyebrow ${styles.metadata}`}><span>{project.category}</span><span>{project.year}</span></div>
             <div className={styles.caption}>

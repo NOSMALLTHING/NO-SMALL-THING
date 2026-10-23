@@ -83,6 +83,24 @@ main:focus { outline: none; }
    transparent case-study layouts and the page-entry fade. */
 main#main-content { position: relative; z-index: 1; isolation: isolate; background: var(--black); }
 
+/* Custom Cursor: hide default arrow on desktop when custom optical HUD cursor is active */
+@media (hover: hover) and (pointer: fine) {
+  html.custom-cursor-enabled,
+  html.custom-cursor-enabled body,
+  html.custom-cursor-enabled a,
+  html.custom-cursor-enabled button,
+  html.custom-cursor-enabled [role="button"],
+  html.custom-cursor-enabled summary {
+    cursor: none !important;
+  }
+
+  html.custom-cursor-enabled input,
+  html.custom-cursor-enabled textarea,
+  html.custom-cursor-enabled select {
+    cursor: auto !important;
+  }
+}
+
 .container { width: min(calc(100% - var(--gutter) * 2), var(--container-width)); margin-inline: auto; }
 .editorial-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--grid-gap); }
 .eyebrow { font-family: var(--font-mono); font-size: .625rem; font-weight: 400; line-height: 1.6; letter-spacing: .1em; text-transform: uppercase; }
