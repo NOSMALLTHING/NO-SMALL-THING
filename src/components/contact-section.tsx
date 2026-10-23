@@ -7,7 +7,7 @@ import styles from "./contact-section.module.css";
 import { EditorialHeading } from "./ui/editorial-heading";
 
 export function ContactSection({ standalone = false }: { standalone?: boolean }) {
-  return <section id="contact" className={styles.section} aria-labelledby="contact-title">
+  return <section id="contact" className={styles.section} data-theme="light" aria-labelledby="contact-title">
     <Container>
       <SectionLabel className={styles.label}>LET’S TALK</SectionLabel>
       <EditorialHeading as={standalone ? "h1" : "h2"} id="contact-title" className={styles.title} lines={["LET'S MAKE", "SOMETHING MATTER."]} />

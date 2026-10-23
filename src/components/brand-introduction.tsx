@@ -18,7 +18,7 @@ export function BrandIntroduction() {
   const copyY = useTransform(scrollYProgress, [.45, .82], [18, 0]);
 
   return (
-    <section ref={ref} className={styles.section} aria-labelledby="brand-introduction-title">
+    <section ref={ref} className={styles.section} data-theme="light" aria-labelledby="brand-introduction-title">
       <Container>
         <SectionLabel className={styles.label}>THREE MINDS. ONE AMBITION.</SectionLabel>
 

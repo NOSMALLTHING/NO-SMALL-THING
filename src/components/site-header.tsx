@@ -15,18 +15,70 @@ export function SiteHeader() {
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isLight, setIsLight] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    const onScroll = () => {
+    const updateHeaderState = () => {
       setScrolled(window.scrollY > 15);
+
+      const headerThreshold = 35; // vertical center of header in px
+      const lightElements = document.querySelectorAll<HTMLElement>('[data-theme="light"]');
+      let foundLight = false;
+
+      for (let i = 0; i < lightElements.length; i++) {
+        const rect = lightElements[i].getBoundingClientRect();
+        if (rect.top <= headerThreshold && rect.bottom >= headerThreshold) {
+          foundLight = true;
+          break;
+        }
+      }
+
+      if (!foundLight) {
+        // Fallback: sample element under right side of header
+        const sampleX = Math.max(10, window.innerWidth - 80);
+        const el = document.elementFromPoint(sampleX, headerThreshold);
+        if (el) {
+          if (el.closest('[data-theme="light"], .theme-light')) {
+            foundLight = true;
+          } else {
+            let cur: HTMLElement | null = el as HTMLElement;
+            while (cur && cur !== document.body && cur !== document.documentElement) {
+              const bg = window.getComputedStyle(cur).backgroundColor;
+              if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
+                const rgb = bg.match(/\d+/g);
+                if (rgb && rgb.length >= 3) {
+                  const lum = 0.299 * Number(rgb[0]) + 0.587 * Number(rgb[1]) + 0.114 * Number(rgb[2]);
+                  if (lum > 160) {
+                    foundLight = true;
+                    break;
+                  }
+                  if (lum < 100) break;
+                }
+              }
+              cur = cur.parentElement;
+            }
+          }
+        }
+      }
+
+      setIsLight(foundLight);
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+
+    window.addEventListener("scroll", updateHeaderState, { passive: true });
+    window.addEventListener("resize", updateHeaderState, { passive: true });
+    updateHeaderState();
+
+    const timer = setTimeout(updateHeaderState, 150);
+
+    return () => {
+      window.removeEventListener("scroll", updateHeaderState);
+      window.removeEventListener("resize", updateHeaderState);
+      clearTimeout(timer);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -49,10 +101,10 @@ export function SiteHeader() {
   }, [open]);
 
   return <>
-    <header className={`site-header${isHome ? " is-cinematic" : ""}${scrolled ? " is-scrolled" : ""}`}>
+    <header className={`site-header${isHome ? " is-cinematic" : ""}${scrolled ? " is-scrolled" : ""}${isLight ? " is-light" : ""}`}>
       <div className="header-bar">
         <Link href="/" className="brand-name" aria-label="NO SMALL THING — Home">
-          <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 130px, 170px" eager />
+          <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 115px, 155px" eager />
         </Link>
         <div className="header-right">
           <nav className="desktop-nav" aria-label="Main navigation">

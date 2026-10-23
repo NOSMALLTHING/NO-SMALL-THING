@@ -20,7 +20,7 @@ export function OurApproach() {
   const enabled = useCinematicMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 65%", "end 80%"] });
 
-  return <section ref={ref} id="approach" className={styles.section} aria-labelledby="approach-title">
+  return <section ref={ref} id="approach" className={styles.section} data-theme="light" aria-labelledby="approach-title">
     <Container>
       <SectionLabel className={styles.label}>OUR APPROACH</SectionLabel>
       <EditorialHeading id="approach-title" className={styles.title} lines={["THINK BEYOND.", "BUILD WITH PURPOSE."]} />

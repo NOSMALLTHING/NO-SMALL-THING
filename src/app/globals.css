@@ -82,8 +82,6 @@ main:focus { outline: none; }
 /* Opaque content plane keeps the sticky footer behind every route, including
    transparent case-study layouts and the page-entry fade. */
 main#main-content { position: relative; z-index: 1; isolation: isolate; background: var(--black); }
-/* Offset for subpages so content starts below fixed precision header */
-body:has(.site-header:not(.is-cinematic)) #main-content { padding-top: var(--header-height); }
 
 .container { width: min(calc(100% - var(--gutter) * 2), var(--container-width)); margin-inline: auto; }
 .editorial-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--grid-gap); }
@@ -164,23 +162,24 @@ body:has(.site-header:not(.is-cinematic)) #main-content { padding-top: var(--hea
 }
 
 .header-logo {
-  width: 170px;
+  width: 155px;
   height: auto;
   display: block;
+  transition: filter 240ms ease;
 }
 
 /* Right-side navigation group: pinned to far top-right edge */
 .header-right {
   display: flex;
   align-items: center;
-  gap: clamp(1.25rem, 2.5vw, 2.75rem);
+  gap: clamp(1rem, 2vw, 2.25rem);
   margin-left: auto;
 }
 
 .desktop-nav {
   display: flex;
   align-items: center;
-  gap: clamp(1rem, 1.8vw, 2rem);
+  gap: clamp(0.75rem, 1.4vw, 1.5rem);
   margin: 0;
   padding: 0;
 }
@@ -192,9 +191,9 @@ body:has(.site-header:not(.is-cinematic)) #main-content { padding-top: var(--hea
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 0.9375rem; /* ~15px, enlarged by ~4-5px matching Production Portugal */
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem; /* 12px precision size */
+  font-weight: 600;
+  letter-spacing: 0.06em; /* scaled down letter spacing */
   text-transform: uppercase;
   color: var(--warm-white);
   text-decoration: none;
@@ -202,9 +201,9 @@ body:has(.site-header:not(.is-cinematic)) #main-content { padding-top: var(--hea
   border: none;
   outline: none;
   cursor: pointer;
-  padding: 0.4rem 0.25rem;
+  padding: 0.3rem 0.2rem;
   line-height: 1;
-  transition: color 200ms ease;
+  transition: color 240ms ease;
   user-select: none;
 }
 
@@ -214,21 +213,21 @@ body:has(.site-header:not(.is-cinematic)) #main-content { padding-top: var(--hea
   font-family: var(--font-sans);
   font-weight: 400;
   line-height: 1;
-  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms ease;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), color 240ms ease;
 }
 
 .bracket-left {
-  margin-right: 0.35em;
+  margin-right: 0.28em;
 }
 
 .bracket-right {
-  margin-left: 0.35em;
+  margin-left: 0.28em;
 }
 
 .bracket-label {
   display: inline-block;
   line-height: 1;
-  transition: color 200ms ease;
+  transition: color 240ms ease;
 }
 
 .nav-bracket-link:hover,
@@ -249,14 +248,14 @@ body:has(.site-header:not(.is-cinematic)) #main-content { padding-top: var(--hea
 .nav-bracket-link:focus-visible .bracket-left,
 .menu-trigger-bracketed:hover .bracket-left,
 .menu-trigger-bracketed:focus-visible .bracket-left {
-  transform: translateX(-0.35em);
+  transform: translateX(-0.28em);
 }
 
 .nav-bracket-link:hover .bracket-right,
 .nav-bracket-link:focus-visible .bracket-right,
 .menu-trigger-bracketed:hover .bracket-right,
 .menu-trigger-bracketed:focus-visible .bracket-right {
-  transform: translateX(0.35em);
+  transform: translateX(0.28em);
 }
 
 .nav-bracket-link.is-active {
@@ -264,6 +263,43 @@ body:has(.site-header:not(.is-cinematic)) #main-content { padding-top: var(--hea
 }
 
 .nav-bracket-link.is-active .bracket-mark {
+  color: var(--mars-orange);
+}
+
+/* Color adaptation when scrolling over light / white sections */
+.site-header.is-light {
+  color: var(--black);
+}
+
+.site-header.is-light .header-logo {
+  filter: brightness(0);
+}
+
+.site-header.is-light .nav-bracket-link,
+.site-header.is-light .menu-trigger-bracketed {
+  color: var(--black);
+}
+
+.site-header.is-light .bracket-mark {
+  color: rgba(8, 8, 9, 0.45);
+}
+
+.site-header.is-light .nav-bracket-link:hover,
+.site-header.is-light .nav-bracket-link:focus-visible,
+.site-header.is-light .menu-trigger-bracketed:hover,
+.site-header.is-light .menu-trigger-bracketed:focus-visible {
+  color: var(--mars-orange);
+}
+
+.site-header.is-light .nav-bracket-link:hover .bracket-mark,
+.site-header.is-light .nav-bracket-link:focus-visible .bracket-mark,
+.site-header.is-light .menu-trigger-bracketed:hover .bracket-mark,
+.site-header.is-light .menu-trigger-bracketed:focus-visible .bracket-mark {
+  color: var(--mars-orange);
+}
+
+.site-header.is-light .nav-bracket-link.is-active,
+.site-header.is-light .nav-bracket-link.is-active .bracket-mark {
   color: var(--mars-orange);
 }
 
@@ -359,25 +395,25 @@ a:focus-visible .scene-reveal { clip-path: none !important; }
 .ds-assets { display: grid; grid-template-columns: 1fr 2fr; gap: var(--grid-gap); align-items: center; }
 
 @media (max-width: 1023px) {
-  :root { --header-height: 58px; }
+  :root { --header-height: 56px; }
   .editorial-grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
   .header-bar { height: var(--header-height); padding: 0 1.25rem; }
-  .header-logo { width: 145px; }
+  .header-logo { width: 135px; }
   .type-display { font-size: clamp(3.75rem, 9vw, 6.25rem); }
-  .desktop-nav { gap: 1rem; }
-  .nav-bracket-link, .menu-trigger-bracketed { font-size: 0.8125rem; }
+  .desktop-nav { gap: 0.875rem; }
+  .nav-bracket-link, .menu-trigger-bracketed { font-size: 0.6875rem; }
   .route-statement { grid-column: 1 / 5; }
   .route-summary { grid-column: 6 / -1; }
   .menu-item { min-height: 88px; }
   .route-shell { min-height: calc(100svh - 212px); }
 }
 @media (max-width: 767px) {
-  :root { --header-height: 54px; --gutter: 1.25rem; --grid-gap: 1rem; --type-display: clamp(3.5rem, 12.7vw, 6rem); }
+  :root { --header-height: 52px; --gutter: 1.25rem; --grid-gap: 1rem; --type-display: clamp(3.5rem, 12.7vw, 6rem); }
   .editorial-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .header-bar { height: var(--header-height); padding: 0 1rem; }
-  .header-logo { width: 125px; }
+  .header-logo { width: 115px; }
   .desktop-nav { display: none; }
-  .menu-trigger-bracketed { display: inline-flex; font-size: 0.8125rem; }
+  .menu-trigger-bracketed { display: inline-flex; font-size: 0.6875rem; }
   .hero-scroll { bottom: max(1.5rem, env(safe-area-inset-bottom)); }
   .menu-top { height: var(--header-height); padding: 0 1rem; }
   .menu-main { grid-template-columns: 1fr; padding-block: 2rem; gap: 2.5rem; }
