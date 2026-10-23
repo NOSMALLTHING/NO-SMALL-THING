@@ -14,7 +14,8 @@ export function BrandIntroduction() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "start 12%"] });
   const first = useTransform(scrollYProgress, [.08, .68], ["105%", "0%"]);
   const second = useTransform(scrollYProgress, [.22, .85], ["105%", "0%"]);
-  const copyOpacity = useTransform(scrollYProgress, [.55, 1], [.15, 1]);
+  const copyOpacity = useTransform(scrollYProgress, [.45, .82], [0, 1]);
+  const copyY = useTransform(scrollYProgress, [.45, .82], [18, 0]);
 
   return (
     <section ref={ref} className={styles.section} aria-labelledby="brand-introduction-title">
@@ -37,13 +38,13 @@ export function BrandIntroduction() {
         <Grid className={styles.copy}>
           <motion.p
             className={styles.statement}
-            style={{ opacity: enabled ? copyOpacity : 1 }}
+            style={{ opacity: enabled ? copyOpacity : 1, y: enabled ? copyY : 0 }}
           >
             Great things start small.
           </motion.p>
           <motion.p
             className={styles.description}
-            style={{ opacity: enabled ? copyOpacity : 1 }}
+            style={{ opacity: enabled ? copyOpacity : 1, y: enabled ? copyY : 0 }}
           >
             We turn ideas into meaningful digital experiences through technology,
             creativity, and thoughtful execution.

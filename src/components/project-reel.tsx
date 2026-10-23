@@ -12,6 +12,7 @@ export function ProjectReel({ children, count }: { children: ReactNode; count: n
   const animation = useRef<ReturnType<typeof animate> | null>(null);
   const suppressClick = useRef(false);
   const [active, setActive] = useState(0);
+  const [scrollRatio, setScrollRatio] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [ready, setReady] = useState(false);
   const reduced = useReducedMotion();
@@ -109,11 +110,22 @@ export function ProjectReel({ children, count }: { children: ReactNode; count: n
       onPointerLeave={() => { if (drag.current && !drag.current.moved) { drag.current = null; viewport.current?.removeAttribute("data-dragging"); } }}
       onClickCapture={event => { if (suppressClick.current && event.detail > 0) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
       onDragStart={event => event.preventDefault()} onKeyDown={keyboard}
-      onScroll={() => { const el = viewport.current; if (el) { const stops = positions(); const closest = stops.reduce((best, stop, index) => Math.abs(stop - el.scrollLeft) < Math.abs(stops[best] - el.scrollLeft) ? index : best, 0); setActive(closest); } }}
+      onScroll={() => {
+        const el = viewport.current;
+        if (el) {
+          const stops = positions();
+          const closest = stops.reduce((best, stop, index) => Math.abs(stop - el.scrollLeft) < Math.abs(stops[best] - el.scrollLeft) ? index : best, 0);
+          setActive(closest);
+          const max = el.scrollWidth - el.clientWidth;
+          if (max > 0) {
+            setScrollRatio(Math.min(1, Math.max(0, el.scrollLeft / max)));
+          }
+        }
+      }}
       onFocusCapture={event => { if (drag.current) return; const item = (event.target as HTMLElement).closest("ol > li"); if (item) { const items = Array.from(viewport.current?.querySelectorAll("ol > li") ?? []); moveTo(items.indexOf(item)); } }}>
       {children}
     </div>
     <noscript><p className={`eyebrow ${styles.fallback}`}>Swipe, use arrow keys, or use the horizontal scrollbar to explore the projects.</p></noscript>
-    <div className={styles.progress} aria-hidden="true"><span style={{ transform: `translateX(${active * 100}%)`, width: `${100 / count}%` }} /></div>
+    <div className={styles.progress} aria-hidden="true"><span style={{ transform: `translateX(${scrollRatio * (count - 1) * 100}%)`, width: `${100 / count}%` }} /></div>
   </div>;
 }

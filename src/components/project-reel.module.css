@@ -19,7 +19,8 @@
 .viewport[data-enhanced]::-webkit-scrollbar { display: none; }
 .fallback { margin-top: 1rem; color: var(--muted); }
 .progress { margin-top: 1.75rem; height: 1px; background: var(--line); overflow: hidden; }
-.progress span { display: block; height: 100%; background: var(--mars-orange); transition: transform 650ms var(--ease); }
+.progress span { display: block; height: 100%; background: var(--mars-orange); transition: transform 200ms ease-out; }
+.viewport[data-interacting] ~ .progress span { transition: none; }
 @media (hover: none) { .mouseHint { display: none; } .touchHint { display: inline; } }
 @media (max-width: 767px) { .mouseHint { display: none; } .touchHint { display: inline; } .navigation { gap: .5rem; } .navigation > span { min-width: 3.5rem; font-size: .5625rem; } .hint { font-size: .5rem; gap: .4rem; } .navigation button { width: 44px; height: 44px; } }
-@media (prefers-reduced-motion: reduce) { .progress span { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .progress span { transition: none !important; } }

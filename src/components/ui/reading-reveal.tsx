@@ -5,7 +5,9 @@ import { motion, useScroll, useTransform, type MotionValue } from "motion/react"
 import { useCinematicMotion } from "./use-cinematic-motion";
 
 function Word({ word, index, count, progress, enabled }: { word: string; index: number; count: number; progress: MotionValue<number>; enabled: boolean }) {
-  const color = useTransform(progress, [index / count, (index + 1) / count], ["#96918b", "#f0ece7"]);
+  const start = index / count;
+  const end = Math.min(1, (index + 1.5) / count);
+  const color = useTransform(progress, [start, end], ["#827e7a", "#f0ece7"]);
   return <><motion.span style={{ color: enabled ? color : undefined }}>{word}</motion.span>{" "}</>;
 }
 

@@ -1,14 +1,19 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
+import { useCinematicMotion } from "./use-cinematic-motion";
 
 /** A quiet aperture reveal, separate from the image's hover transform. */
 export function SceneReveal({ children }: { children: ReactNode }) {
-  const reduced = useReducedMotion();
-  return <motion.div className="scene-reveal" initial={false}
-    whileInView={reduced ? undefined : { clipPath: ["inset(12% 0% 12% 0%)", "inset(0% 0% 0% 0%)"] }}
-    viewport={{ once: true, amount: .18 }} transition={{ duration: 1.1, ease: [.22, 1, .36, 1] }}>
+  const enabled = useCinematicMotion();
+  return <motion.div
+    className="scene-reveal"
+    initial={enabled ? { clipPath: "inset(8% 0% 8% 0%)", opacity: 0.85 } : false}
+    whileInView={enabled ? { clipPath: "inset(0% 0% 0% 0%)", opacity: 1 } : undefined}
+    viewport={{ once: true, amount: 0.18 }}
+    transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
+  >
     {children}
   </motion.div>;
 }

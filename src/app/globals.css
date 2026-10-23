@@ -165,7 +165,9 @@ main#main-content { position: relative; z-index: 1; isolation: isolate; backgrou
 .is-cinematic .menu-trigger { display: none; }
 .hero-scroll { position: absolute; z-index: 1; left: 50%; bottom: max(2rem, env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-width: 140px; min-height: 72px; transform: translateX(-50%); color: rgb(240 236 231 / 80%); transition: color var(--duration); }
 .hero-scroll .eyebrow { font-size: .5625rem; letter-spacing: .18em; }
-.hero-scroll-line { position: relative; height: 32px; width: 1px; background: currentColor; }
+.hero-scroll-line { position: relative; height: 32px; width: 1px; background: rgb(240 236 231 / 35%); overflow: hidden; }
+.hero-scroll-line::before { content: ""; position: absolute; top: -100%; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, transparent, var(--mars-orange), var(--warm-white)); animation: scroll-pulse 2.2s cubic-bezier(.4, 0, .2, 1) infinite; }
+@keyframes scroll-pulse { 0% { transform: translateY(0); } 60%, 100% { transform: translateY(200%); } }
 .hero-scroll-line::after { position: absolute; content: ""; bottom: 0; left: -2px; width: 5px; height: 5px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg); }
 .hero-scroll:hover { color: var(--warm-white); }
 .hero-scroll:focus-visible { opacity: 1 !important; }
@@ -176,7 +178,7 @@ main#main-content { position: relative; z-index: 1; isolation: isolate; backgrou
 .spatial-plane { transform-style: preserve-3d; }
 .editorial-line { display: block; }
 .editorial-word { display: inline-block; overflow: hidden; vertical-align: top; padding: .06em .025em .12em; margin: -.06em -.025em -.12em; perspective: 700px; }
-.editorial-glyph { display: inline-block; transform-origin: 50% 100%; }
+.editorial-glyph { display: inline-block; transform-origin: 50% 100%; will-change: transform, opacity; backface-visibility: hidden; }
 a:focus-visible .scene-reveal { clip-path: none !important; }
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 350ms; }

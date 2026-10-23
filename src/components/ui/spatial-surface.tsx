@@ -10,9 +10,11 @@ export function SpatialSurface({ children, strength = 3, className = "" }: { chi
   const rotateX = useSpring(0, { stiffness: 110, damping: 24, mass: .65 });
   const rotateY = useSpring(0, { stiffness: 110, damping: 24, mass: .65 });
   const reset = () => { rotateX.set(0); rotateY.set(0); };
+
   return <div className={`spatial-surface ${className}`} onPointerLeave={reset} onPointerCancel={reset} onBlur={reset}
     onPointerMove={event => {
       if (!enabled || event.pointerType !== "mouse") return;
+      if (event.buttons !== 0) { reset(); return; }
       const rect = event.currentTarget.getBoundingClientRect();
       rotateY.set(((event.clientX - rect.left) / rect.width - .5) * strength * 2);
       rotateX.set(-((event.clientY - rect.top) / rect.height - .5) * strength * 1.4);

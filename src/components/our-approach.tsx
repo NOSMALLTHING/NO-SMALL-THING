@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll } from "motion/react";
+import { motion, useScroll } from "motion/react";
 import { useCinematicMotion } from "./ui/use-cinematic-motion";
 import { Container } from "./ui/container";
 import { SectionLabel } from "./ui/section-label";
@@ -16,10 +16,9 @@ const stages = [
 ] as const;
 
 export function OurApproach() {
-  const reducedMotion = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   const enabled = useCinematicMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 50%", "end 70%"] });
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 65%", "end 80%"] });
 
   return <section ref={ref} id="approach" className={styles.section} aria-labelledby="approach-title">
     <Container>
@@ -30,10 +29,10 @@ export function OurApproach() {
         {stages.map((stage, index) => <motion.li
           key={stage.number}
           className={styles.stage}
-          initial={false}
-          whileInView={reducedMotion ? undefined : { clipPath: ["inset(0% 100% 0% 0%)", "inset(0% 0% 0% 0%)"] }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.8, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
+          initial={enabled ? { opacity: 0, y: 22 } : false}
+          whileInView={enabled ? { opacity: 1, y: 0 } : undefined}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.75, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
         >
           <span className={styles.number} aria-hidden="true">{stage.number}</span>
           <div className={styles.copy}><h3>{stage.title}</h3><p>{stage.description}</p></div>
