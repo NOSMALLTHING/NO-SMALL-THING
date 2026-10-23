@@ -15,7 +15,7 @@ export function AboutUs({ standalone = false }: { standalone?: boolean }) {
   return <section id="about" className={styles.section} aria-labelledby="about-title">
     <Container>
       <SectionLabel>ABOUT US</SectionLabel>
-      <EditorialHeading as={standalone ? "h1" : "h2"} id="about-title" className={styles.title} lines={["THREE MINDS.", "ONE AMBITION."]} />
+      <EditorialHeading as={standalone ? "h1" : "h2"} id="about-title" className={styles.title} lines={["THREE MINDS.", "ONE *AMBITION.*"]} />
       <Grid className={styles.story}>
         <figure className={styles.artwork}>
           <SpatialSurface strength={9}><SceneReveal><BrandLogo sizes="(max-width: 767px) 80vw, 460px" /></SceneReveal></SpatialSurface>

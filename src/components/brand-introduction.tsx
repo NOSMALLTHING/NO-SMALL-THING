@@ -26,7 +26,7 @@ export function BrandIntroduction() {
           {["STAY", "BIG."].map((word, index) => (
             <span className={styles.wordMask} key={word} aria-hidden="true">
               <motion.span
-                className={styles.word}
+                className={`${styles.word} ${index === 1 ? "serif-accent" : ""}`}
                 style={{ y: enabled ? (index === 0 ? first : second) : 0 }}
               >
                 {word}
@@ -40,7 +40,7 @@ export function BrandIntroduction() {
             className={styles.statement}
             style={{ opacity: enabled ? copyOpacity : 1, y: enabled ? copyY : 0 }}
           >
-            Great things start small.
+            Great things start <span className="serif-accent">small.</span>
           </motion.p>
           <motion.p
             className={styles.description}

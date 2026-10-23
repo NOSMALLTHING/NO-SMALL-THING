@@ -23,7 +23,7 @@ export function OurApproach() {
   return <section ref={ref} id="approach" className={styles.section} data-theme="light" aria-labelledby="approach-title">
     <Container>
       <SectionLabel className={styles.label}>OUR APPROACH</SectionLabel>
-      <EditorialHeading id="approach-title" className={styles.title} lines={["THINK BEYOND.", "BUILD WITH PURPOSE."]} />
+      <EditorialHeading id="approach-title" className={styles.title} lines={["THINK *BEYOND.*", "BUILD WITH *PURPOSE.*"]} />
       <div className={styles.progress} aria-hidden="true"><motion.span style={{ scaleX: enabled ? scrollYProgress : 1 }} /></div>
       <ol className={styles.stages} role="list">
         {stages.map((stage, index) => <motion.li

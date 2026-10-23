@@ -1,9 +1,11 @@
 import Image from "next/image";
 import horizon from "../../public/brand/mars-horizon.webp";
 import { CinematicArtwork } from "./cinematic-artwork";
+import { HeroAtmosphere } from "./hero-atmosphere";
 
 export function HomeHero() {
-  return <>
+  return (
+    <>
       <CinematicArtwork>
         <Image
           src={horizon}
@@ -13,7 +15,9 @@ export function HomeHero() {
           sizes="(max-width: 767px) 168vw, 100vw"
           className="hero-image"
         />
+        <HeroAtmosphere />
       </CinematicArtwork>
-    <div id="hero-end" className="hero-end" tabIndex={-1} />
-  </>;
+      <div id="hero-end" className="hero-end" tabIndex={-1} />
+    </>
+  );
 }

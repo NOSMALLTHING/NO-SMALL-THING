@@ -15,6 +15,20 @@
   font-display: swap;
   src: url("/fonts/manrope-semibold.ttf") format("truetype");
 }
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/cormorant-garamond-italic.ttf") format("truetype");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/cormorant-garamond-semibold-italic.ttf") format("truetype");
+}
 
 /* Source of truth: semantic tokens are shared by every route and component. */
 :root {
@@ -27,6 +41,7 @@
   --muted: #a6a29e;
   --line: rgb(240 236 231 / 18%);
   --font-brand-sans: "Manrope", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-brand-serif: "Cormorant Garamond", Georgia, serif;
   --font-brand-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --space-1: .25rem;
   --space-2: .5rem;
@@ -61,7 +76,16 @@
   --color-mars-orange: var(--mars-orange);
   --color-muted: var(--muted);
   --font-sans: var(--font-brand-sans);
+  --font-serif: var(--font-brand-serif);
   --font-mono: var(--font-brand-mono);
+}
+
+.serif-accent {
+  font-family: var(--font-brand-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
 
 * { box-sizing: border-box; }
