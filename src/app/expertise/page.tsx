@@ -1,8 +1,8 @@
 import { pageMetadata } from "@/lib/seo";
-import { OurServices } from "@/components/our-services";
+import { ProductionServiceAbout } from "@/components/production-service-about";
 
-export const metadata = pageMetadata("Services", "AI solutions, website design and development, UI/UX, custom software and IT services from NO SMALL THING.", "/expertise");
+export const metadata = pageMetadata("Services", "Premium full-scale production service partner in Portugal and Spain.", "/expertise");
 
 export default function ExpertisePage() {
-  return <OurServices standalone />;
+  return <ProductionServiceAbout standalone />;
 }

@@ -48,7 +48,7 @@ try {
   assert.match(sitemap, /<urlset/);
   assert.ok(!sitemap.includes("design-system"));
   const rootHtml = await readFile("out/index.html", "utf8");
-  for (const phrase of ["STAY BIG.", "WHAT WE DO.", "SELECTED WORK.", "THINK BEYOND.", "THREE MINDS.", "SOMETHING MATTER."]) assert.ok(rootHtml.includes(phrase), phrase);
+  for (const phrase of ["STAY BIG.", "PRODUCTION SERVICE", "SELECTED WORK.", "THINK BEYOND.", "THREE MINDS.", "SOMETHING MATTER."]) assert.ok(rootHtml.includes(phrase), phrase);
   assert.ok(!rootHtml.includes("__about-qa") && !rootHtml.includes("__review-qa"));
   console.log(JSON.stringify({ pages: pages.length, assetRequests: assets.size, routeStatus: "passed", headings: "passed", metadata: "passed", conceptDisclosures: "passed", honestContactMode: "passed", fallback404: "passed", unsupportedPost: "405", sitemap: "passed" }));
 } finally { server.kill(); }

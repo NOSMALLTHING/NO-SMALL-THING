@@ -1,11 +1,21 @@
 import { HomeHero } from "@/components/home-hero";
 import { BrandIntroduction } from "@/components/brand-introduction";
-import { OurServices } from "@/components/our-services";
+import { ProductionServiceAbout } from "@/components/production-service-about";
 import { SelectedWork } from "@/components/selected-work";
 import { OurApproach } from "@/components/our-approach";
 import { AboutUs } from "@/components/about-us";
 import { ContactSection } from "@/components/contact-section";
 
 export default function HomePage() {
-  return <><HomeHero /><BrandIntroduction /><OurServices /><SelectedWork /><OurApproach /><AboutUs /><ContactSection /></>;
+  return (
+    <>
+      <HomeHero />
+      <BrandIntroduction />
+      <ProductionServiceAbout />
+      <SelectedWork />
+      <OurApproach />
+      <AboutUs />
+      <ContactSection />
+    </>
+  );
 }
