@@ -21,7 +21,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 15);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -50,41 +50,43 @@ export function SiteHeader() {
 
   return <>
     <header className={`site-header${isHome ? " is-cinematic" : ""}${scrolled ? " is-scrolled" : ""}`}>
-      <Container className="header-inner">
+      <div className="header-bar">
         <Link href="/" className="brand-name" aria-label="NO SMALL THING — Home">
-          <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 125px, 145px" eager />
+          <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 110px, 135px" eager />
         </Link>
-        <nav className="desktop-nav" aria-label="Main navigation">
-          {navigation.map(item => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`nav-bracket-link ${active ? "is-active" : ""}`}
-                aria-current={active ? "page" : undefined}
-              >
-                <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
-                <span className="bracket-label">{item.label}</span>
-                <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
-              </Link>
-            );
-          })}
-        </nav>
-        <button
-          type="button"
-          ref={triggerRef}
-          className="menu-trigger-bracketed"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-controls="site-menu"
-          onClick={() => setOpen(true)}
-        >
-          <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
-          <span className="bracket-label">MENU</span>
-          <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
-        </button>
-      </Container>
+        <div className="header-right">
+          <nav className="desktop-nav" aria-label="Main navigation">
+            {navigation.map(item => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`nav-bracket-link ${active ? "is-active" : ""}`}
+                  aria-current={active ? "page" : undefined}
+                >
+                  <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
+                  <span className="bracket-label">{item.label}</span>
+                  <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
+                </Link>
+              );
+            })}
+          </nav>
+          <button
+            type="button"
+            ref={triggerRef}
+            className="menu-trigger-bracketed"
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-controls="site-menu"
+            onClick={() => setOpen(true)}
+          >
+            <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
+            <span className="bracket-label">MENU</span>
+            <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
+          </button>
+        </div>
+      </div>
       <noscript><nav className="no-script-nav" aria-label="Navigation without JavaScript">{navigation.map(item => <Link key={item.href} href={item.href}>{item.label}</Link>)}</nav></noscript>
     </header>
     <dialog id="site-menu" className="site-menu" ref={dialogRef} aria-labelledby="menu-title" onCancel={() => setOpen(false)} onClose={() => setOpen(false)}>
