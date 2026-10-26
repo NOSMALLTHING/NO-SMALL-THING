@@ -82,6 +82,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
     <section
       ref={sectionRef}
       id="services"
+      data-theme="light"
       className={styles.section}
       aria-labelledby="services-title"
     >

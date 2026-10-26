@@ -1,4 +1,4 @@
-/* WHAT WE DO — Inspired by Production Portugal's Pink Lava Lamp About Section */
+/* WHAT WE DO — light palette; original layout, typography and motion retained. */
 .section {
   position: relative;
   min-height: 100svh;
@@ -6,18 +6,18 @@
   flex-direction: column;
   justify-content: space-between;
   padding: clamp(65px, 8vh, 85px) clamp(1rem, 3.5vw, 2.5rem) clamp(1.25rem, 2.5vw, 2rem);
-  background: var(--base-bg, #ff0080);
-  color: #fff;
+  background: var(--base-bg, #fff);
+  color: var(--black);
   overflow: hidden;
   box-sizing: border-box;
 }
 
 /* 1. Organic Fluid Lava Lamp Background */
 .lavaLamp {
-  --base-bg: #ff0080;
-  --blob-1: #ff126f;
-  --blob-2: #a3003f;
-  --vignette: #590224d9;
+  --base-bg: #fff;
+  --blob-1: #fff;
+  --blob-2: #f7f7f7;
+  --vignette: #08080908;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -143,7 +143,7 @@
 .narrativeBlock {
   width: min(520px, 48%);
   font-family: var(--font-brand-sans);
-  color: #fff;
+  color: var(--black);
   font-size: clamp(0.9375rem, 1.15vw, 1.1875rem);
   line-height: 1.25;
   letter-spacing: -0.025em;
@@ -154,7 +154,7 @@
   display: block;
   font-weight: 700;
   margin-bottom: 0.75rem;
-  color: #fff;
+  color: var(--black);
   line-height: 1.2;
 }
 
@@ -169,7 +169,7 @@
 .narrativeKicker {
   display: block;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(8, 8, 9, 0.9);
   line-height: 1.25;
 }
 
@@ -178,7 +178,7 @@
   position: relative;
   width: calc(100% + clamp(2rem, 7vw, 5rem));
   margin-left: calc(-1 * clamp(1rem, 3.5vw, 2.5rem));
-  background-image: linear-gradient(90deg, #ff1972 15%, #ff006e 50%, #ff1972 85%);
+  background-image: linear-gradient(90deg, #f5f5f5 15%, #ededed 50%, #f5f5f5 85%);
   padding: 4px clamp(1rem, 3vw, 2rem);
   box-sizing: border-box;
   display: flex;
@@ -202,7 +202,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--black);
   text-decoration: none;
   background: none;
   border: none;
@@ -220,7 +220,7 @@
 
 .stripBracket {
   display: inline-block;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(8, 8, 9, 0.55);
   font-family: var(--font-brand-sans);
   font-weight: 400;
   transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms ease;
@@ -237,13 +237,13 @@
 .stripItem:hover .bracketLeft,
 .stripItem.isActive .bracketLeft {
   transform: translateX(-0.25em);
-  color: #fff;
+  color: var(--black);
 }
 
 .stripItem:hover .bracketRight,
 .stripItem.isActive .bracketRight {
   transform: translateX(0.25em);
-  color: #fff;
+  color: var(--black);
 }
 
 /* 4. Bottom Section: Left Floating Media + Right Massive Headline */
@@ -320,7 +320,7 @@
   top: 50%;
   width: 4px;
   height: 4px;
-  background: #ff006e;
+  background: var(--black);
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
@@ -331,14 +331,14 @@
   bottom: 8px;
   left: 8px;
   right: 8px;
-  background: rgba(8, 8, 9, 0.78);
+  background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(8px);
   padding: 6px 10px;
   font-family: var(--font-brand-mono);
   font-size: 0.6875rem;
   line-height: 1.35;
-  color: #fff;
-  border-left: 2px solid #ff006e;
+  color: var(--black);
+  border-left: 2px solid var(--black);
 }
 
 .badgeHeader {
@@ -346,12 +346,12 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2px;
-  color: #ff006e;
+  color: var(--black);
   font-weight: 600;
 }
 
 .badgeText {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(8, 8, 9, 0.85);
   font-size: 0.625rem;
   letter-spacing: 0.02em;
 }
@@ -372,7 +372,7 @@
   text-transform: uppercase;
   line-height: 0.92;
   letter-spacing: -0.04em;
-  color: #fff;
+  color: var(--black);
   margin: 0;
   text-align: right;
   user-select: none;
@@ -411,7 +411,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--black);
   text-decoration: none;
   white-space: nowrap;
   transition: opacity 200ms ease;
@@ -425,20 +425,20 @@
   font-family: var(--font-brand-sans);
   font-size: clamp(0.75rem, 0.9vw, 0.875rem);
   line-height: 1.35;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(8, 8, 9, 0.88);
   max-width: 380px;
   text-align: right;
   margin: 0;
 }
 
 .dash {
-  color: #fff;
+  color: var(--black);
   font-weight: 700;
 }
 
 .endHighlight {
   font-weight: 600;
-  color: #fff;
+  color: var(--black);
 }
 
 /* Responsive Breakpoints */
