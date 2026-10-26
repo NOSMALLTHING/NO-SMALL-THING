@@ -12,6 +12,24 @@
   transition: opacity 240ms ease;
 }
 
+.cursorContainer[popover] {
+  position: fixed;
+  inset: auto;
+  top: 0;
+  left: 0;
+  right: auto;
+  bottom: auto;
+  z-index: 2147483647;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  background: transparent;
+  color: inherit;
+}
+
 .isVisible {
   opacity: 1;
 }
@@ -247,12 +265,59 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
+/* This reticle is activated only while the Menu dialog is open and hovered. */
+.isMenuMode .frameOuter {
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(152, 80, 53, 0.58);
+  border-radius: 50%;
+}
+
+.isMenuMode .frameOuter::before,
+.isMenuMode .frameOuter::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.isMenuMode .frameOuter::before {
+  inset: -7px;
+  border: 1px solid rgba(152, 80, 53, 0.26);
+  border-top-color: var(--mars-orange);
+  border-right-color: transparent;
+  animation: menu-cursor-orbit 7s linear infinite;
+}
+
+.isMenuMode .frameOuter::after {
+  inset: 8px;
+  border: 1px solid rgba(152, 80, 53, 0.24);
+}
+
+.isMenuMode .corner { display: none; }
+.isMenuMode .centerDot { background: var(--mars-orange); }
+.isMenuMode .crossTickH,
+.isMenuMode .crossTickV { background: rgba(8, 8, 9, 0.36); }
+
+.isMenuItem .frameOuter {
+  width: 64px;
+  height: 64px;
+  border-color: rgba(152, 80, 53, 0.84);
+}
+
+.isMenuItem .reticleInner { opacity: 0.82; }
+
+@keyframes menu-cursor-orbit {
+  to { transform: rotate(1turn); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cursorContainer,
   .reticleInner,
   .frameOuter,
   .corner,
-  .hudBadge {
+  .hudBadge,
+  .isMenuMode .frameOuter::before {
     transition: none !important;
     animation: none !important;
   }

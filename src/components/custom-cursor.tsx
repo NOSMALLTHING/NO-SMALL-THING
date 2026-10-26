@@ -25,6 +25,8 @@ export function CustomCursor() {
   const [isProject, setIsProject] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [isLight, setIsLight] = useState(false);
+  const [isMenuMode, setIsMenuMode] = useState(false);
+  const [isMenuItem, setIsMenuItem] = useState(false);
   const [hudText, setHudText] = useState("");
   const [ripples, setRipples] = useState<Ripple[]>([]);
 
@@ -33,7 +35,39 @@ export function CustomCursor() {
     const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     if (!isFinePointer) return;
 
-    document.documentElement.classList.add("custom-cursor-enabled");
+    const root = document.documentElement;
+    root.classList.add("custom-cursor-enabled");
+
+    // A modal dialog is painted in the browser's top layer, above the normal
+    // document. Promote this cursor only while the Menu is open so it remains
+    // visible there without changing the cursor on any other page.
+    const menuDialog = document.querySelector<HTMLDialogElement>("#site-menu");
+    const syncMenuCursorLayer = () => {
+      const cursor = containerRef.current;
+      if (!cursor || !menuDialog) return;
+
+      if (menuDialog.open && typeof cursor.showPopover === "function") {
+        try {
+          cursor.setAttribute("popover", "manual");
+          if (!cursor.matches(":popover-open")) cursor.showPopover();
+          if (!cursor.matches(":popover-open")) throw new Error("Cursor popover did not enter the top layer.");
+          root.classList.add("menu-cursor-top-layer");
+          return;
+        } catch {
+          // The scoped CSS cursor is the fallback when top-layer popovers are unavailable.
+          cursor.removeAttribute("popover");
+        }
+      }
+
+      if (cursor.matches(":popover-open") && typeof cursor.hidePopover === "function") {
+        cursor.hidePopover();
+      }
+      cursor.removeAttribute("popover");
+      root.classList.remove("menu-cursor-top-layer");
+    };
+    const menuObserver = menuDialog ? new MutationObserver(syncMenuCursorLayer) : null;
+    menuObserver?.observe(menuDialog!, { attributes: true, attributeFilter: ["open"] });
+    syncMenuCursorLayer();
 
     let mouseX = -100;
     let mouseY = -100;
@@ -83,10 +117,17 @@ export function CustomCursor() {
       if (!target) {
         setInteractive(false);
         setIsProject(false);
+        setIsMenuMode(false);
+        setIsMenuItem(false);
         setSuppressed(false);
         setHudText("");
         return;
       }
+
+      const menu = target.closest("#site-menu");
+      const menuItem = target.closest("#site-menu .menu-item");
+      setIsMenuMode(!!menu);
+      setIsMenuItem(!!menuItem);
 
       // Hide cursor over text inputs so native caret is unobstructed
       const isInput = !!target.closest('input, textarea, select, [contenteditable="true"]');
@@ -104,6 +145,11 @@ export function CustomCursor() {
       const customText = target.closest('[data-cursor-text]')?.getAttribute("data-cursor-text");
       if (customText) {
         setHudText(customText);
+      } else if (menuItem) {
+        const index = menuItem.querySelector(".eyebrow")?.textContent?.trim();
+        setHudText(index ? `OPEN / ${index}` : "OPEN");
+      } else if (menu) {
+        setHudText("INDEX");
       } else if (projectEl) {
         setHudText("SEE STUDY");
       } else if (target.closest(".menu-trigger-bracketed, #menu-title")) {
@@ -157,6 +203,8 @@ export function CustomCursor() {
     const onPointerLeave = () => {
       setVisible(false);
       setInteractive(false);
+      setIsMenuMode(false);
+      setIsMenuItem(false);
       setIsPressed(false);
       setHudText("");
     };
@@ -210,7 +258,13 @@ export function CustomCursor() {
     rafId = requestAnimationFrame(tick);
 
     return () => {
-      document.documentElement.classList.remove("custom-cursor-enabled");
+      menuObserver?.disconnect();
+      const cursor = containerRef.current;
+      if (cursor?.matches(":popover-open") && typeof cursor.hidePopover === "function") {
+        cursor.hidePopover();
+      }
+      cursor?.removeAttribute("popover");
+      root.classList.remove("custom-cursor-enabled", "menu-cursor-top-layer");
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointerup", onPointerUp);
@@ -227,7 +281,9 @@ export function CustomCursor() {
         suppressed ? styles.isSuppressed : ""
       } ${interactive ? styles.isInteractive : ""} ${isProject ? styles.isProject : ""} ${
         isPressed ? styles.isPressed : ""
-      } ${isLight ? styles.isLight : ""}`}
+      } ${isLight ? styles.isLight : ""} ${isMenuMode ? styles.isMenuMode : ""} ${
+        isMenuItem ? styles.isMenuItem : ""
+      }`}
       aria-hidden="true"
     >
       {/* 1. Instant precision optical reticle */}
