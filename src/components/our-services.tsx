@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import {
   motion,
   useScroll,
+  useSpring,
   useTransform,
   useReducedMotion,
   type MotionValue,
@@ -139,10 +140,18 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
   const videoWrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Scroll tracking for pinned animation across extended track (380vh)
+  // Scroll tracking for pinned animation across extended track (520vh)
   const { scrollYProgress } = useScroll({
     target: scrollTrackRef,
     offset: ["start start", "end end"],
+  });
+
+  // Viscous fluid spring smoothing for ultra-luxurious, slow, and cinematic pacing
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 50,
+    damping: 20,
+    mass: 0.8,
+    restDelta: 0.0005,
   });
 
   const Heading = standalone ? "h1" : "h2";
@@ -251,18 +260,18 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
 
   const animationsEnabled = isMounted && isDesktop && !prefersReduced;
 
-  // Sequential entrances for bottom items after headline completes (0.76 -> 0.90)
-  const fbOpacity = useTransform(scrollYProgress, [0, 0.77, 0.81, 1], [0, 0, 1, 1]);
-  const fbY = useTransform(scrollYProgress, [0, 0.77, 0.81, 1], [10, 10, 0, 0]);
+  // Sequential entrances for bottom items after headline completes (0.74 -> 0.88)
+  const fbOpacity = useTransform(smoothProgress, [0, 0.75, 0.79, 1], [0, 0, 1, 1]);
+  const fbY = useTransform(smoothProgress, [0, 0.75, 0.79, 1], [10, 10, 0, 0]);
 
-  const rnOpacity = useTransform(scrollYProgress, [0, 0.80, 0.84, 1], [0, 0, 1, 1]);
-  const rnY = useTransform(scrollYProgress, [0, 0.80, 0.84, 1], [10, 10, 0, 0]);
+  const rnOpacity = useTransform(smoothProgress, [0, 0.78, 0.82, 1], [0, 0, 1, 1]);
+  const rnY = useTransform(smoothProgress, [0, 0.78, 0.82, 1], [10, 10, 0, 0]);
 
-  const igOpacity = useTransform(scrollYProgress, [0, 0.83, 0.87, 1], [0, 0, 1, 1]);
-  const igY = useTransform(scrollYProgress, [0, 0.83, 0.87, 1], [10, 10, 0, 0]);
+  const igOpacity = useTransform(smoothProgress, [0, 0.81, 0.85, 1], [0, 0, 1, 1]);
+  const igY = useTransform(smoothProgress, [0, 0.81, 0.85, 1], [10, 10, 0, 0]);
 
-  const quoteOpacity = useTransform(scrollYProgress, [0, 0.86, 0.90, 1], [0, 0, 1, 1]);
-  const quoteY = useTransform(scrollYProgress, [0, 0.86, 0.90, 1], [10, 10, 0, 0]);
+  const quoteOpacity = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [0, 0, 1, 1]);
+  const quoteY = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [10, 10, 0, 0]);
 
   const current = services[activeService];
 
@@ -394,37 +403,37 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
                   className={styles.headline}
                   aria-label="WHAT WE DO. FOCUS BUILD WHAT MATTERS. Among THE STARS. AI & DIGITAL, DONE RIGHT."
                 >
-                  {/* Line 1: ®WHAT WE DO. (0.12 -> 0.22 -> 0.28) */}
+                  {/* Line 1: ®WHAT WE DO. (0.10 -> 0.19 -> 0.26) */}
                   <HeadlineRow
-                    scrollYProgress={scrollYProgress}
-                    range={[0.12, 0.22, 0.28]}
+                    scrollYProgress={smoothProgress}
+                    range={[0.10, 0.19, 0.26]}
                     enabled={animationsEnabled}
                   >
                     <span className={styles.regMark} aria-hidden="true">®</span>WHAT WE DO.
                   </HeadlineRow>
 
-                  {/* Line 2: FOCUS BUILD WHAT MATTERS. (0.28 -> 0.38 -> 0.44) */}
+                  {/* Line 2: FOCUS BUILD WHAT MATTERS. (0.26 -> 0.35 -> 0.42) */}
                   <HeadlineRow
-                    scrollYProgress={scrollYProgress}
-                    range={[0.28, 0.38, 0.44]}
+                    scrollYProgress={smoothProgress}
+                    range={[0.26, 0.35, 0.42]}
                     enabled={animationsEnabled}
                   >
                     FOCUS BUILD WHAT MATTERS.
                   </HeadlineRow>
 
-                  {/* Line 3: Among THE STARS (0.44 -> 0.54 -> 0.60) */}
+                  {/* Line 3: Among THE STARS (0.42 -> 0.51 -> 0.58) */}
                   <HeadlineRow
-                    scrollYProgress={scrollYProgress}
-                    range={[0.44, 0.54, 0.60]}
+                    scrollYProgress={smoothProgress}
+                    range={[0.42, 0.51, 0.58]}
                     enabled={animationsEnabled}
                   >
                     <span className={styles.serifWord}>Among</span> THE STARS
                   </HeadlineRow>
 
-                  {/* Line 4: AI & DIGITAL, DONE RIGHT. (0.60 -> 0.70 -> 0.76) */}
+                  {/* Line 4: AI & DIGITAL, DONE RIGHT. (0.58 -> 0.67 -> 0.74) */}
                   <HeadlineRow
-                    scrollYProgress={scrollYProgress}
-                    range={[0.60, 0.70, 0.76]}
+                    scrollYProgress={smoothProgress}
+                    range={[0.58, 0.67, 0.74]}
                     enabled={animationsEnabled}
                   >
                     AI &amp; DIGITAL, DONE RIGHT.
@@ -432,7 +441,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
                 </Heading>
               </div>
 
-              {/* Bottom Socials & Philosophy Statement (0.76 -> 0.90) */}
+              {/* Bottom Socials & Philosophy Statement (0.74 -> 0.88) */}
               <div
                 className={styles.bottomEnd}
                 onMouseEnter={handleTextEnter}
