@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   motion,
   useScroll,
@@ -114,9 +114,23 @@ function HeadlineRow({ children, scrollYProgress, range, enabled }: HeadlineRowP
 
 export function OurServices({ standalone = false }: { standalone?: boolean }) {
   const [activeService, setActiveService] = useState(0);
-  const [isOverHeadline, setIsOverHeadline] = useState(false);
+  const [isOverText, setIsOverText] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+
+  const textHoverCounter = useRef(0);
+
+  const handleTextEnter = useCallback(() => {
+    textHoverCounter.current += 1;
+    setIsOverText(true);
+  }, []);
+
+  const handleTextLeave = useCallback(() => {
+    textHoverCounter.current = Math.max(0, textHoverCounter.current - 1);
+    if (textHoverCounter.current === 0) {
+      setIsOverText(false);
+    }
+  }, []);
 
   const prefersReduced = useReducedMotion();
 
@@ -125,7 +139,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
   const videoWrapRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Scroll tracking for pinned animation
+  // Scroll tracking for pinned animation across extended track (380vh)
   const { scrollYProgress } = useScroll({
     target: scrollTrackRef,
     offset: ["start start", "end end"],
@@ -195,7 +209,8 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
     };
 
     const handlePointerLeave = () => {
-      setIsOverHeadline(false);
+      textHoverCounter.current = 0;
+      setIsOverText(false);
       const rect = section.getBoundingClientRect();
       posRef.current.targetX = Math.min(260, rect.width * 0.22);
       posRef.current.targetY = Math.max(rect.height - 180, 260);
@@ -236,12 +251,18 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
 
   const animationsEnabled = isMounted && isDesktop && !prefersReduced;
 
-  // Bottom end content opacity fade
-  const bottomOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.72, 0.84, 1],
-    [0.25, 0.25, 1, 1]
-  );
+  // Sequential entrances for bottom items after headline completes (0.76 -> 0.90)
+  const fbOpacity = useTransform(scrollYProgress, [0, 0.77, 0.81, 1], [0, 0, 1, 1]);
+  const fbY = useTransform(scrollYProgress, [0, 0.77, 0.81, 1], [10, 10, 0, 0]);
+
+  const rnOpacity = useTransform(scrollYProgress, [0, 0.80, 0.84, 1], [0, 0, 1, 1]);
+  const rnY = useTransform(scrollYProgress, [0, 0.80, 0.84, 1], [10, 10, 0, 0]);
+
+  const igOpacity = useTransform(scrollYProgress, [0, 0.83, 0.87, 1], [0, 0, 1, 1]);
+  const igY = useTransform(scrollYProgress, [0, 0.83, 0.87, 1], [10, 10, 0, 0]);
+
+  const quoteOpacity = useTransform(scrollYProgress, [0, 0.86, 0.90, 1], [0, 0, 1, 1]);
+  const quoteY = useTransform(scrollYProgress, [0, 0.86, 0.90, 1], [10, 10, 0, 0]);
 
   const current = services[activeService];
 
@@ -298,10 +319,10 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
           </div>
         </div>
 
-        {/* 2. Desktop Cursor-Following Floating Video Box */}
+        {/* 2. Desktop Cursor-Following Floating Video Box (Option A: difference mode over all text zones) */}
         <div
           ref={videoWrapRef}
-          className={`${styles.cursorVideoWrap} ${isOverHeadline ? styles.blendDifference : ""}`}
+          className={`${styles.cursorVideoWrap} ${isOverText ? styles.blendDifference : ""}`}
           aria-hidden="true"
         >
           {renderMediaFrame("cursor-media", true)}
@@ -311,7 +332,11 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
         <div className={styles.contentLayer}>
           {/* Top: Upper-Right Narrative Lead */}
           <div className={styles.topSection}>
-            <div className={styles.narrativeBlock}>
+            <div
+              className={styles.narrativeBlock}
+              onMouseEnter={handleTextEnter}
+              onMouseLeave={handleTextLeave}
+            >
               <span className={styles.narrativeLead}>
                 At NO SMALL THING, every project is guided by three minds with one shared ambition.
               </span>
@@ -325,7 +350,12 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
           </div>
 
           {/* Middle: Full-bleed Horizontal Service Links Strip */}
-          <nav className={styles.linksStrip} aria-label="Core services list">
+          <nav
+            className={styles.linksStrip}
+            aria-label="Core services list"
+            onMouseEnter={handleTextEnter}
+            onMouseLeave={handleTextLeave}
+          >
             {services.map((item, index) => {
               const isSelected = index === activeService;
               return (
@@ -356,45 +386,45 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
             <div className={styles.rightHeadlineCol}>
               <div
                 className={styles.headlineTarget}
-                onMouseEnter={() => setIsOverHeadline(true)}
-                onMouseLeave={() => setIsOverHeadline(false)}
+                onMouseEnter={handleTextEnter}
+                onMouseLeave={handleTextLeave}
               >
                 <Heading
                   id="services-title"
                   className={styles.headline}
                   aria-label="WHAT WE DO. FOCUS BUILD WHAT MATTERS. Among THE STARS. AI & DIGITAL, DONE RIGHT."
                 >
-                  {/* Line 1: ®WHAT WE DO. */}
+                  {/* Line 1: ®WHAT WE DO. (0.12 -> 0.22 -> 0.28) */}
                   <HeadlineRow
                     scrollYProgress={scrollYProgress}
-                    range={[0.08, 0.20, 0.28]}
+                    range={[0.12, 0.22, 0.28]}
                     enabled={animationsEnabled}
                   >
                     <span className={styles.regMark} aria-hidden="true">®</span>WHAT WE DO.
                   </HeadlineRow>
 
-                  {/* Line 2: FOCUS BUILD WHAT MATTERS. */}
+                  {/* Line 2: FOCUS BUILD WHAT MATTERS. (0.28 -> 0.38 -> 0.44) */}
                   <HeadlineRow
                     scrollYProgress={scrollYProgress}
-                    range={[0.26, 0.38, 0.46]}
+                    range={[0.28, 0.38, 0.44]}
                     enabled={animationsEnabled}
                   >
                     FOCUS BUILD WHAT MATTERS.
                   </HeadlineRow>
 
-                  {/* Line 3: Among THE STARS */}
+                  {/* Line 3: Among THE STARS (0.44 -> 0.54 -> 0.60) */}
                   <HeadlineRow
                     scrollYProgress={scrollYProgress}
-                    range={[0.44, 0.56, 0.64]}
+                    range={[0.44, 0.54, 0.60]}
                     enabled={animationsEnabled}
                   >
                     <span className={styles.serifWord}>Among</span> THE STARS
                   </HeadlineRow>
 
-                  {/* Line 4: AI & DIGITAL, DONE RIGHT. */}
+                  {/* Line 4: AI & DIGITAL, DONE RIGHT. (0.60 -> 0.70 -> 0.76) */}
                   <HeadlineRow
                     scrollYProgress={scrollYProgress}
-                    range={[0.62, 0.74, 0.84]}
+                    range={[0.60, 0.70, 0.76]}
                     enabled={animationsEnabled}
                   >
                     AI &amp; DIGITAL, DONE RIGHT.
@@ -402,53 +432,74 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
                 </Heading>
               </div>
 
-              {/* Bottom Socials & Philosophy Statement */}
-              <motion.div
+              {/* Bottom Socials & Philosophy Statement (0.76 -> 0.90) */}
+              <div
                 className={styles.bottomEnd}
-                style={{ opacity: animationsEnabled ? bottomOpacity : 1 }}
+                onMouseEnter={handleTextEnter}
+                onMouseLeave={handleTextLeave}
               >
                 <div className={styles.socialGroup} aria-label="Social links">
-                  <a
+                  <motion.a
                     href="https://facebook.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.socialBracketLink}
+                    style={{
+                      opacity: animationsEnabled ? fbOpacity : 1,
+                      y: animationsEnabled ? fbY : 0,
+                    }}
                     aria-label="Facebook (opens in new tab)"
                   >
                     <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
                     <span>FACEBOOK</span>
                     <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
-                  </a>
-                  <a
+                  </motion.a>
+
+                  <motion.a
                     href="https://xiaohongshu.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.socialBracketLink}
+                    style={{
+                      opacity: animationsEnabled ? rnOpacity : 1,
+                      y: animationsEnabled ? rnY : 0,
+                    }}
                     aria-label="Rednote (opens in new tab)"
                   >
                     <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
                     <span>REDNOTE</span>
                     <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
-                  </a>
-                  <a
+                  </motion.a>
+
+                  <motion.a
                     href="https://instagram.com"
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.socialBracketLink}
+                    style={{
+                      opacity: animationsEnabled ? igOpacity : 1,
+                      y: animationsEnabled ? igY : 0,
+                    }}
                     aria-label="Instagram (opens in new tab)"
                   >
                     <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
                     <span>IG</span>
                     <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
-                  </a>
+                  </motion.a>
                 </div>
 
-                <p className={styles.endParagraph}>
+                <motion.p
+                  className={styles.endParagraph}
+                  style={{
+                    opacity: animationsEnabled ? quoteOpacity : 1,
+                    y: animationsEnabled ? quoteY : 0,
+                  }}
+                >
                   <span className={styles.dash}>— </span>
                   The first step is to establish that something is possible then probability will occur.{" "}
                   <strong className={styles.endHighlight}>From idea to execution.</strong>
-                </p>
-              </motion.div>
+                </motion.p>
+              </div>
             </div>
           </div>
         </div>
