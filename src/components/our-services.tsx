@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+  type MotionValue,
+} from "motion/react";
 import styles from "./our-services.module.css";
 
 const services = [
@@ -42,165 +48,411 @@ const services = [
   },
 ] as const;
 
+interface HeadlineRowProps {
+  children: React.ReactNode;
+  scrollYProgress: MotionValue<number>;
+  range: [number, number, number]; // [enterStart, coverComplete, exitComplete]
+  enabled: boolean;
+}
+
+function HeadlineRow({ children, scrollYProgress, range, enabled }: HeadlineRowProps) {
+  const [a, b, c] = range;
+
+  // Phase 1 (a -> b): sweeps in from left to right, covering line with solid black block
+  // Phase 2 (b -> c): sweeps out towards right, revealing text cleanly
+  const blockClipPath = useTransform(
+    scrollYProgress,
+    [0, a, b, c, 1],
+    [
+      "inset(0% 100% 0% 0%)",
+      "inset(0% 100% 0% 0%)",
+      "inset(0% 0% 0% 0%)",
+      "inset(0% 0% 0% 100%)",
+      "inset(0% 0% 0% 100%)",
+    ]
+  );
+
+  const blockOpacity = useTransform(
+    scrollYProgress,
+    [0, Math.max(0, a - 0.001), a, c, Math.min(1, c + 0.001), 1],
+    [0, 0, 1, 1, 0, 0]
+  );
+
+  const textOpacity = useTransform(
+    scrollYProgress,
+    [0, Math.max(0, b - 0.001), b, 1],
+    [0, 0, 1, 1]
+  );
+
+  if (!enabled) {
+    return (
+      <span className={styles.headlineRow}>
+        <span className={styles.textInner}>{children}</span>
+      </span>
+    );
+  }
+
+  return (
+    <span className={styles.headlineRow}>
+      <motion.span
+        className={styles.textInner}
+        style={{ opacity: textOpacity }}
+      >
+        {children}
+      </motion.span>
+      <motion.span
+        className={styles.blackBlock}
+        style={{
+          clipPath: blockClipPath,
+          opacity: blockOpacity,
+        }}
+        aria-hidden="true"
+      />
+    </span>
+  );
+}
+
 export function OurServices({ standalone = false }: { standalone?: boolean }) {
   const [activeService, setActiveService] = useState(0);
-  const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
-  const sectionRef = useRef<HTMLElement>(null);
+  const [isOverHeadline, setIsOverHeadline] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  const prefersReduced = useReducedMotion();
+
+  const scrollTrackRef = useRef<HTMLDivElement>(null);
+  const stickySectionRef = useRef<HTMLElement>(null);
+  const videoWrapRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Scroll tracking for pinned animation
+  const { scrollYProgress } = useScroll({
+    target: scrollTrackRef,
+    offset: ["start start", "end end"],
+  });
+
   const Heading = standalone ? "h1" : "h2";
 
+  // Check window breakpoint & mount state
   useEffect(() => {
-    const section = sectionRef.current;
+    setIsMounted(true);
+
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+
+    checkDesktop();
+    window.addEventListener("resize", checkDesktop, { passive: true });
+    return () => window.removeEventListener("resize", checkDesktop);
+  }, []);
+
+  // Ensure video autoplays safely
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  // Cursor following video physics (smooth lerp with inertia)
+  const posRef = useRef({
+    currentX: 240,
+    currentY: 520,
+    targetX: 240,
+    targetY: 520,
+    hasMoved: false,
+  });
+
+  useEffect(() => {
+    if (!isDesktop) return;
+
+    const section = stickySectionRef.current;
     if (!section) return;
+
+    const updateDefaultPos = () => {
+      const rect = section.getBoundingClientRect();
+      const defaultX = Math.min(260, rect.width * 0.22);
+      const defaultY = Math.max(rect.height - 180, 260);
+      if (!posRef.current.hasMoved) {
+        posRef.current.currentX = defaultX;
+        posRef.current.currentY = defaultY;
+        posRef.current.targetX = defaultX;
+        posRef.current.targetY = defaultY;
+      }
+    };
+    updateDefaultPos();
 
     const handlePointerMove = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
       const rect = section.getBoundingClientRect();
-      const normX = (e.clientX - rect.left) / rect.width - 0.5;
-      const normY = (e.clientY - rect.top) / rect.height - 0.5;
-      setMouseOffset({
-        x: normX * 18,
-        y: normY * 14,
-      });
+      const padX = Math.min(180, rect.width * 0.18);
+      const padY = Math.min(110, rect.height * 0.15);
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      posRef.current.targetX = Math.max(padX, Math.min(rect.width - padX, mouseX));
+      posRef.current.targetY = Math.max(padY, Math.min(rect.height - padY, mouseY));
+      posRef.current.hasMoved = true;
     };
 
     const handlePointerLeave = () => {
-      setMouseOffset({ x: 0, y: 0 });
+      setIsOverHeadline(false);
+      const rect = section.getBoundingClientRect();
+      posRef.current.targetX = Math.min(260, rect.width * 0.22);
+      posRef.current.targetY = Math.max(rect.height - 180, 260);
+      posRef.current.hasMoved = false;
     };
 
     section.addEventListener("pointermove", handlePointerMove, { passive: true });
     section.addEventListener("pointerleave", handlePointerLeave, { passive: true });
+    window.addEventListener("resize", updateDefaultPos);
+
+    let animationFrameId: number;
+    const LERP_FACTOR = 0.12;
+
+    const render = () => {
+      const p = posRef.current;
+      const dx = p.targetX - p.currentX;
+      const dy = p.targetY - p.currentY;
+
+      p.currentX += dx * LERP_FACTOR;
+      p.currentY += dy * LERP_FACTOR;
+
+      if (videoWrapRef.current) {
+        videoWrapRef.current.style.transform = `translate3d(${p.currentX}px, ${p.currentY}px, 0) translate(-50%, -50%)`;
+      }
+
+      animationFrameId = requestAnimationFrame(render);
+    };
+
+    animationFrameId = requestAnimationFrame(render);
 
     return () => {
+      cancelAnimationFrame(animationFrameId);
       section.removeEventListener("pointermove", handlePointerMove);
       section.removeEventListener("pointerleave", handlePointerLeave);
+      window.removeEventListener("resize", updateDefaultPos);
     };
-  }, []);
+  }, [isDesktop]);
+
+  const animationsEnabled = isMounted && isDesktop && !prefersReduced;
+
+  // Bottom end content opacity fade
+  const bottomOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.72, 0.84, 1],
+    [0.25, 0.25, 1, 1]
+  );
 
   const current = services[activeService];
 
+  const renderMediaFrame = (key: string, isCursorFollower = false) => (
+    <div key={key} className={styles.mediaFrame}>
+      <video
+        ref={isCursorFollower ? videoRef : undefined}
+        className={styles.mediaVideo}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster="/brand/mars-horizon.webp"
+        src="https://s3.amazonaws.com/webflow-prod-assets/69f205b0a0439779a1d746f7/6a023cc07c5866c024c8055a_Hero_section_About_Us_01.mp4"
+        aria-hidden="true"
+      />
+
+      {/* Optical Reticle Crosshair */}
+      <div className={styles.mediaReticle} aria-hidden="true">
+        <span className={styles.reticleTickH} />
+        <span className={styles.reticleTickV} />
+        <span className={styles.reticleDot} />
+      </div>
+
+      {/* Active Service Badge */}
+      <div className={styles.serviceBadge}>
+        <div className={styles.badgeHeader}>
+          <span>SERVICE // {current.number}</span>
+          <span>ACTIVE</span>
+        </div>
+        <div className={styles.badgeText}>{current.description}</div>
+      </div>
+    </div>
+  );
+
   return (
-    <section
-      ref={sectionRef}
-      id="services"
-      data-theme="light"
-      className={styles.section}
-      aria-labelledby="services-title"
-    >
-      {/* 1. Organic Fluid Lava Lamp Moving Background */}
-      <div className={styles.lavaLamp} aria-hidden="true">
-        <div className={styles.lavaBg}>
-          <div className={styles.blob} />
-          <div className={styles.blob} />
-          <div className={styles.blob} />
-          <div className={styles.blob} />
-          <div className={styles.blob} />
-        </div>
-      </div>
-
-      {/* 2. Structured Layout */}
-      <div className={styles.contentLayer}>
-        {/* Top: Upper-Right Narrative Lead */}
-        <div className={styles.topSection}>
-          <div className={styles.narrativeBlock}>
-            <span className={styles.narrativeLead}>
-              At NO SMALL THING, every project is guided by three minds with one shared ambition.
-            </span>
-            <span className={styles.narrativeBody}>
-              We partner with forward-thinking businesses, founders, and teams to build purposeful digital solutions across AI, custom software, UI/UX, and web development. Combining strategic foresight with hands-on technical craftsmanship.
-            </span>
-            <span className={styles.narrativeKicker}>
-              From AI integration and software engineering to bespoke websites and digital systems.
-            </span>
+    <div ref={scrollTrackRef} className={styles.scrollTrack}>
+      <section
+        ref={stickySectionRef}
+        id="services"
+        data-theme="light"
+        className={styles.stickySection}
+        aria-labelledby="services-title"
+      >
+        {/* 1. Organic Fluid Lava Lamp Moving Background (Option A: Light theme) */}
+        <div className={styles.lavaLamp} aria-hidden="true">
+          <div className={styles.lavaBg}>
+            <div className={styles.blob} />
+            <div className={styles.blob} />
+            <div className={styles.blob} />
+            <div className={styles.blob} />
+            <div className={styles.blob} />
           </div>
         </div>
 
-        {/* Middle: Full-bleed Horizontal Service Links Strip */}
-        <nav className={styles.linksStrip} aria-label="Core services list">
-          {services.map((item, index) => {
-            const isSelected = index === activeService;
-            return (
-              <button
-                key={item.number}
-                type="button"
-                className={`${styles.stripItem} ${isSelected ? styles.isActive : ""}`}
-                onClick={() => setActiveService(index)}
-                onMouseEnter={() => setActiveService(index)}
-                aria-pressed={isSelected}
+        {/* 2. Desktop Cursor-Following Floating Video Box */}
+        <div
+          ref={videoWrapRef}
+          className={`${styles.cursorVideoWrap} ${isOverHeadline ? styles.blendDifference : ""}`}
+          aria-hidden="true"
+        >
+          {renderMediaFrame("cursor-media", true)}
+        </div>
+
+        {/* 3. Structured Content Layout Layer */}
+        <div className={styles.contentLayer}>
+          {/* Top: Upper-Right Narrative Lead */}
+          <div className={styles.topSection}>
+            <div className={styles.narrativeBlock}>
+              <span className={styles.narrativeLead}>
+                At NO SMALL THING, every project is guided by three minds with one shared ambition.
+              </span>
+              <span className={styles.narrativeBody}>
+                We partner with forward-thinking businesses, founders, and teams to build purposeful digital solutions across AI, custom software, UI/UX, and web development. Combining strategic foresight with hands-on technical craftsmanship.
+              </span>
+              <span className={styles.narrativeKicker}>
+                From AI integration and software engineering to bespoke websites and digital systems.
+              </span>
+            </div>
+          </div>
+
+          {/* Middle: Full-bleed Horizontal Service Links Strip */}
+          <nav className={styles.linksStrip} aria-label="Core services list">
+            {services.map((item, index) => {
+              const isSelected = index === activeService;
+              return (
+                <button
+                  key={item.number}
+                  type="button"
+                  className={`${styles.stripItem} ${isSelected ? styles.isActive : ""}`}
+                  onClick={() => setActiveService(index)}
+                  onMouseEnter={() => setActiveService(index)}
+                  aria-pressed={isSelected}
+                >
+                  <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+                  <span>{item.shortName}</span>
+                  <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Bottom: Mobile Media Card + Right Massive Typography Headline */}
+          <div className={styles.bottomSection}>
+            {/* Mobile inline video fallback */}
+            <div className={styles.mobileVideoCard}>
+              {renderMediaFrame("mobile-media", false)}
+            </div>
+
+            {/* Right: Massive Typography Poster Headline & Interaction Target */}
+            <div className={styles.rightHeadlineCol}>
+              <div
+                className={styles.headlineTarget}
+                onMouseEnter={() => setIsOverHeadline(true)}
+                onMouseLeave={() => setIsOverHeadline(false)}
               >
-                <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
-                <span>{item.shortName}</span>
-                <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
-              </button>
-            );
-          })}
-        </nav>
+                <Heading
+                  id="services-title"
+                  className={styles.headline}
+                  aria-label="WHAT WE DO. FOCUS BUILD WHAT MATTERS. Among THE STARS. AI & DIGITAL, DONE RIGHT."
+                >
+                  {/* Line 1: ®WHAT WE DO. */}
+                  <HeadlineRow
+                    scrollYProgress={scrollYProgress}
+                    range={[0.08, 0.20, 0.28]}
+                    enabled={animationsEnabled}
+                  >
+                    <span className={styles.regMark} aria-hidden="true">®</span>WHAT WE DO.
+                  </HeadlineRow>
 
-        {/* Bottom: Left Floating Media Box + Right Massive Typographic Headline */}
-        <div className={styles.bottomSection}>
-          {/* Left: Floating Video Box with Optical Reticle */}
-          <div
-            className={styles.mediaFloatBox}
-            style={{
-              transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0)`,
-            }}
-          >
-            <div className={styles.mediaFrame}>
-              <video
-                className={styles.mediaVideo}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                src="https://s3.amazonaws.com/webflow-prod-assets/69f205b0a0439779a1d746f7/6a023cc07c5866c024c8055a_Hero_section_About_Us_01.mp4"
-                aria-hidden="true"
-              />
+                  {/* Line 2: FOCUS BUILD WHAT MATTERS. */}
+                  <HeadlineRow
+                    scrollYProgress={scrollYProgress}
+                    range={[0.26, 0.38, 0.46]}
+                    enabled={animationsEnabled}
+                  >
+                    FOCUS BUILD WHAT MATTERS.
+                  </HeadlineRow>
 
-              {/* Optical Reticle Crosshair */}
-              <div className={styles.mediaReticle} aria-hidden="true">
-                <span className={styles.reticleTickH} />
-                <span className={styles.reticleTickV} />
-                <span className={styles.reticleDot} />
+                  {/* Line 3: Among THE STARS */}
+                  <HeadlineRow
+                    scrollYProgress={scrollYProgress}
+                    range={[0.44, 0.56, 0.64]}
+                    enabled={animationsEnabled}
+                  >
+                    <span className={styles.serifWord}>Among</span> THE STARS
+                  </HeadlineRow>
+
+                  {/* Line 4: AI & DIGITAL, DONE RIGHT. */}
+                  <HeadlineRow
+                    scrollYProgress={scrollYProgress}
+                    range={[0.62, 0.74, 0.84]}
+                    enabled={animationsEnabled}
+                  >
+                    AI &amp; DIGITAL, DONE RIGHT.
+                  </HeadlineRow>
+                </Heading>
               </div>
 
-              {/* Active Service Badge */}
-              <div className={styles.serviceBadge}>
-                <div className={styles.badgeHeader}>
-                  <span>SERVICE // {current.number}</span>
-                  <span>ACTIVE</span>
+              {/* Bottom Socials & Philosophy Statement */}
+              <motion.div
+                className={styles.bottomEnd}
+                style={{ opacity: animationsEnabled ? bottomOpacity : 1 }}
+              >
+                <div className={styles.socialGroup} aria-label="Social links">
+                  <a
+                    href="https://facebook.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.socialBracketLink}
+                    aria-label="Facebook (opens in new tab)"
+                  >
+                    <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+                    <span>FACEBOOK</span>
+                    <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+                  </a>
+                  <a
+                    href="https://xiaohongshu.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.socialBracketLink}
+                    aria-label="Rednote (opens in new tab)"
+                  >
+                    <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+                    <span>REDNOTE</span>
+                    <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+                  </a>
+                  <a
+                    href="https://instagram.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.socialBracketLink}
+                    aria-label="Instagram (opens in new tab)"
+                  >
+                    <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+                    <span>IG</span>
+                    <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+                  </a>
                 </div>
-                <div className={styles.badgeText}>{current.description}</div>
-              </div>
-            </div>
-          </div>
 
-          {/* Right: Massive Typography Poster Headline */}
-          <div className={styles.rightHeadlineCol}>
-            <Heading id="services-title" className={styles.headline} aria-label="WHAT WE DO.">
-              <span className={styles.regMark} aria-hidden="true">®</span>
-              WHAT WE DO.<br />
-              PURPOSEFUL DIGITAL<br />
-              EXPERIENCES &amp; AI<br />
-              <span className={styles.serifWord}>SOLUTIONS </span>BEYOND<br />
-              BOUNDARIES
-            </Heading>
-
-            {/* Bottom Contact / Philosophy Statement */}
-            <div className={styles.bottomEnd}>
-              <Link href="/contact" className={styles.contactBracketLink}>
-                <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
-                <span>CONTACT US</span>
-                <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
-              </Link>
-              <p className={styles.endParagraph}>
-                <span className={styles.dash}>— </span>
-                Because purposeful digital products aren&apos;t just built with code, but shaped around the way people work and think.{" "}
-                <span className={styles.endHighlight}>From idea to execution</span>.
-              </p>
+                <p className={styles.endParagraph}>
+                  <span className={styles.dash}>— </span>
+                  The first step is to establish that something is possible then probability will occur.{" "}
+                  <strong className={styles.endHighlight}>From idea to execution.</strong>
+                </p>
+              </motion.div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
