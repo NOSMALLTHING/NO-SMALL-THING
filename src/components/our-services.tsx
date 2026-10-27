@@ -368,7 +368,9 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
               onMouseLeave={handleTextLeave}
             >
               <span className={styles.narrativeLead}>
-                At NO SMALL THING, every project is guided by three minds with one shared ambition.
+                At NO SMALL THING, every project is guided by three minds with{" "}
+                <br className={styles.desktopBr} />
+                one shared ambition.
               </span>
               <span className={styles.narrativeBody}>
                 We partner with forward-thinking businesses, founders, and teams to build purposeful digital solutions across AI, custom software, UI/UX, and web development. Combining strategic foresight with hands-on technical craftsmanship.

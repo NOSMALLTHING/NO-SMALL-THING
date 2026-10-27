@@ -156,10 +156,13 @@
   justify-content: flex-end;
   width: 100%;
   margin-bottom: clamp(0.45rem, 1vh, 0.75rem);
+  padding-right: clamp(0.5rem, 3.5vw, 3.5rem);
+  box-sizing: border-box;
 }
 
 .narrativeBlock {
-  width: min(560px, 48%);
+  width: min(780px, 52vw);
+  max-width: 800px;
   font-family: var(--font-brand-sans);
   color: var(--black);
   text-align: left;
@@ -167,20 +170,30 @@
 
 .narrativeLead {
   display: block;
-  font-size: clamp(0.9375rem, 1.15vw, 1.1875rem);
+  font-size: clamp(0.9375rem, 1.05vw, 1.125rem);
   font-weight: 700;
-  margin-bottom: 0.35rem;
+  margin-bottom: clamp(0.45rem, 0.9vh, 0.75rem);
   color: var(--black);
   line-height: 1.18;
   letter-spacing: -0.025em;
 }
 
+.desktopBr {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .desktopBr {
+    display: inline;
+  }
+}
+
 .narrativeBody {
   display: block;
-  font-size: clamp(0.9375rem, 1.15vw, 1.1875rem);
+  font-size: clamp(0.9375rem, 1.05vw, 1.125rem);
   font-weight: 700;
   opacity: 0.96;
-  margin-bottom: 0.55rem;
+  margin-bottom: clamp(0.45rem, 0.9vh, 0.65rem);
   color: var(--black);
   line-height: 1.22;
   letter-spacing: -0.025em;
