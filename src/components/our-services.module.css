@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(65px, 8vh, 85px) clamp(1rem, 3.5vw, 2.5rem) clamp(1.25rem, 2.5vw, 2rem);
+  padding: clamp(48px, 6vh, 60px) clamp(1rem, 3.5vw, 2.5rem) clamp(1rem, 2vh, 1.5rem);
   background: var(--base-bg, #fff);
   color: var(--black, #080809);
   overflow: hidden;
@@ -155,40 +155,44 @@
   display: flex;
   justify-content: flex-end;
   width: 100%;
-  margin-bottom: clamp(1rem, 2.5vh, 2rem);
+  margin-bottom: clamp(0.45rem, 1vh, 0.75rem);
 }
 
 .narrativeBlock {
-  width: min(520px, 48%);
+  width: min(560px, 48%);
   font-family: var(--font-brand-sans);
   color: var(--black);
-  font-size: clamp(0.9375rem, 1.15vw, 1.1875rem);
-  line-height: 1.25;
-  letter-spacing: -0.025em;
   text-align: left;
 }
 
 .narrativeLead {
   display: block;
+  font-size: clamp(0.9375rem, 1.15vw, 1.1875rem);
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.35rem;
   color: var(--black);
-  line-height: 1.2;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
 }
 
 .narrativeBody {
   display: block;
-  font-weight: 400;
-  opacity: 0.88;
-  margin-bottom: 0.75rem;
-  line-height: 1.35;
+  font-size: clamp(0.9375rem, 1.15vw, 1.1875rem);
+  font-weight: 700;
+  opacity: 0.96;
+  margin-bottom: 0.55rem;
+  color: var(--black);
+  line-height: 1.22;
+  letter-spacing: -0.025em;
 }
 
 .narrativeKicker {
   display: block;
-  font-weight: 700;
-  color: rgba(8, 8, 9, 0.9);
-  line-height: 1.25;
+  font-size: clamp(0.75rem, 0.8vw, 0.825rem);
+  font-weight: 450;
+  color: rgba(8, 8, 9, 0.72);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 /* 3. Full-bleed Horizontal Links Strip */
@@ -207,7 +211,7 @@
   gap: 0.75rem;
   overflow-x: auto;
   scrollbar-width: none;
-  margin-block: clamp(0.45rem, 1vh, 0.85rem);
+  margin-block: 0 clamp(0.5rem, 1.2vh, 1rem);
   will-change: clip-path, transform, opacity;
 }
 
