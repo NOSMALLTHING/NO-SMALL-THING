@@ -49,6 +49,50 @@ const services = [
   },
 ] as const;
 
+interface NarrativeLineProps {
+  children: React.ReactNode;
+  lineIndex: number;
+  scrollYProgress: MotionValue<number>;
+  enabled: boolean;
+}
+
+function NarrativeLine({ children, lineIndex, scrollYProgress, enabled }: NarrativeLineProps) {
+  const e0 = 0.005 + lineIndex * 0.010;
+  const e1 = e0 + 0.035;
+  const x0 = 0.880 + lineIndex * 0.010;
+  const x1 = x0 + 0.035;
+
+  const y = useTransform(
+    scrollYProgress,
+    [0, e0, e1, x0, x1, 1],
+    ["100%", "100%", "0%", "0%", "-100%", "-100%"]
+  );
+  const opacity = useTransform(
+    scrollYProgress,
+    [0, e0, e1, x0, x1, 1],
+    [0, 0, 1, 1, 0, 0]
+  );
+
+  if (!enabled) {
+    return (
+      <span className={styles.narrativeLineMask}>
+        <span className={styles.narrativeLineInner}>{children}</span>
+      </span>
+    );
+  }
+
+  return (
+    <span className={styles.narrativeLineMask}>
+      <motion.span
+        className={styles.narrativeLineInner}
+        style={{ y, opacity }}
+      >
+        {children}
+      </motion.span>
+    </span>
+  );
+}
+
 interface HeadlineRowProps {
   children: React.ReactNode;
   scrollYProgress: MotionValue<number>;
@@ -367,17 +411,30 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
               onMouseEnter={handleTextEnter}
               onMouseLeave={handleTextLeave}
             >
-              <span className={styles.narrativeLead}>
-                At NO SMALL THING, every project is guided by three minds with{" "}
-                <br className={styles.desktopBr} />
-                one shared ambition.
-              </span>
-              <span className={styles.narrativeBody}>
-                We partner with forward-thinking businesses, founders, and teams to build purposeful digital solutions across AI, custom software, UI/UX, and web development. Combining strategic foresight with hands-on technical craftsmanship.
-              </span>
-              <span className={styles.narrativeKicker}>
-                From AI integration and software engineering to bespoke websites and digital systems.
-              </span>
+              <div className={styles.narrativeLead}>
+                <NarrativeLine lineIndex={0} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                  At NO SMALL THING, every project is guided by three minds with
+                </NarrativeLine>
+                <NarrativeLine lineIndex={1} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                  one shared ambition.
+                </NarrativeLine>
+              </div>
+              <div className={styles.narrativeBody}>
+                <NarrativeLine lineIndex={2} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                  We partner with forward-thinking businesses, founders, and teams to build purposeful
+                </NarrativeLine>
+                <NarrativeLine lineIndex={3} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                  digital solutions across AI, custom software, UI/UX, and web development. Combining
+                </NarrativeLine>
+                <NarrativeLine lineIndex={4} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                  strategic foresight with hands-on technical craftsmanship.
+                </NarrativeLine>
+              </div>
+              <div className={styles.narrativeKicker}>
+                <NarrativeLine lineIndex={5} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                  From AI integration and software engineering to bespoke websites and digital systems.
+                </NarrativeLine>
+              </div>
             </div>
           </div>
 
