@@ -116,10 +116,12 @@ function HeadlineRow({ children, scrollYProgress, range, enabled }: HeadlineRowP
 export function OurServices({ standalone = false }: { standalone?: boolean }) {
   const [activeService, setActiveService] = useState(0);
   const [isOverText, setIsOverText] = useState(false);
+  const [isOverBracket, setIsOverBracket] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
 
   const textHoverCounter = useRef(0);
+  const bracketHoverCounter = useRef(0);
 
   const handleTextEnter = useCallback(() => {
     textHoverCounter.current += 1;
@@ -130,6 +132,18 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
     textHoverCounter.current = Math.max(0, textHoverCounter.current - 1);
     if (textHoverCounter.current === 0) {
       setIsOverText(false);
+    }
+  }, []);
+
+  const handleBracketEnter = useCallback(() => {
+    bracketHoverCounter.current += 1;
+    setIsOverBracket(true);
+  }, []);
+
+  const handleBracketLeave = useCallback(() => {
+    bracketHoverCounter.current = Math.max(0, bracketHoverCounter.current - 1);
+    if (bracketHoverCounter.current === 0) {
+      setIsOverBracket(false);
     }
   }, []);
 
@@ -219,7 +233,9 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
 
     const handlePointerLeave = () => {
       textHoverCounter.current = 0;
+      bracketHoverCounter.current = 0;
       setIsOverText(false);
+      setIsOverBracket(false);
       const rect = section.getBoundingClientRect();
       posRef.current.targetX = Math.min(260, rect.width * 0.22);
       posRef.current.targetY = Math.max(rect.height - 180, 260);
@@ -260,6 +276,20 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
 
   const animationsEnabled = isMounted && isDesktop && !prefersReduced;
 
+  // Horizontal links strip entrance from left to right during initial entry (0.01 -> 0.08)
+  const stripClipPath = useTransform(
+    smoothProgress,
+    [0, 0.01, 0.08, 1],
+    [
+      "inset(0% 100% 0% 0%)",
+      "inset(0% 100% 0% 0%)",
+      "inset(0% 0% 0% 0%)",
+      "inset(0% 0% 0% 0%)",
+    ]
+  );
+  const stripOpacity = useTransform(smoothProgress, [0, 0.01, 0.08, 1], [0, 0, 1, 1]);
+  const stripX = useTransform(smoothProgress, [0, 0.01, 0.08, 1], [-30, -30, 0, 0]);
+
   // Sequential entrances for bottom items after headline completes (0.74 -> 0.88)
   const fbOpacity = useTransform(smoothProgress, [0, 0.75, 0.79, 1], [0, 0, 1, 1]);
   const fbY = useTransform(smoothProgress, [0, 0.75, 0.79, 1], [10, 10, 0, 0]);
@@ -273,8 +303,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
   const quoteOpacity = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [0, 0, 1, 1]);
   const quoteY = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [10, 10, 0, 0]);
 
-  const current = services[activeService];
-
+  // Render media frame with pure video + optical reticle (badge completely removed)
   const renderMediaFrame = (key: string, isCursorFollower = false) => (
     <div key={key} className={styles.mediaFrame}>
       <video
@@ -295,15 +324,6 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
         <span className={styles.reticleTickH} />
         <span className={styles.reticleTickV} />
         <span className={styles.reticleDot} />
-      </div>
-
-      {/* Active Service Badge */}
-      <div className={styles.serviceBadge}>
-        <div className={styles.badgeHeader}>
-          <span>SERVICE // {current.number}</span>
-          <span>ACTIVE</span>
-        </div>
-        <div className={styles.badgeText}>{current.description}</div>
       </div>
     </div>
   );
@@ -328,10 +348,11 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
           </div>
         </div>
 
-        {/* 2. Desktop Cursor-Following Floating Video Box (Option A: difference mode over all text zones) */}
+        {/* 2. Desktop Cursor-Following Floating Video Box */}
+        {/* Disappears when hovering any [...] bracket elements; activates difference mode over text */}
         <div
           ref={videoWrapRef}
-          className={`${styles.cursorVideoWrap} ${isOverText ? styles.blendDifference : ""}`}
+          className={`${styles.cursorVideoWrap} ${isOverText ? styles.blendDifference : ""} ${isOverBracket ? styles.videoHidden : ""}`}
           aria-hidden="true"
         >
           {renderMediaFrame("cursor-media", true)}
@@ -358,12 +379,17 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
             </div>
           </div>
 
-          {/* Middle: Full-bleed Horizontal Service Links Strip */}
-          <nav
+          {/* Middle: Full-bleed Horizontal Service Links Strip with left-to-right entrance */}
+          <motion.nav
             className={styles.linksStrip}
             aria-label="Core services list"
-            onMouseEnter={handleTextEnter}
-            onMouseLeave={handleTextLeave}
+            style={{
+              clipPath: animationsEnabled ? stripClipPath : undefined,
+              opacity: animationsEnabled ? stripOpacity : 1,
+              x: animationsEnabled ? stripX : 0,
+            }}
+            onMouseEnter={handleBracketEnter}
+            onMouseLeave={handleBracketLeave}
           >
             {services.map((item, index) => {
               const isSelected = index === activeService;
@@ -382,7 +408,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
                 </button>
               );
             })}
-          </nav>
+          </motion.nav>
 
           {/* Bottom: Mobile Media Card + Right Massive Typography Headline */}
           <div className={styles.bottomSection}>
@@ -442,12 +468,13 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
               </div>
 
               {/* Bottom Socials & Philosophy Statement (0.74 -> 0.88) */}
-              <div
-                className={styles.bottomEnd}
-                onMouseEnter={handleTextEnter}
-                onMouseLeave={handleTextLeave}
-              >
-                <div className={styles.socialGroup} aria-label="Social links">
+              <div className={styles.bottomEnd}>
+                <div
+                  className={styles.socialGroup}
+                  aria-label="Social links"
+                  onMouseEnter={handleBracketEnter}
+                  onMouseLeave={handleBracketLeave}
+                >
                   <motion.a
                     href="https://facebook.com"
                     target="_blank"
@@ -503,6 +530,8 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
                     opacity: animationsEnabled ? quoteOpacity : 1,
                     y: animationsEnabled ? quoteY : 0,
                   }}
+                  onMouseEnter={handleTextEnter}
+                  onMouseLeave={handleTextLeave}
                 >
                   <span className={styles.dash}>— </span>
                   The first step is to establish that something is possible then probability will occur.{" "}
