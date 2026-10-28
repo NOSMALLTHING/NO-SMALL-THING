@@ -1,0 +1,66 @@
+.experience {
+  position: relative;
+  isolation: isolate;
+  color: var(--warm-white);
+  background: #111b20;
+  height: 200svh;
+}
+
+/* This route alone ends with the film and half-screen introduction. */
+:global(body):has(.experience) > :global(footer) { display: none; }
+.scene { position: sticky; top: 0; height: 100svh; overflow: hidden; isolation: isolate; }
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  background: #111b20 url('/studio/poster.jpg') center / cover no-repeat;
+}
+
+.video { width: 100%; height: 100%; object-fit: cover; }
+.shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgb(0 0 0 / 34%), transparent 36%, rgb(0 0 0 / 25%)); }
+.opening { position: relative; display: flex; flex-direction: column; justify-content: space-between; min-height: 100svh; padding: calc(var(--header-height) + 3rem) var(--gutter) 2.5rem; }
+.kicker, .bar, .openingBottom, .signature { font-family: var(--font-brand-mono); font-size: .625rem; line-height: 1.6; letter-spacing: .1em; }
+.kicker span { margin-inline: .75rem; opacity: .6; }
+.openingBottom { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; }
+.scrollCue { display: inline-flex; align-items: center; gap: 1rem; min-height: 44px; padding: 0; border: 0; background: transparent; font: inherit; letter-spacing: inherit; }
+.scrollLine { width: 48px; height: 1px; background: currentColor; opacity: .7; }
+.playback { position: absolute; right: var(--gutter); top: calc(var(--header-height) + 2rem); display: inline-flex; align-items: center; gap: .75rem; min-height: 44px; border: 1px solid rgb(255 255 255 / 30%); padding: .6rem 1rem; background: rgb(0 0 0 / 24%); font: inherit; letter-spacing: inherit; }
+.playback:hover { background: rgb(0 0 0 / 50%); }
+.playback:disabled { opacity: .6; cursor: default; }
+.story { position: absolute; inset: auto 0 0; height: 50svh; display: flex; flex-direction: column; border-top: 1px solid rgb(240 236 231 / 65%); background: rgb(8 8 9 / 48%); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+.bar { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; padding: 1rem var(--gutter); border-bottom: 1px solid rgb(240 236 231 / 25%); }
+.bar p { display: flex; align-items: center; gap: 1rem; }
+.cross { color: var(--mars-orange); font-size: 1.3rem; line-height: 1; }
+.bar > span { white-space: nowrap; opacity: .75; }
+.storyBody { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: thin; scrollbar-color: rgb(240 236 231 / 45%) transparent; padding: clamp(1.5rem, 3vw, 3rem) var(--gutter) 2rem; }
+.storyBody > .kicker { opacity: .75; }
+.title { margin-top: 2rem; margin-left: -.045em; font-size: clamp(4rem, 9.8vw, 10rem); line-height: .98; letter-spacing: -.065em; }
+.title em { font-family: var(--font-brand-serif); font-weight: 400; letter-spacing: -.045em; }
+.narrative { display: grid; grid-template-columns: 1.2fr 1fr; gap: clamp(2rem, 8vw, 9rem); margin-top: clamp(3rem, 6vw, 6rem); margin-left: 25%; }
+.introduction { max-width: 29ch; font-size: clamp(1.375rem, 2.2vw, 2.25rem); line-height: 1.5; letter-spacing: -.035em; }
+.details { max-width: 42ch; font-size: 1rem; line-height: 1.8; }
+.details p + p { margin-top: 1.25rem; }
+.contact { display: flex; justify-content: space-between; gap: 1.5rem; margin-top: 2rem; padding-block: .75rem; border-bottom: 1px solid rgb(240 236 231 / 45%); font-size: .8125rem; }
+.contact:hover { color: #f0b89b; }
+.signature { display: flex; justify-content: space-between; gap: 1rem; margin-top: clamp(4rem, 7vw, 7rem); padding-top: 1.5rem; border-top: 1px solid rgb(240 236 231 / 25%); opacity: .65; font-size: .5625rem; }
+
+@media (max-width: 767px) {
+  .opening { padding-top: calc(var(--header-height) + 2rem); padding-bottom: 1.5rem; }
+  .scrollLine { width: 24px; }
+  .openingBottom { gap: .75rem; font-size: .5rem; }
+  .scrollCue { gap: .625rem; }
+  .playback { padding-inline: .625rem; }
+  .bar { align-items: flex-start; padding-block: 1.25rem; font-size: .5rem; }
+  .bar p { max-width: 25ch; gap: .625rem; }
+  .title { font-size: clamp(3.5rem, 13vw, 6rem); line-height: 1.05; }
+  .narrative { grid-template-columns: 1fr; margin-left: 0; gap: 2rem; }
+  .introduction { max-width: 30ch; font-size: 1.5rem; }
+  .details { max-width: none; }
+  .signature { align-items: flex-end; font-size: .5rem; }
+  .signature span:first-child { max-width: 24ch; }
+  .signature span:last-child { white-space: nowrap; }
+}
+
