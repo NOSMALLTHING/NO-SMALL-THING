@@ -17,7 +17,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(65px, 8vh, 85px) clamp(1rem, 3.5vw, 2.5rem) clamp(1.25rem, 2.5vw, 2rem);
+  padding: clamp(48px, 6vh, 60px) clamp(1rem, 3.5vw, 2.5rem) clamp(1rem, 2vh, 1.5rem);
   background: var(--base-bg, #fff);
   color: var(--black, #080809);
   overflow: hidden;
@@ -155,40 +155,59 @@
   display: flex;
   justify-content: flex-end;
   width: 100%;
-  margin-bottom: clamp(1rem, 2.5vh, 2rem);
+  margin-bottom: clamp(0.45rem, 1vh, 0.75rem);
+  padding-right: clamp(1.5rem, 5.5vw, 6rem);
+  box-sizing: border-box;
 }
 
 .narrativeBlock {
-  width: min(520px, 48%);
+  width: min(840px, 56vw);
+  max-width: 860px;
   font-family: var(--font-brand-sans);
   color: var(--black);
-  font-size: clamp(0.9375rem, 1.15vw, 1.1875rem);
-  line-height: 1.25;
-  letter-spacing: -0.025em;
   text-align: left;
+}
+
+.narrativeLineMask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.05em;
+  line-height: inherit;
+}
+
+.narrativeLineInner {
+  display: block;
+  will-change: transform, opacity;
 }
 
 .narrativeLead {
   display: block;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
+  font-size: clamp(0.9375rem, 1.05vw, 1.125rem);
+  font-weight: 800;
+  margin-bottom: clamp(0.45rem, 0.9vh, 0.75rem);
   color: var(--black);
-  line-height: 1.2;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
 }
 
 .narrativeBody {
   display: block;
-  font-weight: 400;
-  opacity: 0.88;
-  margin-bottom: 0.75rem;
-  line-height: 1.35;
+  font-size: clamp(0.9375rem, 1.05vw, 1.125rem);
+  font-weight: 800;
+  opacity: 0.98;
+  margin-bottom: clamp(0.45rem, 0.9vh, 0.65rem);
+  color: var(--black);
+  line-height: 1.22;
+  letter-spacing: -0.025em;
 }
 
 .narrativeKicker {
   display: block;
-  font-weight: 700;
-  color: rgba(8, 8, 9, 0.9);
-  line-height: 1.25;
+  font-size: clamp(0.75rem, 0.8vw, 0.825rem);
+  font-weight: 800;
+  color: rgba(8, 8, 9, 0.88);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
 /* 3. Full-bleed Horizontal Links Strip */
@@ -196,8 +215,10 @@
   position: relative;
   width: calc(100% + clamp(2rem, 7vw, 5rem));
   margin-left: calc(-1 * clamp(1rem, 3.5vw, 2.5rem));
-  background-image: linear-gradient(90deg, #f5f5f5 15%, #ededed 50%, #f5f5f5 85%);
-  padding: 4px clamp(1rem, 3vw, 2rem);
+  background: linear-gradient(90deg, #eaeaea 15%, #dfdfdf 50%, #eaeaea 85%);
+  border-top: 1px solid rgba(8, 8, 9, 0.08);
+  border-bottom: 1px solid rgba(8, 8, 9, 0.08);
+  padding: 2px clamp(1rem, 3vw, 2rem);
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -205,7 +226,8 @@
   gap: 0.75rem;
   overflow-x: auto;
   scrollbar-width: none;
-  margin-block: clamp(0.75rem, 1.5vh, 1.4rem);
+  margin-block: 0 clamp(0.5rem, 1.2vh, 1rem);
+  will-change: clip-path, transform, opacity;
 }
 
 .linksStrip::-webkit-scrollbar {
@@ -216,7 +238,7 @@
   display: inline-flex;
   align-items: center;
   font-family: var(--font-brand-mono);
-  font-size: clamp(0.6875rem, 0.85vw, 0.78125rem);
+  font-size: clamp(0.6875rem, 0.8vw, 0.75rem);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -226,7 +248,7 @@
   border: none;
   cursor: pointer;
   white-space: nowrap;
-  padding: 0.25rem 0.4rem;
+  padding: 0.18rem 0.35rem;
   line-height: 1;
   transition: opacity 200ms ease;
 }
@@ -292,6 +314,12 @@
 
 .cursorVideoWrap.blendDifference {
   mix-blend-mode: difference;
+}
+
+.cursorVideoWrap.videoHidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Mobile Inline Video Card */
