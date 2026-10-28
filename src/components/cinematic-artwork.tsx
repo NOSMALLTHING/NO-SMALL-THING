@@ -9,8 +9,8 @@ export function CinematicArtwork({ children }: { children: ReactNode }) {
   const enabled = useCinematicMotion(true);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const frame = useTransform(scrollYProgress, [0, .3, 1], ["inset(0% 0%)", "inset(0% 0%)", "inset(7% 5%)"]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, .97]);
-  const y = useTransform(scrollYProgress, [0, 1], [0, -24]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.14]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, -28]);
   const invitation = useTransform(scrollYProgress, [0, .25], [1, 0]);
   const lookX = useSpring(0, { stiffness: 45, damping: 20 });
   const lookY = useSpring(0, { stiffness: 45, damping: 20 });

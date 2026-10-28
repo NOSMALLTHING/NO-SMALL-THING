@@ -410,8 +410,21 @@ main#main-content { position: relative; z-index: 1; isolation: isolate; backgrou
   .home-hero { position: sticky; top: 0; }
 }
 .hero-figure { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-.hero-artwork { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-.hero-image { width: 100%; height: 100%; object-fit: contain; flex: none; }
+.hero-artwork { position: absolute; inset: -4%; display: flex; align-items: center; justify-content: center; }
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 65%;
+  flex: none;
+  will-change: transform;
+  animation: forward-cruise 24s ease-in-out infinite alternate;
+}
+@keyframes forward-cruise {
+  0% { transform: scale(1) translate3d(0, 0, 0); }
+  50% { transform: scale(1.06) translate3d(0, 1.4%, 0); }
+  100% { transform: scale(1) translate3d(0, 0, 0); }
+}
 .is-cinematic { color: var(--warm-white); }
 .hero-scroll { position: absolute; z-index: 1; left: 50%; bottom: max(2rem, env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; min-width: 140px; min-height: 72px; transform: translateX(-50%); color: rgb(240 236 231 / 80%); transition: color var(--duration); }
 .hero-scroll .eyebrow { font-size: .5625rem; letter-spacing: .18em; }
