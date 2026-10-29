@@ -26,23 +26,11 @@ export function TelemetryPreloader() {
     setActive(false);
   }, []);
 
-  useEffect(() => {
-    setMounted(true);
-
-    let seen = false;
-    try {
-      seen = sessionStorage.getItem("nst-intro-seen") === "1";
-    } catch {}
-    if (seen) return;
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      try {
-        sessionStorage.setItem("nst-intro-seen", "1");
-      } catch {}
-      window.dispatchEvent(new CustomEvent("nst-intro-complete"));
-      return;
-    }
-
+  const play = useCallback(() => {
+    doneRef.current = false;
+    if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    setProgress(0);
+    setLeaving(false);
     setActive(true);
     document.body.style.overflow = "hidden";
     const start = performance.now();
@@ -60,18 +48,43 @@ export function TelemetryPreloader() {
     };
 
     frameRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(() => {
+    setMounted(true);
+
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem("nst-intro-seen") === "1";
+    } catch {}
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!seen && !reduced) {
+      play();
+    } else {
+      window.dispatchEvent(new CustomEvent("nst-intro-complete"));
+    }
+
+    const onReplay = () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      play();
+    };
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") finish();
     };
+
+    window.addEventListener("nst-intro-replay", onReplay);
     window.addEventListener("keydown", onKey);
 
     return () => {
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      window.removeEventListener("nst-intro-replay", onReplay);
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [finish]);
+  }, [play, finish]);
 
   useEffect(() => {
     if (!leaving) return;
