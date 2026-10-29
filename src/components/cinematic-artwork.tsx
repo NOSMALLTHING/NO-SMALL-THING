@@ -42,7 +42,7 @@ export function CinematicArtwork({ children }: { children: ReactNode }) {
           {children}
         </motion.div>
       </figure>
-      <motion.a className="hero-scroll" href="#hero-end" data-cursor-text="DESCEND" aria-label="Scroll beyond the opening scene" style={{ opacity: enabled ? invitation : 1 }}>
+      <motion.a className="hero-scroll" href="#hero-end" aria-label="Scroll beyond the opening scene" style={{ opacity: enabled ? invitation : 1 }}>
         <span className="eyebrow">SCROLL TO EXPLORE</span><span className="hero-scroll-line" aria-hidden="true" />
       </motion.a>
     </motion.section>

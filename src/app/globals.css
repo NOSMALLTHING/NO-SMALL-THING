@@ -121,40 +121,6 @@ main:focus { outline: none; }
    transparent case-study layouts and the page-entry fade. */
 main#main-content { position: relative; z-index: 1; isolation: isolate; background: var(--black); }
 
-/* Custom Cursor: hide default arrow on desktop when custom optical HUD cursor is active */
-@media (hover: hover) and (pointer: fine) {
-  html.custom-cursor-enabled,
-  html.custom-cursor-enabled body,
-  html.custom-cursor-enabled a,
-  html.custom-cursor-enabled button,
-  html.custom-cursor-enabled [role="button"],
-  html.custom-cursor-enabled summary {
-    cursor: none !important;
-  }
-
-  html.custom-cursor-enabled input,
-  html.custom-cursor-enabled textarea,
-  html.custom-cursor-enabled select {
-    cursor: auto !important;
-  }
-}
-
-/* Keep the coloured native cursor visible in the Menu if top-layer promotion
-   is unavailable; use the orbital DOM cursor when promotion succeeds. */
-/* The menu always gets its branded fallback pointer; touch devices simply do
-   not render a cursor. The custom DOM reticle replaces it on fine pointers. */
-#site-menu[open],
-#site-menu[open] * {
-  cursor: url("/brand/menu-cursor.svg") 24 24, crosshair !important;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  html.custom-cursor-enabled.menu-cursor-top-layer #site-menu[open],
-  html.custom-cursor-enabled.menu-cursor-top-layer #site-menu[open] * {
-    cursor: none !important;
-  }
-}
-
 .container { width: min(calc(100% - var(--gutter) * 2), var(--container-width)); margin-inline: auto; }
 .editorial-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--grid-gap); }
 .eyebrow { font-family: var(--font-mono); font-size: .625rem; font-weight: 400; line-height: 1.6; letter-spacing: .1em; text-transform: uppercase; }
