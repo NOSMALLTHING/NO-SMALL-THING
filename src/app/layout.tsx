@@ -3,7 +3,6 @@ import { TelemetryPreloader } from "@/components/telemetry-preloader";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SmoothScroll } from "@/components/smooth-scroll";
-import { CursorDotTrail } from "@/components/cursor-dot-trail";
 import { site } from "@/lib/site";
 import { contactDetails } from "@/lib/contact";
 import { pageMetadata, publicSiteUrl } from "@/lib/seo";
@@ -30,7 +29,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, "\\u003c") }} />
     <a href="#main-content" className="skip-link">Skip to content</a>
     <TelemetryPreloader />
-    <CursorDotTrail />
     <SmoothScroll />
     <SiteHeader />
     <main id="main-content" tabIndex={-1}>{children}</main>
