@@ -10,6 +10,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import styles from "./our-services.module.css";
+import { FluidMedia } from "./fluid-media";
 
 const services = [
   {
@@ -196,7 +197,6 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
   const scrollTrackRef = useRef<HTMLDivElement>(null);
   const stickySectionRef = useRef<HTMLElement>(null);
   const videoWrapRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Scroll tracking for pinned animation across extended track (520vh)
   const { scrollYProgress } = useScroll({
@@ -225,13 +225,6 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
     checkDesktop();
     window.addEventListener("resize", checkDesktop, { passive: true });
     return () => window.removeEventListener("resize", checkDesktop);
-  }, []);
-
-  // Ensure video autoplays safely
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {});
-    }
   }, []);
 
   // Cursor following video physics (smooth lerp with inertia)
@@ -347,20 +340,15 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
   const quoteOpacity = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [0, 0, 1, 1]);
   const quoteY = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [10, 10, 0, 0]);
 
-  // Render media frame with pure video + optical reticle (badge completely removed)
-  const renderMediaFrame = (key: string, isCursorFollower = false) => (
+  // Render media frame. Desktop pointer movement smears the picture; touch keeps the video.
+  const renderMediaFrame = (key: string) => (
     <div key={key} className={styles.mediaFrame}>
-      <video
-        ref={isCursorFollower ? videoRef : undefined}
+      <FluidMedia
+        video
         className={styles.mediaVideo}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
         poster="/brand/mars-horizon.webp"
         src="https://s3.amazonaws.com/webflow-prod-assets/69f205b0a0439779a1d746f7/6a023cc07c5866c024c8055a_Hero_section_About_Us_01.mp4"
-        aria-hidden="true"
+        alt=""
       />
 
       {/* Optical Reticle Crosshair */}
@@ -399,7 +387,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
           className={`${styles.cursorVideoWrap} ${isOverText ? styles.blendDifference : ""} ${isOverBracket ? styles.videoHidden : ""}`}
           aria-hidden="true"
         >
-          {renderMediaFrame("cursor-media", true)}
+          {renderMediaFrame("cursor-media")}
         </div>
 
         {/* 3. Structured Content Layout Layer */}
@@ -473,7 +461,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
           <div className={styles.bottomSection}>
             {/* Mobile inline video fallback */}
             <div className={styles.mobileVideoCard}>
-              {renderMediaFrame("mobile-media", false)}
+              {renderMediaFrame("mobile-media")}
             </div>
 
             {/* Right: Massive Typography Poster Headline & Interaction Target */}

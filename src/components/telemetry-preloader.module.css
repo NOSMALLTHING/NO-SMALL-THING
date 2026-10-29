@@ -1,301 +1,115 @@
-/* Aerospace Telemetry Preloader & Shutter Curtain */
+/* Fullscreen Preloader Overlay */
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 99999;
+  background: #000000;
   overflow: hidden;
   pointer-events: auto;
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.isFinished {
-  pointer-events: none;
+/* Switches to transparent during the ink explosion so the punched hole reveals the site */
+.overlayExploding {
+  background: transparent;
 }
 
-/* Dual Shutter Blades — Split along the central horizontal line */
-.shutterTop,
-.shutterBottom {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 50.5%;
-  background: #060607;
-  z-index: 1;
-  transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
-}
-
-.shutterTop {
-  top: 0;
-  transform: translateY(0);
-  border-bottom: 1px solid rgba(240, 236, 231, 0.08);
-}
-
-.shutterBottom {
-  bottom: 0;
-  transform: translateY(0);
-  border-top: 1px solid rgba(240, 236, 231, 0.08);
-}
-
-.shutterOpened .shutterTop {
-  transform: translateY(-100%);
-}
-
-.shutterOpened .shutterBottom {
-  transform: translateY(100%);
-}
-
-/* Telemetry HUD Layer (lives between the shutters) */
-.hudLayer {
+/* Fullscreen Ink Blast Canvas */
+.blastCanvas {
   position: absolute;
   inset: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: clamp(1.5rem, 4vw, 3.5rem);
-  box-sizing: border-box;
-  font-family: var(--font-brand-mono);
-  color: var(--warm-white);
-  transition: opacity 350ms ease;
-}
-
-.shutterOpened .hudLayer {
-  opacity: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+  z-index: 1;
 }
 
-/* Top Telemetry Header */
-.topBar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  font-size: clamp(0.6875rem, 1vw, 0.8125rem);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.telemetryGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.missionTag {
-  color: var(--warm-white);
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.liveIndicator {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--mars-orange);
-  box-shadow: 0 0 8px var(--mars-orange);
-  animation: telemetry-pulse 1.4s ease-in-out infinite alternate;
-}
-
-@keyframes telemetry-pulse {
-  from { opacity: 0.3; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1.2); }
-}
-
-.topRight {
-  text-align: right;
-}
-
-/* Center Stage: Main Quantum / Telemetry Counter */
-.centerStage {
+/* Phase 1: Minimalist Digital Percentage Counter in Exact Center */
+.counterWrap {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  width: min(92vw, 520px);
-  text-align: center;
-}
-
-.counterWrap {
-  display: inline-flex;
-  align-items: baseline;
   justify-content: center;
-  gap: 0.25rem;
-  line-height: 0.9;
-  margin-bottom: 1.5rem;
+  transition: opacity 220ms ease, transform 220ms ease;
 }
 
-.counterValue {
-  font-family: var(--font-brand-mono);
-  font-size: clamp(4.5rem, 14vw, 8.5rem);
-  font-weight: 400;
-  letter-spacing: -0.04em;
-  color: var(--warm-white);
-  font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 40px rgba(200, 116, 80, 0.25);
+.counterHidden {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.92);
 }
 
-.counterPercent {
-  font-family: var(--font-brand-mono);
-  font-size: clamp(1.25rem, 3.5vw, 2.25rem);
-  color: var(--mars-orange);
-  font-weight: 600;
-  opacity: 0.9;
-}
-
-/* Central Horizon Laser Scanning Line */
-.laserBarWrap {
-  position: relative;
-  width: 100%;
-  height: 2px;
-  background: rgba(240, 236, 231, 0.12);
-  overflow: visible;
-  margin-block: 1rem;
-}
-
-.laserBarProgress {
-  height: 100%;
-  background: linear-gradient(90deg, transparent, var(--mars-orange) 80%, #fff);
-  box-shadow: 0 0 14px var(--mars-orange);
-  transition: width 60ms linear;
-  position: relative;
-}
-
-.laserHead {
-  position: absolute;
-  right: -2px;
-  top: 50%;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #fff;
-  transform: translateY(-50%);
-  box-shadow: 0 0 10px 2px var(--mars-orange);
-}
-
-/* Status readouts */
-.statusReadout {
-  margin-top: 1.25rem;
-  font-size: clamp(0.6875rem, 1vw, 0.8125rem);
-  letter-spacing: 0.16em;
-  color: var(--warm-white);
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  height: 1.5rem;
-}
-
-.statusIndex {
-  color: var(--mars-orange);
-  font-weight: 600;
-}
-
-.statusText {
-  color: rgba(240, 236, 231, 0.85);
-  transition: opacity 200ms ease;
-}
-
-/* Bottom Bar */
-.bottomBar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  font-size: clamp(0.6875rem, 1vw, 0.8125rem);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.bottomBrand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--warm-white);
+.counterText {
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  font-size: clamp(14px, 1.25vw, 18px);
   font-weight: 500;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
 }
 
-.brandMonogram {
-  width: 18px;
-  height: 18px;
-  opacity: 0.85;
+/* Phase 2: Brand Pixel Monogram (NST 4x4 Grid Logo) in Exact Center */
+.monogramWrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
+  width: clamp(72px, 8vw, 108px);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 0;
+  transition: opacity 260ms ease, transform 260ms ease;
 }
 
-/* Skip Button */
+.monogramInitial {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+}
+
+.monogramVisible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.monogramBlock {
+  background: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+  width: 100%;
+  height: 100%;
+  transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease;
+  will-change: transform, opacity;
+}
+
+/* Discreet Skip Button */
 .skipButton {
-  background: transparent;
-  border: 1px solid rgba(240, 236, 231, 0.2);
-  color: var(--muted);
-  font-family: var(--font-brand-mono);
-  font-size: clamp(0.625rem, 0.9vw, 0.75rem);
-  letter-spacing: 0.14em;
-  padding: 0.4rem 0.85rem;
+  position: absolute;
+  right: clamp(1.5rem, 3.5vw, 3rem);
+  bottom: clamp(1.5rem, 3.5vw, 3rem);
+  z-index: 20;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   cursor: pointer;
-  border-radius: 0;
-  transition: all 200ms ease;
+  padding: 0.5rem;
+  transition: color 200ms ease;
 }
 
 .skipButton:hover {
-  border-color: var(--mars-orange);
-  color: var(--mars-orange);
-  background: rgba(200, 116, 80, 0.08);
-}
-
-/* Reticle corner marks around center */
-.reticleBracket {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-color: rgba(240, 236, 231, 0.25);
-  border-style: solid;
-  border-width: 0;
-  pointer-events: none;
-}
-
-.cornerTL {
-  top: -15px;
-  left: -15px;
-  border-top-width: 1px;
-  border-left-width: 1px;
-}
-
-.cornerTR {
-  top: -15px;
-  right: -15px;
-  border-top-width: 1px;
-  border-right-width: 1px;
-}
-
-.cornerBL {
-  bottom: -15px;
-  left: -15px;
-  border-bottom-width: 1px;
-  border-left-width: 1px;
-}
-
-.cornerBR {
-  bottom: -15px;
-  right: -15px;
-  border-bottom-width: 1px;
-  border-right-width: 1px;
-}
-
-@media (max-width: 767px) {
-  .hudLayer {
-    padding: 1.5rem 1rem;
-  }
-  .telemetryGroup:nth-child(2) {
-    display: none;
-  }
-  .centerStage {
-    width: 90vw;
-  }
+  color: #ffffff;
 }

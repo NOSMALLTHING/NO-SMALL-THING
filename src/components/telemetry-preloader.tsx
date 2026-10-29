@@ -1,31 +1,27 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import Image from "next/image";
-import monogram from "../../public/brand/monogram.png";
 import styles from "./telemetry-preloader.module.css";
 
-const STATUS_STAGES = [
-  { threshold: 0, index: "01", text: "OPTICAL SENSORS ONLINE" },
-  { threshold: 28, index: "02", text: "SYNCHRONIZING ORBITAL TRAJECTORY" },
-  { threshold: 62, index: "03", text: "TARGET ACQUIRED: MARS HORIZON" },
-  { threshold: 92, index: "04", text: "SYSTEM ARMED // TRANSCEND EVERYTHING" },
+// The 7 canonical blocks of the NO SMALL THING pixel monogram (4x4 grid)
+const MONOGRAM_BLOCKS = [
+  { id: "b1", col: 0, row: 0, dx: -1.2, dy: -1.2, rot: -45 },
+  { id: "b2", col: 0, row: 1, dx: -1.5, dy: -0.2, rot: -75 },
+  { id: "b3", col: 0, row: 2, dx: -1.3, dy: 0.8, rot: -110 },
+  { id: "b4", col: 2, row: 1, dx: 1.2, dy: -0.3, rot: 60 },
+  { id: "b5", col: 2, row: 2, dx: 1.1, dy: 0.9, rot: 95 },
+  { id: "b6", col: 1, row: 3, dx: -0.3, dy: 1.6, rot: 30 },
+  { id: "b7", col: 3, row: 3, dx: 1.7, dy: 1.5, rot: 135 },
 ];
 
 export function TelemetryPreloader() {
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
-  const [opened, setOpened] = useState(false);
+  const [phase, setPhase] = useState<"counting" | "monogram" | "exploding" | "complete">("counting");
   const [progress, setProgress] = useState(0);
-  const [telemetryValues, setTelemetryValues] = useState({
-    lat: "04°12'S",
-    lon: "137°26'E",
-    velocity: "11.2",
-    altitude: "384.2",
-  });
 
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number | null>(null);
   const isFinishedRef = useRef(false);
 
   const finish = useCallback(() => {
@@ -36,28 +32,35 @@ export function TelemetryPreloader() {
       cancelAnimationFrame(animFrameRef.current);
     }
 
-    setProgress(100);
-    setOpened(true);
-
     try {
       sessionStorage.setItem("nst-intro-seen", "1");
     } catch {}
 
     window.dispatchEvent(new CustomEvent("nst-intro-complete"));
     document.body.style.overflow = "";
-
-    // Completely unmount after shutters have cleared
-    const timer = setTimeout(() => {
-      setActive(false);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    setPhase("complete");
+    setActive(false);
   }, []);
+
+  // Initialize Canvas to solid black on mount
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }, [mounted, active]);
 
   useEffect(() => {
     setMounted(true);
 
-    // Skip if already seen in this session
     let seen = false;
     try {
       seen = sessionStorage.getItem("nst-intro-seen") === "1";
@@ -70,42 +73,37 @@ export function TelemetryPreloader() {
     setActive(true);
     document.body.style.overflow = "hidden";
 
-    // Duration of sequence in ms
-    const TOTAL_DURATION = 1750;
+    // --- Phase 1: Minimalist Center Progress Counter (0% -> 100%) ---
+    const COUNT_DURATION = 1250; // 1.25s
+    const startCountTime = performance.now();
 
-    const animateProgress = (timestamp: number) => {
-      if (!startTimeRef.current) startTimeRef.current = timestamp;
-      const elapsed = timestamp - startTimeRef.current;
-      const p = Math.min(1, elapsed / TOTAL_DURATION);
+    const updateCounter = (currentTime: number) => {
+      const elapsed = currentTime - startCountTime;
+      const t = Math.min(1, elapsed / COUNT_DURATION);
 
-      // Ease out quad
-      const eased = 1 - (1 - p) * (1 - p);
+      // Smooth modern cubic-bezier ease out
+      const eased = 1 - Math.pow(1 - t, 2.5);
       const currentVal = Math.floor(eased * 100);
       setProgress(currentVal);
 
-      // Jitter telemetry values slightly to simulate live telemetry data
-      if (Math.random() < 0.25) {
-        setTelemetryValues({
-          lat: `04°${(10 + Math.floor(Math.random() * 5)).toString().padStart(2, "0")}'S`,
-          lon: `137°${(24 + Math.floor(Math.random() * 5)).toString().padStart(2, "0")}'E`,
-          velocity: (11.18 + Math.random() * 0.08).toFixed(2),
-          altitude: (384.1 + (currentVal / 100) * 16.1).toFixed(1),
-        });
-      }
-
-      if (p < 1) {
-        animFrameRef.current = requestAnimationFrame(animateProgress);
+      if (t < 1) {
+        animFrameRef.current = requestAnimationFrame(updateCounter);
       } else {
-        // Hold briefly at 100% before firing shutter split
+        setProgress(100);
+        // Transition to Phase 2: Monogram
         setTimeout(() => {
-          finish();
+          setPhase("monogram");
+
+          // Hold Monogram in center for 380ms, then trigger explosion
+          setTimeout(() => {
+            setPhase("exploding");
+          }, 380);
         }, 180);
       }
     };
 
-    animFrameRef.current = requestAnimationFrame(animateProgress);
+    animFrameRef.current = requestAnimationFrame(updateCounter);
 
-    // Allow escape key to skip
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         finish();
@@ -120,97 +118,201 @@ export function TelemetryPreloader() {
     };
   }, [finish]);
 
-  if (!mounted || !active) return null;
+  // --- Phase 3: Organic Canvas 2D Ink Explosion (水墨风爆炸破圈) ---
+  useEffect(() => {
+    if (phase !== "exploding") return;
 
-  const currentStage =
-    STATUS_STAGES.slice()
-      .reverse()
-      .find((s) => progress >= s.threshold) || STATUS_STAGES[0];
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      finish();
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      finish();
+      return;
+    }
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let width = (canvas.width = window.innerWidth * dpr);
+    let height = (canvas.height = window.innerHeight * dpr);
+
+    const onResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth * dpr;
+      height = canvas.height = window.innerHeight * dpr;
+    };
+    window.addEventListener("resize", onResize);
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const maxRadius = Math.sqrt(width * width + height * height) * 0.95;
+
+    // Splashing ink droplets
+    const dropletCount = 55;
+    const droplets = Array.from({ length: dropletCount }, () => {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = (Math.random() * 24 + 10) * dpr;
+      return {
+        x: centerX,
+        y: centerY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: (Math.random() * 6 + 2) * dpr,
+        alpha: 1.0,
+        decay: Math.random() * 0.025 + 0.015,
+      };
+    });
+
+    const BLAST_DURATION = 720; // 720ms ink explosion
+    const blastStartTime = performance.now();
+
+    const renderInkExplosion = (now: number) => {
+      const elapsed = now - blastStartTime;
+      const p = Math.min(1, elapsed / BLAST_DURATION);
+
+      // Explosive expansion: fast blast initial, easing out
+      const easeBlast = 1 - Math.pow(1 - p, 3);
+      const currentRadius = maxRadius * easeBlast;
+
+      ctx.clearRect(0, 0, width, height);
+
+      // 1. Draw solid black base
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, width, height);
+
+      // 2. Punch organic ink burst hole through the black veil
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath();
+
+      const segments = 80;
+      for (let i = 0; i <= segments; i++) {
+        const theta = (i / segments) * Math.PI * 2;
+        // Multi-frequency organic liquid harmonics for water-ink splatter contour
+        const harmonic =
+          1 +
+          0.18 * Math.sin(3 * theta + 1.2) +
+          0.12 * Math.cos(5 * theta + 2.4) +
+          0.08 * Math.sin(7 * theta + 0.5) +
+          0.05 * Math.cos(11 * theta + 3.1);
+
+        const r = currentRadius * harmonic;
+        const px = centerX + Math.cos(theta) * r;
+        const py = centerY + Math.sin(theta) * r;
+
+        if (i === 0) {
+          ctx.moveTo(px, py);
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      // 3. Flying ink droplets puncturing ahead of the wave
+      for (let i = 0; i < droplets.length; i++) {
+        const d = droplets[i];
+        d.x += d.vx;
+        d.y += d.vy;
+        d.vx *= 0.94;
+        d.vy *= 0.94;
+        d.alpha = Math.max(0, d.alpha - d.decay);
+
+        if (d.alpha > 0) {
+          ctx.beginPath();
+          ctx.arc(d.x, d.y, d.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      if (p < 1) {
+        animFrameRef.current = requestAnimationFrame(renderInkExplosion);
+      } else {
+        // Complete! All black has been blown away by the ink explosion
+        window.removeEventListener("resize", onResize);
+        finish();
+      }
+    };
+
+    animFrameRef.current = requestAnimationFrame(renderInkExplosion);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [phase, finish]);
+
+  if (!mounted || !active || phase === "complete") return null;
 
   return (
     <aside
-      className={`${styles.overlay} ${opened ? styles.shutterOpened : ""}`}
-      aria-label="System telemetry calibration"
+      className={`${styles.overlay} ${
+        phase === "exploding" ? styles.overlayExploding : ""
+      }`}
+      aria-label="Website loading intro"
       role="status"
     >
-      {/* Upper and Lower Shutter Blades */}
-      <div className={styles.shutterTop} aria-hidden="true" />
-      <div className={styles.shutterBottom} aria-hidden="true" />
+      {/* 1. Fullscreen Canvas for Black Background & Ink Splash Tear-Through */}
+      <canvas ref={canvasRef} className={styles.blastCanvas} />
 
-      {/* Telemetry HUD Layer */}
-      <div className={styles.hudLayer}>
-        {/* Top telemetry bar */}
-        <div className={styles.topBar}>
-          <div className={styles.telemetryGroup}>
-            <span className={styles.missionTag}>
-              <span className={styles.liveIndicator} aria-hidden="true" />
-              MISSION NST-01 // TELEMETRY
-            </span>
-            <span>
-              LAT {telemetryValues.lat} // LON {telemetryValues.lon}
-            </span>
-          </div>
-
-          <div className={`${styles.telemetryGroup} ${styles.topRight}`}>
-            <span>VELOCITY // {telemetryValues.velocity} KM/S</span>
-            <span>ORBITAL ALTITUDE // {telemetryValues.altitude} KM</span>
-          </div>
-        </div>
-
-        {/* Center Stage: Percentage, Laser Line, Status Readout */}
-        <div className={styles.centerStage}>
-          <div className={`${styles.reticleBracket} ${styles.cornerTL}`} aria-hidden="true" />
-          <div className={`${styles.reticleBracket} ${styles.cornerTR}`} aria-hidden="true" />
-          <div className={`${styles.reticleBracket} ${styles.cornerBL}`} aria-hidden="true" />
-          <div className={`${styles.reticleBracket} ${styles.cornerBR}`} aria-hidden="true" />
-
-          <div className={styles.counterWrap}>
-            <span className={styles.counterValue}>
-              {progress.toString().padStart(2, "0")}
-            </span>
-            <span className={styles.counterPercent}>%</span>
-          </div>
-
-          {/* Central Laser Scanning Line */}
-          <div className={styles.laserBarWrap} aria-hidden="true">
-            <div
-              className={styles.laserBarProgress}
-              style={{ width: `${progress}%` }}
-            >
-              <span className={styles.laserHead} />
-            </div>
-          </div>
-
-          {/* Status index and label */}
-          <div className={styles.statusReadout}>
-            <span className={styles.statusIndex}>[{currentStage.index}]</span>
-            <span className={styles.statusText}>{currentStage.text}</span>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div className={styles.bottomBar}>
-          <div className={styles.bottomBrand}>
-            <Image
-              src={monogram}
-              alt=""
-              width={18}
-              height={18}
-              className={styles.brandMonogram}
-            />
-            <span>NO SMALL THING</span>
-          </div>
-
-          <button
-            type="button"
-            className={styles.skipButton}
-            onClick={finish}
-            aria-label="Skip website intro animation"
-          >
-            [ ESC // SKIP ]
-          </button>
-        </div>
+      {/* 2. Phase 1: Minimalist Digital Percentage Counter in Exact Screen Center */}
+      <div
+        className={`${styles.counterWrap} ${
+          phase !== "counting" ? styles.counterHidden : ""
+        }`}
+        aria-hidden={phase !== "counting"}
+      >
+        <span className={styles.counterText}>{progress}%</span>
       </div>
+
+      {/* 3. Phase 2 & 3: Brand Pixel Monogram (NST 4x4 Grid) in Exact Screen Center */}
+      {phase !== "counting" && (
+        <div
+          className={`${styles.monogramWrap} ${
+            phase === "monogram"
+              ? styles.monogramVisible
+              : phase === "exploding"
+              ? styles.monogramInitial
+              : ""
+          }`}
+          aria-hidden="true"
+        >
+          {MONOGRAM_BLOCKS.map((block) => {
+            const isExploding = phase === "exploding";
+            const transform = isExploding
+              ? `translate(${block.dx * 220}px, ${block.dy * 220}px) rotate(${
+                  block.rot
+                }deg) scale(0)`
+              : "none";
+            const opacity = isExploding ? 0 : 1;
+
+            return (
+              <div
+                key={block.id}
+                className={styles.monogramBlock}
+                style={{
+                  gridColumn: block.col + 1,
+                  gridRow: block.row + 1,
+                  transform,
+                  opacity,
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {/* 4. Discreet Skip Button */}
+      <button
+        type="button"
+        className={styles.skipButton}
+        onClick={finish}
+        aria-label="Skip website intro animation"
+      >
+        [ ESC // SKIP ]
+      </button>
     </aside>
   );
 }
