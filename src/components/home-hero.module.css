@@ -88,12 +88,12 @@
   z-index: 2;
   left: clamp(1.25rem, 3.4vw, 3.4rem);
   right: clamp(1.25rem, 3.4vw, 3.4rem);
-  bottom: 1.15rem;
+  bottom: 2.14rem;
   display: grid;
-  grid-template-columns: 27% 23% 1fr;
+  grid-template-columns: 17% 17% 1fr;
   align-items: center;
-  padding-top: 0.85rem;
-  border-top: 1px solid #f4f1ec;
+  padding-top: 1.4rem;
+  border-top: 1.7px solid #f4f1ec;
   font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.06em;
