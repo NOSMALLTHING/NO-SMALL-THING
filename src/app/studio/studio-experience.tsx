@@ -1,9 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
-import { aboutContent } from "@/lib/about";
 import styles from "./studio.module.css";
 
 export function StudioExperience() {
@@ -78,22 +76,10 @@ export function StudioExperience() {
       </header>
 
       <motion.section id="studio-story" className={styles.story} style={{ y: panelY }} aria-labelledby="studio-title">
-        <div className={styles.bar}>
-          <p><span className={styles.cross} aria-hidden="true">+</span> THE PEOPLE BEHIND THE POSSIBILITY</p>
-          <span>01 / ABOUT US</span>
-        </div>
-        <div id="studio-story-body" className={styles.storyBody} data-lenis-prevent tabIndex={0} role="region" aria-label="About us introduction, scroll to read more">
-          <p className={styles.kicker}>SMALL BEGINNINGS. LIMITLESS POSSIBILITY.</p>
-          <h1 id="studio-title" className={styles.title}>Three minds.<br />One <em>ambition.</em></h1>
-          <div className={styles.narrative}>
-            <p className={styles.introduction}>{aboutContent.introduction}</p>
-            <div className={styles.details}>
-              <p>{aboutContent.belief}</p>
-              <p>{aboutContent.purpose}</p>
-              <Link className={styles.contact} href="/contact">Let’s build something meaningful <span aria-hidden="true">↗</span></Link>
-            </div>
-          </div>
-          <div className={styles.signature}><span>INDEPENDENT MINDS. SHARED DIRECTION.</span><span>NO SMALL THING</span></div>
+        <div id="studio-story-body" className={styles.storyBody} tabIndex={0} role="region" aria-label="About us introduction">
+          <h1 id="studio-title" className={styles.title}>
+            NO SMALL THING IS AN INDEPENDENT CREATIVE TECHNOLOGY STUDIO BUILDING DIGITAL SOLUTIONS ACROSS AI, SOFTWARE, WEB DEVELOPMENT, UI/UX AND <em>IT SERVICES.</em>
+          </h1>
         </div>
       </motion.section>
       </div>
