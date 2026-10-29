@@ -10,7 +10,6 @@ import {
   type MotionValue,
 } from "motion/react";
 import styles from "./our-services.module.css";
-import { FluidMedia } from "./fluid-media";
 
 const services = [
   {
@@ -343,13 +342,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
   // Render media frame. Desktop pointer movement smears the picture; touch keeps the video.
   const renderMediaFrame = (key: string) => (
     <div key={key} className={styles.mediaFrame}>
-      <FluidMedia
-        video
-        className={styles.mediaVideo}
-        poster="/brand/mars-horizon.webp"
-        src="https://s3.amazonaws.com/webflow-prod-assets/69f205b0a0439779a1d746f7/6a023cc07c5866c024c8055a_Hero_section_About_Us_01.mp4"
-        alt=""
-      />
+      <video className={styles.mediaVideo} autoPlay muted loop playsInline preload="metadata" poster="/brand/mars-horizon.webp" src="https://s3.amazonaws.com/webflow-prod-assets/69f205b0a0439779a1d746f7/6a023cc07c5866c024c8055a_Hero_section_About_Us_01.mp4" aria-hidden="true" />
 
       {/* Optical Reticle Crosshair */}
       <div className={styles.mediaReticle} aria-hidden="true">
