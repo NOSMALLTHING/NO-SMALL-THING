@@ -103,7 +103,16 @@ export function SiteHeader() {
   return <>
     <header className={`site-header${isHome ? " is-cinematic" : ""}${scrolled ? " is-scrolled" : ""}${isLight ? " is-light" : ""}`}>
       <div className="header-bar">
-        <Link href="/" className="brand-name" aria-label="NO SMALL THING — Home">
+        <Link
+          href="/"
+          className="brand-name"
+          aria-label="NO SMALL THING — Home"
+          onClick={(event) => {
+            if (reducedMotion) return;
+            if (isHome) event.preventDefault();
+            window.dispatchEvent(new CustomEvent("nst-intro-replay"));
+          }}
+        >
           <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 115px, 155px" eager />
         </Link>
         <div className="header-right">
