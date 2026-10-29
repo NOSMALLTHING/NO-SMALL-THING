@@ -1,53 +1,49 @@
-import Image from "next/image";
-import spaceship from "../../public/brand/spaceship.webp";
-import { CinematicArtwork } from "./cinematic-artwork";
-import { HeroAtmosphere } from "./hero-atmosphere";
-import { MarsGlobe } from "./mars-globe";
-import styles from "./hero-poster.module.css";
+import Link from "next/link";
+import { IBM_Plex_Mono, Inter_Tight } from "next/font/google";
+import styles from "./home-hero.module.css";
+
+const display = Inter_Tight({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  display: "swap",
+});
+
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["500"],
+  display: "swap",
+});
 
 export function HomeHero() {
   return (
-    <>
-      <CinematicArtwork>
-        {/* 1. 3D WebGL Mars Sphere Rolling Forward */}
-        <MarsGlobe />
+    <section className={styles.hero} data-theme="light" aria-labelledby="home-title">
+      <img className={styles.media} src="/hero/opening.jpg" alt="" />
+      <div className={styles.shade} aria-hidden="true" />
 
-        {/* 2. Cinematic Atmospheric Horizon Lighting */}
-        <HeroAtmosphere />
+      <Link href="/contact" className={`${styles.contact} ${mono.className}`}>
+        GET IN TOUCH
+      </Link>
 
-        {/* 3. Foreground Hovering Spaceship (Cruising forward above Mars) */}
-        <div className={styles.spaceshipContainer} aria-hidden="true">
-          <Image
-            src={spaceship}
-            alt="Spacecraft cruising over the Mars horizon"
-            width={326}
-            height={260}
-            priority
-            className={styles.spaceshipImage}
-          />
-        </div>
+      <div className={styles.copy}>
+        <p className={`${styles.kicker} ${mono.className}`}>[ WE ARE NO SMALL THING ]</p>
+        <h1 id="home-title" className={`${styles.title} ${display.className}`}>
+          WE BUILD
+          <br />
+          WEBSITES, SYSTEMS
+          <br />
+          AND THE AI.
+        </h1>
+      </div>
 
-        {/* 4. Native Sharp Typography & Central Vertical Glowing Laser Beam */}
-        <div className={styles.heroContainer}>
-          <header className={styles.topRow}>
-            <span className={styles.brandLabel}>NO SMALL THING</span>
-            <div className={styles.ambitionBlock}>
-              <span>THREE MINDS.</span>
-              <span>ONE AMBITION.</span>
-              <span>BEYOND BOUNDARIES.</span>
-            </div>
-          </header>
+      <p className={`${styles.aside} ${display.className}`}>
+        Not a pitch deck and not a hand-off. Three people in Kuala Lumpur take it from the first sketch to the thing that actually runs.
+      </p>
 
-          <div className={styles.headlineContainer} aria-hidden="true">
-            <span className={styles.headlineWord}>TRANSCEND</span>
-            <div className={styles.laserBeam}>
-              <div className={styles.laserDot} />
-            </div>
-            <span className={styles.headlineWord}>EVERYTHING</span>
-          </div>
-        </div>
-      </CinematicArtwork>
+      <div className={`${styles.meta} ${mono.className}`}>
+        <span>KUALA LUMPUR</span>
+      </div>
+
       <div id="hero-end" className="hero-end" tabIndex={-1} />
-    </>
+    </section>
   );
 }

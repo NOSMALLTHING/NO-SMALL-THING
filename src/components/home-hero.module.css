@@ -1,0 +1,122 @@
+.hero {
+  position: relative;
+  height: 100dvh;
+  min-height: 640px;
+  overflow: hidden;
+  color: #f4f1ec;
+  background: #111;
+}
+
+.media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+}
+
+.shade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.38), transparent);
+  pointer-events: none;
+}
+
+.contact {
+  position: absolute;
+  z-index: 2;
+  top: calc(var(--header-height) + 1.25rem);
+  right: clamp(1.25rem, 3vw, 2.75rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 168px;
+  min-height: 64px;
+  padding: 0.85rem 1.1rem;
+  background: #f6f6f4;
+  color: #111;
+  text-decoration: none;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  border-radius: 2px;
+}
+
+.contact:hover {
+  background: #fff;
+}
+
+.copy {
+  position: absolute;
+  z-index: 2;
+  left: clamp(1.25rem, 3.4vw, 3.4rem);
+  bottom: clamp(4.75rem, 9vh, 6.75rem);
+  max-width: min(980px, 64vw);
+}
+
+.kicker {
+  margin-bottom: 0.9rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  font-size: clamp(2.7rem, 5.5vw, 5.35rem);
+  font-weight: 700;
+  letter-spacing: -0.048em;
+  line-height: 0.86;
+  text-transform: uppercase;
+}
+
+.aside {
+  position: absolute;
+  z-index: 2;
+  right: clamp(1.25rem, 4vw, 4.2rem);
+  bottom: clamp(5.4rem, 11vh, 8rem);
+  width: min(280px, 26vw);
+  font-size: clamp(1rem, 1.2vw, 1.2rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+
+.meta {
+  position: absolute;
+  z-index: 2;
+  left: clamp(1.25rem, 3.4vw, 3.4rem);
+  right: clamp(1.25rem, 3.4vw, 3.4rem);
+  bottom: 1.05rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(244, 241, 236, 0.55);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+}
+
+@media (max-width: 800px) {
+  .copy {
+    right: 1.25rem;
+    bottom: 10.5rem;
+    max-width: none;
+  }
+
+  .title {
+    font-size: clamp(2.15rem, 11vw, 3.3rem);
+  }
+
+  .aside {
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: 4.7rem;
+    width: auto;
+    max-width: 28rem;
+    font-size: 1rem;
+  }
+
+  .contact {
+    min-width: 132px;
+    min-height: 48px;
+  }
+}
