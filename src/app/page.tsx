@@ -8,10 +8,12 @@ export default function HomePage() {
   return (
     <>
       <HomeHero />
-      <OurServices />
-      <SelectedWork />
-      <OurApproach />
-      <ContactSection />
+      <div className="home-over">
+        <OurServices />
+        <SelectedWork />
+        <OurApproach />
+        <ContactSection />
+      </div>
     </>
   );
 }

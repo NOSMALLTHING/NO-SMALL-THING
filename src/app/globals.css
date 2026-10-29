@@ -121,6 +121,12 @@ html::-webkit-scrollbar {
   display: none;
 }
 
+.home-over {
+  position: relative;
+  z-index: 2;
+  background: #080809;
+}
+
 body {
   margin: 0;
   background: var(--background);
