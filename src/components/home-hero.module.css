@@ -9,6 +9,24 @@
   background: #111;
 }
 
+:global(body):has(.hero) :global(.site-header:not(.is-light) .bracket-label),
+:global(body):has(.hero) :global(.site-header:not(.is-light) .bracket-mark) {
+  color: #fff;
+}
+
+:global(body):has(.hero) :global(.site-header:not(.is-light) .header-logo) {
+  filter: brightness(0) invert(1);
+}
+
+:global(body):has(.hero) :global(.site-header.is-light .bracket-label),
+:global(body):has(.hero) :global(.site-header.is-light .bracket-mark) {
+  color: #000;
+}
+
+:global(body):has(.hero) :global(.site-header.is-light .header-logo) {
+  filter: brightness(0);
+}
+
 .media {
   position: absolute;
   inset: 0;

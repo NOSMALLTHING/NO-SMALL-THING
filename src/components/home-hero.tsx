@@ -43,8 +43,8 @@ function HeroClock() {
 
 export function HomeHero() {
   return (
-    <section className={styles.hero} data-theme="light" aria-labelledby="home-title">
-      <img className={styles.media} src="/hero/opening.jpg" alt="" />
+    <section className={styles.hero} data-theme="dark" aria-labelledby="home-title">
+      <img className={styles.media} src="/hero/opening.gif" alt="" />
       <div className={styles.shade} aria-hidden="true" />
 
       <Link href="/contact" className={`${styles.contact} ${mono.className}`}>
