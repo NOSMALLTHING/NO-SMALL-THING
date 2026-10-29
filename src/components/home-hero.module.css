@@ -21,8 +21,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: 48%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.38), transparent);
+  height: 42%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.28), transparent);
   pointer-events: none;
 }
 
@@ -53,21 +53,21 @@
   position: absolute;
   z-index: 2;
   left: clamp(1.25rem, 3.4vw, 3.4rem);
-  bottom: clamp(4.75rem, 9vh, 6.75rem);
+  bottom: clamp(7.4rem, 14vh, 9.6rem);
   max-width: min(980px, 64vw);
 }
 
 .kicker {
-  margin-bottom: 0.9rem;
+  margin-bottom: 0.85rem;
   font-size: 0.68rem;
   letter-spacing: 0.08em;
 }
 
 .title {
   font-size: clamp(2.7rem, 5.5vw, 5.35rem);
-  font-weight: 700;
-  letter-spacing: -0.048em;
-  line-height: 0.86;
+  font-weight: 800;
+  letter-spacing: -0.046em;
+  line-height: 0.82;
   text-transform: uppercase;
 }
 
@@ -75,7 +75,7 @@
   position: absolute;
   z-index: 2;
   right: clamp(1.25rem, 4vw, 4.2rem);
-  bottom: clamp(5.4rem, 11vh, 8rem);
+  bottom: clamp(8.6rem, 17vh, 11.4rem);
   width: min(280px, 26vw);
   font-size: clamp(1rem, 1.2vw, 1.2rem);
   font-weight: 500;
@@ -88,17 +88,39 @@
   z-index: 2;
   left: clamp(1.25rem, 3.4vw, 3.4rem);
   right: clamp(1.25rem, 3.4vw, 3.4rem);
-  bottom: 1.05rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid rgba(244, 241, 236, 0.55);
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
+  bottom: 1.15rem;
+  display: grid;
+  grid-template-columns: 27% 23% 1fr;
+  align-items: center;
+  padding-top: 0.85rem;
+  border-top: 1px solid #f4f1ec;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.dot {
+  width: 0.42em;
+  height: 0.42em;
+  border-radius: 50%;
+  background: #ff2a2a;
+  flex-shrink: 0;
 }
 
 @media (max-width: 800px) {
   .copy {
     right: 1.25rem;
-    bottom: 10.5rem;
+    bottom: 11.5rem;
     max-width: none;
   }
 
@@ -109,10 +131,16 @@
   .aside {
     left: 1.25rem;
     right: 1.25rem;
-    bottom: 4.7rem;
+    bottom: 7.4rem;
     width: auto;
     max-width: 28rem;
     font-size: 1rem;
+  }
+
+  .meta {
+    grid-template-columns: 1fr;
+    row-gap: 0.4rem;
+    font-size: 0.58rem;
   }
 
   .contact {

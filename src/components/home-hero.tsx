@@ -1,10 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { IBM_Plex_Mono, Inter_Tight } from "next/font/google";
 import styles from "./home-hero.module.css";
 
 const display = Inter_Tight({
   subsets: ["latin"],
-  weight: ["500", "700"],
+  weight: ["500", "800"],
   display: "swap",
 });
 
@@ -13,6 +16,30 @@ const mono = IBM_Plex_Mono({
   weight: ["500"],
   display: "swap",
 });
+
+function pad(value: number) {
+  return String(value).padStart(2, "0");
+}
+
+function HeroClock() {
+  const [time, setTime] = useState("00 : 00 : 00");
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      setTime(`${pad(now.getHours())} : ${pad(now.getMinutes())} : ${pad(now.getSeconds())}`);
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  return (
+    <span className={styles.clock} aria-label="Current local time">
+      [ <span className={styles.dot} aria-hidden="true" /> {time} ]
+    </span>
+  );
+}
 
 export function HomeHero() {
   return (
@@ -40,7 +67,9 @@ export function HomeHero() {
       </p>
 
       <div className={`${styles.meta} ${mono.className}`}>
-        <span>KUALA LUMPUR</span>
+        <span>3+ DIGITAL FREAKS</span>
+        <span>KUALA LUMPUR BASED</span>
+        <HeroClock />
       </div>
 
       <div id="hero-end" className="hero-end" tabIndex={-1} />
