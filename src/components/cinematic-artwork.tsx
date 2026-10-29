@@ -32,7 +32,7 @@ export function CinematicArtwork({ children }: { children: ReactNode }) {
       <h1 id="hero-title" className="sr-only">NO SMALL THING — Transcend Everything</h1>
       <figure className="hero-figure">
         <motion.div className="hero-artwork" style={{
-          scale: enabled ? scale : 1,
+          scale: 1,
           y: enabled ? y : 0,
           x: enabled ? shiftX : 0,
           rotateY: enabled ? lookX : 0,
