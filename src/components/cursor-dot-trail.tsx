@@ -4,54 +4,42 @@ import { useEffect, useRef } from "react";
 import { useReducedMotion } from "motion/react";
 import styles from "./cursor-dot-trail.module.css";
 
-const DIV = 12;
-const ENERGY_SCALE = 2;
+const GRID_SPACING = 14;
+const INFLUENCE_RADIUS = 62;
+const SPRING = 0.088;
+const DAMPING = 0.845;
+const DECAY = 0.942;
+const NEIGHBOR_PUSH = 0.032;
+const NEIGHBOR_ALPHA = 0.016;
 
-const VERT = `#version 300 es
-void main() {
-  vec2 p = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
-  gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
-}`;
-
-const FRAG = `#version 300 es
-precision highp float;
-uniform sampler2D u_field;
+const VERT_SRC = `
+attribute vec2 a_pos;
+attribute float a_alpha;
+attribute float a_size;
 uniform vec2 u_res;
-uniform float u_dpr;
-out vec4 outColor;
+varying float v_alpha;
 
 void main() {
-  vec2 screen = vec2(gl_FragCoord.x, u_res.y - gl_FragCoord.y);
-  vec2 uv = screen / u_res;
-  vec4 field = texture(u_field, uv);
-  float energy = field.r * ${ENERGY_SCALE}.0;
-  if (energy < 0.035) discard;
-  vec2 vel = (field.gb - 0.5) * 8.0;
+  vec2 clip = (a_pos / u_res) * 2.0 - 1.0;
+  clip.y = -clip.y;
+  gl_Position = vec4(clip, 0.0, 1.0);
+  gl_PointSize = a_size;
+  v_alpha = a_alpha;
+}
+`;
 
-  float gap = 6.0 * u_dpr;
-  vec2 p = screen - vel * 4.0 * u_dpr;
-  vec2 cell = abs(fract(p / gap) - 0.5);
-  float dist = length(cell);
-  float tone = smoothstep(0.035, 0.9, energy);
-  float radius = mix(0.055, 0.3, tone);
-  float alpha = 0.0;
-  if (dist < radius) {
-    alpha = mix(0.18, 0.95, tone) * (1.0 - smoothstep(radius * 0.15, radius, dist));
-  }
+const FRAG_SRC = `
+precision mediump float;
+varying float v_alpha;
 
-  float core = smoothstep(0.42, 1.15, energy);
-  if (core > 0.0) {
-    vec2 cell2 = abs(fract(p / gap + 0.5) - 0.5);
-    float dist2 = length(cell2);
-    float radius2 = 0.18 * core;
-    if (dist2 < radius2) {
-      alpha = max(alpha, 0.72 * core * (1.0 - dist2 / radius2));
-    }
-  }
-
-  if (alpha < 0.03) discard;
-  outColor = vec4(1.0, 1.0, 1.0, alpha);
-}`;
+void main() {
+  vec2 p = abs(gl_PointCoord - vec2(0.5)) * 2.0;
+  float d = length(max(p - vec2(0.38), vec2(0.0)));
+  float a = smoothstep(0.62, 0.30, d);
+  if (a < 0.01) discard;
+  gl_FragColor = vec4(0.96, 0.96, 0.98, v_alpha * a * 0.95);
+}
+`;
 
 export function CursorDotTrail() {
   const reducedMotion = useReducedMotion();
@@ -60,169 +48,345 @@ export function CursorDotTrail() {
   useEffect(() => {
     if (reducedMotion) return;
     if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
     const canvas = canvasRef.current;
-    const gl = canvas?.getContext("webgl2", { alpha: true, antialias: false, premultipliedAlpha: false });
-    if (!canvas || !gl) return;
+    if (!canvas) return;
 
-    const compile = (type: number, source: string) => {
-      const shader = gl.createShader(type);
-      if (!shader) return null;
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        gl.deleteShader(shader);
-        return null;
+    let gl: WebGLRenderingContext | null =
+      (canvas.getContext("webgl2", { alpha: true, antialias: false, premultipliedAlpha: false }) as WebGLRenderingContext | null) ||
+      (canvas.getContext("webgl", { alpha: true, antialias: false, premultipliedAlpha: false }) as WebGLRenderingContext | null);
+
+    let ctx2d: CanvasRenderingContext2D | null = null;
+    let program: WebGLProgram | null = null;
+    let buffer: WebGLBuffer | null = null;
+    let posLoc = -1;
+    let alphaLoc = -1;
+    let sizeLoc = -1;
+    let resLoc: WebGLUniformLocation | null = null;
+
+    if (gl) {
+      const compile = (type: number, src: string) => {
+        if (!gl) return null;
+        const shader = gl.createShader(type);
+        if (!shader) return null;
+        gl.shaderSource(shader, src);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      };
+
+      const vs = compile(gl.VERTEX_SHADER, VERT_SRC);
+      const fs = compile(gl.FRAGMENT_SHADER, FRAG_SRC);
+      if (vs && fs) {
+        program = gl.createProgram();
+        if (program) {
+          gl.attachShader(program, vs);
+          gl.attachShader(program, fs);
+          gl.linkProgram(program);
+          if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            gl.useProgram(program);
+            posLoc = gl.getAttribLocation(program, "a_pos");
+            alphaLoc = gl.getAttribLocation(program, "a_alpha");
+            sizeLoc = gl.getAttribLocation(program, "a_size");
+            resLoc = gl.getUniformLocation(program, "u_res");
+            buffer = gl.createBuffer();
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+          } else {
+            gl.deleteProgram(program);
+            program = null;
+          }
+        }
       }
-      return shader;
-    };
-    const vertex = compile(gl.VERTEX_SHADER, VERT);
-    const fragment = compile(gl.FRAGMENT_SHADER, FRAG);
-    const program = gl.createProgram();
-    if (!vertex || !fragment || !program) return;
-    gl.attachShader(program, vertex);
-    gl.attachShader(program, fragment);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
+    }
 
-    const resLoc = gl.getUniformLocation(program, "u_res");
-    const dprLoc = gl.getUniformLocation(program, "u_dpr");
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    if (!gl || !program) {
+      gl = null;
+      ctx2d = canvas.getContext("2d");
+      if (!ctx2d) return;
+    }
 
     let width = 0;
     let height = 0;
     let dpr = 1;
     let cols = 0;
     let rows = 0;
-    let energy = new Float32Array(0);
+    let total = 0;
+
+    let x0 = new Float32Array(0);
+    let y0 = new Float32Array(0);
+    let x = new Float32Array(0);
+    let y = new Float32Array(0);
     let vx = new Float32Array(0);
     let vy = new Float32Array(0);
-    let pixels = new Uint8Array(0);
+    let alpha = new Float32Array(0);
+    let isActive = new Uint8Array(0);
+    let activeList: number[] = [];
+    let vertexData = new Float32Array(0);
+
     let lastX = 0;
     let lastY = 0;
     let hasLast = false;
-    let frame = 0;
     let running = false;
+    let rafId = 0;
     let lastTime = 0;
 
     const resize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
-      cols = Math.max(2, Math.ceil(width / DIV));
-      rows = Math.max(2, Math.ceil(height / DIV));
-      energy = new Float32Array(cols * rows);
-      vx = new Float32Array(cols * rows);
-      vy = new Float32Array(cols * rows);
-      pixels = new Uint8Array(cols * rows * 4);
-      gl.viewport(0, 0, canvas.width, canvas.height);
+
+      cols = Math.ceil(width / GRID_SPACING) + 1;
+      rows = Math.ceil(height / GRID_SPACING) + 1;
+      total = cols * rows;
+
+      x0 = new Float32Array(total);
+      y0 = new Float32Array(total);
+      x = new Float32Array(total);
+      y = new Float32Array(total);
+      vx = new Float32Array(total);
+      vy = new Float32Array(total);
+      alpha = new Float32Array(total);
+      isActive = new Uint8Array(total);
+      activeList = [];
+      vertexData = new Float32Array(total * 4);
+
+      for (let r = 0; r < rows; r += 1) {
+        for (let c = 0; c < cols; c += 1) {
+          const idx = r * cols + c;
+          const px = (c + 0.5) * GRID_SPACING;
+          const py = (r + 0.5) * GRID_SPACING;
+          x0[idx] = px;
+          y0[idx] = py;
+          x[idx] = px;
+          y[idx] = py;
+        }
+      }
+
+      if (gl) {
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
       hasLast = false;
     };
 
-    const inject = (x: number, y: number, dx: number, dy: number, weight: number) => {
-      const aspect = width / Math.max(height, 1);
-      const radius = 0.085;
-      const reach = radius * 2.2;
-      const minCol = Math.max(0, Math.floor(((x / width) - reach) * cols));
-      const maxCol = Math.min(cols - 1, Math.ceil(((x / width) + reach) * cols));
-      const minRow = Math.max(0, Math.floor(((y / height) - reach) * rows));
-      const maxRow = Math.min(rows - 1, Math.ceil(((y / height) + reach) * rows));
-      for (let row = minRow; row <= maxRow; row += 1) {
-        for (let col = minCol; col <= maxCol; col += 1) {
-          let du = x / width - (col + 0.5) / cols;
-          const dv = y / height - (row + 0.5) / rows;
-          du *= aspect;
-          const dist = du * du + dv * dv;
-          if (dist > reach * reach) continue;
-          const influence = Math.exp(-dist / (radius * radius));
-          const index = row * cols + col;
-          energy[index] = Math.min(ENERGY_SCALE, energy[index] + weight * influence);
-          vx[index] += dx * influence * 0.03;
-          vy[index] += dy * influence * 0.03;
+    const injectAt = (mx: number, my: number, dx: number, dy: number, impulseWeight: number) => {
+      const rMin = Math.max(0, Math.floor((my - INFLUENCE_RADIUS) / GRID_SPACING));
+      const rMax = Math.min(rows - 1, Math.ceil((my + INFLUENCE_RADIUS) / GRID_SPACING));
+      const cMin = Math.max(0, Math.floor((mx - INFLUENCE_RADIUS) / GRID_SPACING));
+      const cMax = Math.min(cols - 1, Math.ceil((mx + INFLUENCE_RADIUS) / GRID_SPACING));
+      const r2 = INFLUENCE_RADIUS * INFLUENCE_RADIUS;
+      const coreDenom = r2 * 0.42;
+
+      for (let r = rMin; r <= rMax; r += 1) {
+        for (let c = cMin; c <= cMax; c += 1) {
+          const idx = r * cols + c;
+          const dX = x0[idx] - mx;
+          const dY = y0[idx] - my;
+          const distSq = dX * dX + dY * dY;
+          if (distSq > r2) continue;
+
+          const influence = Math.exp(-distSq / coreDenom);
+          vx[idx] += dx * influence * 0.38;
+          vy[idx] += dy * influence * 0.38;
+          alpha[idx] = Math.min(1.0, alpha[idx] + impulseWeight * influence);
+
+          if (!isActive[idx]) {
+            isActive[idx] = 1;
+            activeList.push(idx);
+          }
         }
       }
     };
 
-    const upload = () => {
-      for (let index = 0; index < energy.length; index += 1) {
-        pixels[index * 4] = Math.max(0, Math.min(255, Math.round((energy[index] / ENERGY_SCALE) * 255)));
-        pixels[index * 4 + 1] = Math.max(0, Math.min(255, Math.round((vx[index] / 8 + 0.5) * 255)));
-        pixels[index * 4 + 2] = Math.max(0, Math.min(255, Math.round((vy[index] / 8 + 0.5) * 255)));
-        pixels[index * 4 + 3] = 255;
-      }
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, cols, rows, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-    };
-
-    const draw = (time: number) => {
-      running = true;
-      const dt = lastTime ? Math.min(34, time - lastTime) : 16;
+    const frameLoop = (time: number) => {
+      if (!lastTime) lastTime = time;
+      const dt = Math.min(34, time - lastTime);
       lastTime = time;
-      const decay = 1 - Math.min(0.5, dt / 280);
-      let peak = 0;
-      for (let index = 0; index < energy.length; index += 1) {
-        energy[index] *= decay;
-        vx[index] *= decay;
-        vy[index] *= decay;
-        peak = Math.max(peak, energy[index]);
+      const timeScale = Math.max(0.4, Math.min(2.0, dt / 16.67));
+
+      const damp = Math.pow(DAMPING, timeScale);
+      const dec = Math.pow(DECAY, timeScale);
+      const springK = SPRING * timeScale;
+
+      const currentActiveCount = activeList.length;
+
+      // Neighbor fluid coupling for active dots
+      for (let i = 0; i < currentActiveCount; i += 1) {
+        const idx = activeList[i];
+        const a = alpha[idx];
+        if (a < 0.08) continue;
+
+        const c = idx % cols;
+        const r = Math.floor(idx / cols);
+
+        const pushX = vx[idx] * NEIGHBOR_PUSH * timeScale;
+        const pushY = vy[idx] * NEIGHBOR_PUSH * timeScale;
+        const pushA = a * NEIGHBOR_ALPHA * timeScale;
+
+        const neighbors = [
+          c > 0 ? idx - 1 : -1,
+          c < cols - 1 ? idx + 1 : -1,
+          r > 0 ? idx - cols : -1,
+          r < rows - 1 ? idx + cols : -1,
+        ];
+
+        for (let n = 0; n < 4; n += 1) {
+          const nb = neighbors[n];
+          if (nb === -1) continue;
+          vx[nb] += pushX;
+          vy[nb] += pushY;
+          alpha[nb] = Math.min(1.0, alpha[nb] + pushA);
+          if (!isActive[nb]) {
+            isActive[nb] = 1;
+            activeList.push(nb);
+          }
+        }
       }
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      if (peak < 0.03) {
+
+      // Physics update and active list compacting
+      let writeIdx = 0;
+      let renderCount = 0;
+
+      for (let i = 0; i < activeList.length; i += 1) {
+        const idx = activeList[i];
+        const fx = (x0[idx] - x[idx]) * springK;
+        const fy = (y0[idx] - y[idx]) * springK;
+
+        vx[idx] = (vx[idx] + fx) * damp;
+        vy[idx] = (vy[idx] + fy) * damp;
+        x[idx] += vx[idx] * timeScale;
+        y[idx] += vy[idx] * timeScale;
+        alpha[idx] *= dec;
+
+        const a = alpha[idx];
+        const dx = Math.abs(x[idx] - x0[idx]);
+        const dy = Math.abs(y[idx] - y0[idx]);
+
+        if (a < 0.008 && dx < 0.15 && dy < 0.15) {
+          x[idx] = x0[idx];
+          y[idx] = y0[idx];
+          vx[idx] = 0;
+          vy[idx] = 0;
+          alpha[idx] = 0;
+          isActive[idx] = 0;
+        } else {
+          activeList[writeIdx] = idx;
+          writeIdx += 1;
+
+          if (a >= 0.01) {
+            const vOffset = renderCount * 4;
+            const sz = (2.3 + a * 1.5) * dpr;
+            vertexData[vOffset] = x[idx] * dpr;
+            vertexData[vOffset + 1] = y[idx] * dpr;
+            vertexData[vOffset + 2] = a;
+            vertexData[vOffset + 3] = sz;
+            renderCount += 1;
+          }
+        }
+      }
+      activeList.length = writeIdx;
+
+      // Rendering
+      if (gl && program && buffer) {
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        if (renderCount > 0) {
+          gl.useProgram(program);
+          gl.uniform2f(resLoc, canvas.width, canvas.height);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+          gl.bufferData(gl.ARRAY_BUFFER, vertexData.subarray(0, renderCount * 4), gl.DYNAMIC_DRAW);
+
+          gl.enableVertexAttribArray(posLoc);
+          gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 16, 0);
+
+          gl.enableVertexAttribArray(alphaLoc);
+          gl.vertexAttribPointer(alphaLoc, 1, gl.FLOAT, false, 16, 8);
+
+          gl.enableVertexAttribArray(sizeLoc);
+          gl.vertexAttribPointer(sizeLoc, 1, gl.FLOAT, false, 16, 12);
+
+          gl.drawArrays(gl.POINTS, 0, renderCount);
+        }
+      } else if (ctx2d) {
+        ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < renderCount; i += 1) {
+          const vOffset = i * 4;
+          const px = vertexData[vOffset];
+          const py = vertexData[vOffset + 1];
+          const a = vertexData[vOffset + 2];
+          const sz = vertexData[vOffset + 3];
+          ctx2d.fillStyle = `rgba(245, 245, 248, ${a * 0.95})`;
+          ctx2d.fillRect(px - sz * 0.5, py - sz * 0.5, sz, sz);
+        }
+      }
+
+      if (activeList.length > 0) {
+        rafId = requestAnimationFrame(frameLoop);
+      } else {
         running = false;
         lastTime = 0;
-        return;
       }
-      upload();
-      gl.useProgram(program);
-      gl.uniform2f(resLoc, canvas.width, canvas.height);
-      gl.uniform1f(dprLoc, dpr);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      frame = requestAnimationFrame(draw);
     };
 
     const onPointerMove = (event: PointerEvent) => {
       if (event.pointerType === "touch") return;
+
+      const cx = event.clientX;
+      const cy = event.clientY;
+
       if (!hasLast) {
-        lastX = event.clientX;
-        lastY = event.clientY;
+        lastX = cx;
+        lastY = cy;
         hasLast = true;
         return;
       }
-      const dx = event.clientX - lastX;
-      const dy = event.clientY - lastY;
-      const speed = Math.hypot(dx, dy);
-      if (speed < 0.4) return;
-      const steps = Math.max(1, Math.ceil(speed / 18));
-      const weight = (0.22 + Math.min(speed, 140) / 160) / steps;
-      for (let step = 1; step <= steps; step += 1) {
-        const t = step / steps;
-        inject(lastX + dx * t, lastY + dy * t, dx / steps, dy / steps, weight);
+
+      const dx = cx - lastX;
+      const dy = cy - lastY;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < 0.5) return;
+
+      const subSteps = Math.max(1, Math.min(10, Math.ceil(dist / (GRID_SPACING * 0.75))));
+      const impulseWeight = (0.34 + Math.min(dist / 30, 0.66)) / subSteps;
+
+      for (let s = 1; s <= subSteps; s += 1) {
+        const t = s / subSteps;
+        const subX = lastX + dx * t;
+        const subY = lastY + dy * t;
+        injectAt(subX, subY, dx / subSteps, dy / subSteps, impulseWeight);
       }
-      lastX = event.clientX;
-      lastY = event.clientY;
-      if (!running) frame = requestAnimationFrame(draw);
+
+      lastX = cx;
+      lastY = cy;
+
+      if (!running) {
+        running = true;
+        lastTime = 0;
+        rafId = requestAnimationFrame(frameLoop);
+      }
     };
 
     resize();
     window.addEventListener("resize", resize);
     window.addEventListener("pointermove", onPointerMove, { passive: true });
+
     return () => {
-      cancelAnimationFrame(frame);
+      cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onPointerMove);
-      gl.deleteProgram(program);
-      gl.deleteTexture(texture);
+      if (gl) {
+        if (program) gl.deleteProgram(program);
+        if (buffer) gl.deleteBuffer(buffer);
+      }
     };
   }, [reducedMotion]);
 
