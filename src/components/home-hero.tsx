@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IBM_Plex_Mono, Inter_Tight } from "next/font/google";
 import styles from "./home-hero.module.css";
 
@@ -41,10 +41,111 @@ function HeroClock() {
   );
 }
 
+const HERO_VIDEOS = [
+  { id: "video-1", src: "/hero/video_1.mp4", startTime: 0 },
+  { id: "video-2", src: "/hero/video_2.mp4", startTime: 0 },
+  { id: "video-3", src: "/hero/video_3.mp4", startTime: 0 },
+];
+
 export function HomeHero() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const isTransitioningRef = useRef(false);
+
+  useEffect(() => {
+    const firstVideo = videoRefs.current[0];
+    if (firstVideo) {
+      firstVideo.currentTime = HERO_VIDEOS[0].startTime;
+      firstVideo.play().catch(() => {});
+    }
+  }, []);
+
+  const advanceVideo = (fromIndex: number) => {
+    if (isTransitioningRef.current) return;
+    isTransitioningRef.current = true;
+
+    const nextIndex = (fromIndex + 1) % HERO_VIDEOS.length;
+    const nextVideo = videoRefs.current[nextIndex];
+
+    if (nextVideo) {
+      nextVideo.currentTime = HERO_VIDEOS[nextIndex].startTime;
+      nextVideo.play().catch(() => {});
+    }
+
+    setCurrentIndex(nextIndex);
+
+    window.setTimeout(() => {
+      isTransitioningRef.current = false;
+      videoRefs.current.forEach((video, idx) => {
+        if (idx !== nextIndex && video && !video.paused) {
+          video.pause();
+        }
+      });
+    }, 1000);
+  };
+
+  const handleTimeUpdate = (index: number) => {
+    if (index !== currentIndex || isTransitioningRef.current) return;
+    const video = videoRefs.current[index];
+    if (!video || !video.duration) return;
+
+    const remaining = video.duration - video.currentTime;
+    if (remaining <= 0.75 && remaining > 0) {
+      advanceVideo(index);
+    }
+  };
+
+  const handleEnded = (index: number) => {
+    if (index === currentIndex) {
+      advanceVideo(index);
+    }
+  };
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      const activeVideo = videoRefs.current[currentIndex];
+      if (!activeVideo) return;
+      if (document.hidden) {
+        activeVideo.pause();
+      } else {
+        activeVideo.play().catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [currentIndex]);
+
   return (
     <section className={styles.hero} data-theme="dark" aria-labelledby="home-title">
-      <img className={styles.media} src="/hero/opening.gif" alt="" />
+      <div className={styles.mediaWrap}>
+        <picture>
+          <source srcSet="/hero/poster.webp" type="image/webp" />
+          <img
+            src="/hero/poster.jpg"
+            alt=""
+            className={styles.posterFallback}
+            loading="eager"
+            decoding="async"
+          />
+        </picture>
+        {HERO_VIDEOS.map((item, idx) => (
+          <video
+            key={item.id}
+            ref={(el) => {
+              videoRefs.current[idx] = el;
+            }}
+            src={item.src}
+            className={`${styles.videoItem} ${idx === currentIndex ? styles.videoActive : ""}`}
+            muted
+            playsInline
+            autoPlay={idx === 0}
+            preload={idx === 0 ? "auto" : "metadata"}
+            onTimeUpdate={() => handleTimeUpdate(idx)}
+            onEnded={() => handleEnded(idx)}
+            aria-hidden="true"
+          />
+        ))}
+      </div>
       <div className={styles.shade} aria-hidden="true" />
 
       <Link href="/contact" className={`${styles.contact} ${mono.className}`}>
