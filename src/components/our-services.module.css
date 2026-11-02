@@ -8,19 +8,39 @@
   .scrollTrack {
     height: 520vh;
   }
+
+  /* 100vh viewport + 420vh content + 150vh horizontal handoff */
+  .scrollTrackHandoff {
+    height: 670vh;
+  }
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
+  .scrollTrackHandoff {
+    height: 520vh;
+  }
 }
 
 .stickySection {
   position: relative;
+  z-index: 4;
   width: 100%;
   min-height: 100svh;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: transparent;
+  color: var(--black, #080809);
+}
+
+.plane {
+  position: relative;
+  height: 100%;
+  min-height: inherit;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: clamp(48px, 6vh, 60px) clamp(1rem, 3.5vw, 2.5rem) clamp(1rem, 2vh, 1.5rem);
-  background: var(--base-bg, #fff);
-  color: var(--black, #080809);
-  overflow: hidden;
+  background: #fff;
   box-sizing: border-box;
 }
 
@@ -29,6 +49,12 @@
     position: sticky;
     top: 0;
     height: 100vh;
+    min-height: 0;
+  }
+
+  .plane {
+    height: 100%;
+    min-height: 100%;
   }
 }
 
@@ -584,6 +610,9 @@
 
 @media (max-width: 767px) {
   .stickySection {
+    min-height: auto;
+  }
+  .plane {
     min-height: auto;
     padding-top: 70px;
     padding-bottom: 2rem;

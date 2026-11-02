@@ -8,11 +8,11 @@ import { ProjectReel } from "./project-reel";
 import { EditorialHeading } from "./ui/editorial-heading";
 import styles from "./selected-work.module.css";
 
-export function SelectedWork({ standalone = false }: { standalone?: boolean }) {
+export function SelectedWork({ standalone = false, immediateHeading = false }: { standalone?: boolean; immediateHeading?: boolean }) {
   return <section id="selected-work" className={styles.section} aria-labelledby="selected-work-title">
     <Container>
       <SectionLabel>IDEAS, EXPLORED.</SectionLabel>
-      <EditorialHeading as={standalone ? "h1" : "h2"} id="selected-work-title" className={styles.heading} lines={["SELECTED WORK."]} />
+      <EditorialHeading as={standalone ? "h1" : "h2"} id="selected-work-title" className={styles.heading} lines={["SELECTED WORK."]} immediate={immediateHeading} />
       <p className={styles.intro}>{projects.every(project => project.status === "concept")
         ? "Self-initiated concept studies. Imagined briefs, original design directions. No client commissions or commercial results are represented."
         : "A considered selection of client work and clearly labelled concept studies."}</p>

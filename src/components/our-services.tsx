@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type RefObject } from "react";
 import {
   motion,
   useScroll,
@@ -59,19 +59,9 @@ interface NarrativeLineProps {
 function NarrativeLine({ children, lineIndex, scrollYProgress, enabled }: NarrativeLineProps) {
   const e0 = 0.005 + lineIndex * 0.010;
   const e1 = e0 + 0.035;
-  const x0 = 0.880 + lineIndex * 0.010;
-  const x1 = x0 + 0.035;
 
-  const y = useTransform(
-    scrollYProgress,
-    [0, e0, e1, x0, x1, 1],
-    ["100%", "100%", "0%", "0%", "-100%", "-100%"]
-  );
-  const opacity = useTransform(
-    scrollYProgress,
-    [0, e0, e1, x0, x1, 1],
-    [0, 0, 1, 1, 0, 0]
-  );
+  const y = useTransform(scrollYProgress, [0, e0, e1, 1], ["100%", "100%", "0%", "0%"]);
+  const opacity = useTransform(scrollYProgress, [0, e0, e1, 1], [0, 0, 1, 1]);
 
   if (!enabled) {
     return (
@@ -157,7 +147,19 @@ function HeadlineRow({ children, scrollYProgress, range, enabled }: HeadlineRowP
   );
 }
 
-export function OurServices({ standalone = false }: { standalone?: boolean }) {
+export function OurServices({
+  standalone = false,
+  trackRef,
+  progress,
+  planeX,
+  handoff = false,
+}: {
+  standalone?: boolean;
+  trackRef?: RefObject<HTMLDivElement | null>;
+  progress?: MotionValue<number>;
+  planeX?: MotionValue<string>;
+  handoff?: boolean;
+}) {
   const [activeService, setActiveService] = useState(0);
   const [isOverText, setIsOverText] = useState(false);
   const [isOverBracket, setIsOverBracket] = useState(false);
@@ -193,23 +195,25 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
 
   const prefersReduced = useReducedMotion();
 
-  const scrollTrackRef = useRef<HTMLDivElement>(null);
+  const internalTrackRef = useRef<HTMLDivElement>(null);
+  const scrollTrackRef = trackRef ?? internalTrackRef;
   const stickySectionRef = useRef<HTMLElement>(null);
   const videoWrapRef = useRef<HTMLDivElement>(null);
 
-  // Scroll tracking for pinned animation across extended track (520vh)
+  // Scroll tracking for the pinned services scene. Homepage hands in its own
+  // progress so the horizontal exit can share the same track.
   const { scrollYProgress } = useScroll({
     target: scrollTrackRef,
     offset: ["start start", "end end"],
   });
 
-  // Viscous fluid spring smoothing for ultra-luxurious, slow, and cinematic pacing
-  const smoothProgress = useSpring(scrollYProgress, {
+  const sprungProgress = useSpring(scrollYProgress, {
     stiffness: 50,
     damping: 20,
     mass: 0.8,
     restDelta: 0.0005,
   });
+  const smoothProgress = progress ?? sprungProgress;
 
   const Heading = standalone ? "h1" : "h2";
 
@@ -354,7 +358,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
   );
 
   return (
-    <div ref={scrollTrackRef} className={styles.scrollTrack}>
+    <div ref={scrollTrackRef} className={`${styles.scrollTrack} ${handoff ? styles.scrollTrackHandoff : ""}`}>
       <section
         ref={stickySectionRef}
         id="services"
@@ -362,6 +366,10 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
         className={styles.stickySection}
         aria-labelledby="services-title"
       >
+        <motion.div
+          className={styles.plane}
+          style={{ x: planeX && animationsEnabled ? planeX : 0 }}
+        >
         {/* 1. Organic Fluid Lava Lamp Moving Background (Option A: Light theme) */}
         <div className={styles.lavaLamp} aria-hidden="true">
           <div className={styles.lavaBg}>
@@ -581,6 +589,7 @@ export function OurServices({ standalone = false }: { standalone?: boolean }) {
             </div>
           </div>
         </div>
+        </motion.div>
       </section>
     </div>
   );

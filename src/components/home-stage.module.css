@@ -1,0 +1,24 @@
+.workAnchor {
+  position: relative;
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .workAnchor {
+    margin-top: -100vh;
+  }
+}
+
+.workPlane {
+  width: 100%;
+}
+
+.workViewport {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: #080809;
+}

@@ -1,6 +1,5 @@
 import { HomeHero } from "@/components/home-hero";
-import { OurServices } from "@/components/our-services";
-import { SelectedWork } from "@/components/selected-work";
+import { HomeStage } from "@/components/home-stage";
 import { OurApproach } from "@/components/our-approach";
 import { ContactSection } from "@/components/contact-section";
 
@@ -9,8 +8,7 @@ export default function HomePage() {
     <>
       <HomeHero />
       <div className="home-over">
-        <OurServices />
-        <SelectedWork />
+        <HomeStage />
         <OurApproach />
         <ContactSection />
       </div>

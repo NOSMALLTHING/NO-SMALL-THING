@@ -23,13 +23,15 @@ export function EditorialHeading({
   id,
   className = "",
   as: Heading = "h2",
-  italicWords = []
+  italicWords = [],
+  immediate = false,
 }: {
   lines: readonly string[];
   id: string;
   className?: string;
   as?: "h1" | "h2";
   italicWords?: readonly string[];
+  immediate?: boolean;
 }) {
   const enabled = useCinematicMotion();
   let character = 0;
@@ -63,8 +65,8 @@ export function EditorialHeading({
                         className="editorial-glyph"
                         variants={glyphVariants}
                         custom={order}
-                        initial={enabled ? "hidden" : false}
-                        whileInView={enabled ? "visible" : undefined}
+                        initial={enabled && !immediate ? "hidden" : false}
+                        whileInView={enabled && !immediate ? "visible" : undefined}
                         viewport={{ once: true, amount: 0.25 }}
                       >
                         {letter}

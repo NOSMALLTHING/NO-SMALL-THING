@@ -2,19 +2,21 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { IBM_Plex_Mono, Inter_Tight } from "next/font/google";
+import localFont from "next/font/local";
 import styles from "./home-hero.module.css";
 
-const display = Inter_Tight({
-  subsets: ["latin"],
-  weight: ["500", "800"],
+const display = localFont({
+  src: "../fonts/SuisseBPIntl-Bold.otf",
+  weight: "800",
   display: "swap",
+  adjustFontFallback: false,
 });
 
-const mono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["500"],
+const mono = localFont({
+  src: "../fonts/SometypeMono-Variable.ttf",
+  weight: "400 700",
   display: "swap",
+  adjustFontFallback: false,
 });
 
 function pad(value: number) {
@@ -163,7 +165,7 @@ export function HomeHero() {
         </h1>
       </div>
 
-      <p className={`${styles.aside} ${display.className}`}>
+      <p className={`${styles.aside} ${mono.className}`}>
         Not a pitch deck and not a hand-off. Three people in Kuala Lumpur take it from the first sketch to the thing that actually runs.
       </p>
 
