@@ -21,6 +21,15 @@
   }
 }
 
+@media (min-width: 1024px) {
+  :global(.handoff-released) .stickySection {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+  }
+}
+
 .stickySection {
   position: relative;
   z-index: 4;

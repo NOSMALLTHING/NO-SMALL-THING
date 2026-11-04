@@ -56,7 +56,9 @@ export function HomeStage() {
       setPinned(false);
       return;
     }
-    const next = value > CONTENT_END + 0.001 && value < 0.999;
+    const revealDone = value >= 0.999;
+    trackRef.current?.classList.toggle("handoff-released", enabled && revealDone);
+    const next = value > CONTENT_END + 0.001 && !revealDone;
     setPinned((current) => (current === next ? current : next));
   };
 
