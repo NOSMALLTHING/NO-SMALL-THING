@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect, useCallback, type RefObject } from "react";
 import {
   motion,
+  useMotionValue,
+  useMotionValueEvent,
   useScroll,
   useSpring,
   useTransform,
@@ -48,6 +50,27 @@ const services = [
       "Technology consulting, system integration and technical support. Connected digital solutions for your everyday business challenges.",
   },
 ] as const;
+
+function segment(value: number, start: number, end: number) {
+  if (value <= start) return 0;
+  if (value >= end) return 1;
+  return (value - start) / (end - start);
+}
+
+function glide(amount: number) {
+  const t = Math.min(1, Math.max(0, amount));
+  return t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2;
+}
+
+function useDepart(progress: MotionValue<number>, start: number, end: number, distanceVw: number) {
+  const x = useTransform(progress, (value) => `${-glide(segment(value, start, end)) * distanceVw}vw`);
+  const opacity = useTransform(progress, (value) => {
+    const t = segment(value, start, end);
+    if (t <= 0.68) return 1;
+    return 1 - glide((t - 0.68) / 0.32);
+  });
+  return { x, opacity };
+}
 
 interface NarrativeLineProps {
   children: React.ReactNode;
@@ -151,13 +174,13 @@ export function OurServices({
   standalone = false,
   trackRef,
   progress,
-  planeX,
+  exitProgress,
   handoff = false,
 }: {
   standalone?: boolean;
   trackRef?: RefObject<HTMLDivElement | null>;
   progress?: MotionValue<number>;
-  planeX?: MotionValue<string>;
+  exitProgress?: MotionValue<number>;
   handoff?: boolean;
 }) {
   const [activeService, setActiveService] = useState(0);
@@ -238,6 +261,8 @@ export function OurServices({
     targetY: 520,
     hasMoved: false,
   });
+  const videoDepartRef = useRef(0);
+  const motionEnabledRef = useRef(false);
 
   useEffect(() => {
     if (!isDesktop) return;
@@ -298,7 +323,12 @@ export function OurServices({
       p.currentY += dy * LERP_FACTOR;
 
       if (videoWrapRef.current) {
-        videoWrapRef.current.style.transform = `translate3d(${p.currentX}px, ${p.currentY}px, 0) translate(-50%, -50%)`;
+        const travel = motionEnabledRef.current ? glide(segment(videoDepartRef.current, 0.04, 0.72)) : 0;
+        const fade = travel <= 0.68 ? 1 : 1 - glide((travel - 0.68) / 0.32);
+        const shift = -travel * window.innerWidth * 0.92;
+        videoWrapRef.current.style.transform = `translate3d(${p.currentX + shift}px, ${p.currentY}px, 0) translate(-50%, -50%)`;
+        videoWrapRef.current.style.opacity = motionEnabledRef.current ? String(fade) : "";
+        videoWrapRef.current.style.transition = travel > 0 ? "none" : "";
       }
 
       animationFrameId = requestAnimationFrame(render);
@@ -343,6 +373,19 @@ export function OurServices({
   const quoteOpacity = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [0, 0, 1, 1]);
   const quoteY = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [10, 10, 0, 0]);
 
+  const idleExit = useMotionValue(0);
+  const depart = exitProgress ?? idleExit;
+  useMotionValueEvent(depart, "change", (value) => {
+    videoDepartRef.current = value;
+  });
+  useEffect(() => {
+    motionEnabledRef.current = animationsEnabled;
+  }, [animationsEnabled]);
+  const narrativeExit = useDepart(depart, 0, 0.7, 108);
+  const stripExit = useDepart(depart, 0.08, 0.8, 120);
+  const headlineExit = useDepart(depart, 0.18, 0.94, 128);
+  const closingExit = useDepart(depart, 0.3, 1, 112);
+
   // Render media frame. Desktop pointer movement smears the picture; touch keeps the video.
   const renderMediaFrame = (key: string) => (
     <div key={key} className={styles.mediaFrame}>
@@ -366,10 +409,7 @@ export function OurServices({
         className={styles.stickySection}
         aria-labelledby="services-title"
       >
-        <motion.div
-          className={styles.plane}
-          style={{ x: planeX && animationsEnabled ? planeX : 0 }}
-        >
+        <div className={styles.plane}>
         {/* 1. Organic Fluid Lava Lamp Moving Background (Option A: Light theme) */}
         <div className={styles.lavaLamp} aria-hidden="true">
           <div className={styles.lavaBg}>
@@ -394,7 +434,7 @@ export function OurServices({
         {/* 3. Structured Content Layout Layer */}
         <div className={styles.contentLayer}>
           {/* Top: Upper-Right Narrative Lead */}
-          <div className={styles.topSection}>
+          <motion.div className={styles.topSection} style={animationsEnabled ? narrativeExit : undefined}>
             <div
               className={styles.narrativeBlock}
               onMouseEnter={handleTextEnter}
@@ -425,9 +465,10 @@ export function OurServices({
                 </NarrativeLine>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Middle: Full-bleed Horizontal Service Links Strip with left-to-right entrance */}
+          <motion.div style={animationsEnabled ? stripExit : undefined}>
           <motion.nav
             className={styles.linksStrip}
             aria-label="Core services list"
@@ -457,6 +498,7 @@ export function OurServices({
               );
             })}
           </motion.nav>
+          </motion.div>
 
           {/* Bottom: Mobile Media Card + Right Massive Typography Headline */}
           <div className={styles.bottomSection}>
@@ -467,8 +509,9 @@ export function OurServices({
 
             {/* Right: Massive Typography Poster Headline & Interaction Target */}
             <div className={styles.rightHeadlineCol}>
-              <div
+              <motion.div
                 className={styles.headlineTarget}
+                style={animationsEnabled ? headlineExit : undefined}
                 onMouseEnter={handleTextEnter}
                 onMouseLeave={handleTextLeave}
               >
@@ -513,10 +556,10 @@ export function OurServices({
                     AI &amp; DIGITAL, DONE RIGHT.
                   </HeadlineRow>
                 </Heading>
-              </div>
+              </motion.div>
 
               {/* Bottom Socials & Philosophy Statement (0.74 -> 0.88) */}
-              <div className={styles.bottomEnd}>
+              <motion.div className={styles.bottomEnd} style={animationsEnabled ? closingExit : undefined}>
                 <div
                   className={styles.socialGroup}
                   aria-label="Social links"
@@ -585,11 +628,11 @@ export function OurServices({
                   The first step is to establish that something is possible then probability will occur.{" "}
                   <strong className={styles.endHighlight}>From idea to execution.</strong>
                 </motion.p>
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>
-        </motion.div>
+        </div>
       </section>
     </div>
   );

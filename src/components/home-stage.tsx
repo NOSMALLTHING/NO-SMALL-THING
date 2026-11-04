@@ -7,13 +7,23 @@ import { SelectedWork } from "./selected-work";
 import { useCinematicMotion } from "./ui/use-cinematic-motion";
 import styles from "./home-stage.module.css";
 
-/** First 420vh keeps the services choreography. The last 150vh slides that scene out. */
-const CONTENT_END = 420 / 570;
+/** 420vh of services choreography, then a 200vh exit, then a 180vh reveal. */
+const CONTENT_SCROLL = 420;
+const EXIT_SCROLL = 200;
+const REVEAL_SCROLL = 180;
+const TOTAL_SCROLL = CONTENT_SCROLL + EXIT_SCROLL + REVEAL_SCROLL;
+const CONTENT_END = CONTENT_SCROLL / TOTAL_SCROLL;
+const EXIT_END = (CONTENT_SCROLL + EXIT_SCROLL) / TOTAL_SCROLL;
 
-function slideAmount(progress: number) {
-  if (progress <= CONTENT_END) return 0;
+function glide(amount: number) {
+  const t = Math.min(1, Math.max(0, amount));
+  return t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2;
+}
+
+function revealAmount(progress: number) {
+  if (progress <= EXIT_END) return 0;
   if (progress >= 1) return 1;
-  return (progress - CONTENT_END) / (1 - CONTENT_END);
+  return glide((progress - EXIT_END) / (1 - EXIT_END));
 }
 
 export function HomeStage() {
@@ -33,16 +43,20 @@ export function HomeStage() {
     if (value >= CONTENT_END) return 1;
     return value / CONTENT_END;
   });
-  const servicesX = useTransform(scrollYProgress, (value) => `${-slideAmount(value) * 100}%`);
-  const workX = useTransform(scrollYProgress, (value) => `${(1 - slideAmount(value)) * 100}%`);
+  const exitProgress = useTransform(scrollYProgress, (value) => {
+    if (value <= CONTENT_END) return 0;
+    if (value >= EXIT_END) return 1;
+    return (value - CONTENT_END) / (EXIT_END - CONTENT_END);
+  });
+  const workX = useTransform(scrollYProgress, (value) => `${(1 - revealAmount(value)) * 100}%`);
+  const workScale = useTransform(scrollYProgress, (value) => 1.045 - revealAmount(value) * 0.045);
 
   const syncPin = (value: number) => {
     if (!enabled) {
       setPinned(false);
       return;
     }
-    const amount = slideAmount(value);
-    const next = amount > 0.001 && amount < 0.999;
+    const next = value > CONTENT_END + 0.001 && value < 0.999;
     setPinned((current) => (current === next ? current : next));
   };
 
@@ -71,11 +85,13 @@ export function HomeStage() {
 
   return (
     <>
-      <OurServices trackRef={trackRef} progress={contentProgress} planeX={servicesX} handoff />
+      <OurServices trackRef={trackRef} progress={contentProgress} exitProgress={exitProgress} handoff />
       <div ref={anchorRef} className={styles.workAnchor}>
         <div className={pinned ? styles.workViewport : undefined}>
           <motion.div ref={panelRef} className={styles.workPlane} style={{ x: pinned && enabled ? workX : 0 }}>
-            <SelectedWork immediateHeading />
+            <motion.div className={styles.workSettle} style={{ scale: pinned && enabled ? workScale : 1 }}>
+              <SelectedWork immediateHeading />
+            </motion.div>
           </motion.div>
         </div>
       </div>

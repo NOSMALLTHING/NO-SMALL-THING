@@ -9,9 +9,9 @@
     height: 520vh;
   }
 
-  /* 100vh viewport + 420vh content + 150vh horizontal handoff */
+  /* 100vh viewport + 420vh content + 200vh exit + 180vh reveal */
   .scrollTrackHandoff {
-    height: 670vh;
+    height: 900vh;
   }
 }
 
