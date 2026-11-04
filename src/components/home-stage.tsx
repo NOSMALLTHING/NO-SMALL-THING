@@ -7,29 +7,31 @@ import { SelectedWork } from "./selected-work";
 import { useCinematicMotion } from "./ui/use-cinematic-motion";
 import styles from "./home-stage.module.css";
 
-/** 420vh of services choreography, then a 200vh exit, then a 180vh reveal. */
+/** Services plays for 420vh, leaves over 200vh, and the next page begins 64vh before that exit finishes. */
 const CONTENT_SCROLL = 420;
 const EXIT_SCROLL = 200;
-const REVEAL_SCROLL = 180;
-const TOTAL_SCROLL = CONTENT_SCROLL + EXIT_SCROLL + REVEAL_SCROLL;
+const REVEAL_LEAD = 64;
+const TOTAL_SCROLL = CONTENT_SCROLL + EXIT_SCROLL + 136;
 const CONTENT_END = CONTENT_SCROLL / TOTAL_SCROLL;
 const EXIT_END = (CONTENT_SCROLL + EXIT_SCROLL) / TOTAL_SCROLL;
+const REVEAL_START = (CONTENT_SCROLL + EXIT_SCROLL - REVEAL_LEAD) / TOTAL_SCROLL;
 
-function glide(amount: number) {
+function arrive(amount: number) {
   const t = Math.min(1, Math.max(0, amount));
-  return t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2;
+  return 1 - (1 - t) ** 2.4;
 }
 
 function revealAmount(progress: number) {
-  if (progress <= EXIT_END) return 0;
+  if (progress <= REVEAL_START) return 0;
   if (progress >= 1) return 1;
-  return glide((progress - EXIT_END) / (1 - EXIT_END));
+  return arrive((progress - REVEAL_START) / (1 - REVEAL_START));
 }
 
 export function HomeStage() {
   const trackRef = useRef<HTMLDivElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const revealDoneRef = useRef(false);
   const enabled = useCinematicMotion(true);
   const [pinned, setPinned] = useState(false);
 
@@ -49,16 +51,20 @@ export function HomeStage() {
     return (value - CONTENT_END) / (EXIT_END - CONTENT_END);
   });
   const workX = useTransform(scrollYProgress, (value) => `${(1 - revealAmount(value)) * 100}%`);
-  const workScale = useTransform(scrollYProgress, (value) => 1.045 - revealAmount(value) * 0.045);
+  const edgeOpacity = useTransform(scrollYProgress, (value) => {
+    const travel = 1 - revealAmount(value);
+    if (travel <= 0.02) return 0;
+    return Math.min(1, (travel - 0.02) * 2.8);
+  });
 
   const syncPin = (value: number) => {
     if (!enabled) {
+      revealDoneRef.current = false;
       setPinned(false);
       return;
     }
-    const revealDone = value >= 0.999;
-    trackRef.current?.classList.toggle("handoff-released", enabled && revealDone);
-    const next = value > CONTENT_END + 0.001 && !revealDone;
+    revealDoneRef.current = value >= 0.999;
+    const next = value > CONTENT_END + 0.001 && !revealDoneRef.current;
     setPinned((current) => (current === next ? current : next));
   };
 
@@ -67,6 +73,13 @@ export function HomeStage() {
   useEffect(() => {
     syncPin(scrollYProgress.get());
   }, [enabled, scrollYProgress]);
+
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const releaseWhite = enabled && !pinned && revealDoneRef.current;
+    track.classList.toggle("handoff-released", releaseWhite);
+  }, [pinned, enabled]);
 
   useLayoutEffect(() => {
     const panel = panelRef.current;
@@ -91,9 +104,8 @@ export function HomeStage() {
       <div ref={anchorRef} className={styles.workAnchor}>
         <div className={pinned ? styles.workViewport : undefined}>
           <motion.div ref={panelRef} className={styles.workPlane} style={{ x: pinned && enabled ? workX : 0 }}>
-            <motion.div className={styles.workSettle} style={{ scale: pinned && enabled ? workScale : 1 }}>
-              <SelectedWork immediateHeading />
-            </motion.div>
+            {pinned ? <motion.div className={styles.revealEdge} style={{ opacity: edgeOpacity }} /> : null}
+            <SelectedWork immediateHeading />
           </motion.div>
         </div>
       </div>

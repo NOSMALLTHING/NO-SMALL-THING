@@ -14,37 +14,31 @@
   background: #080809;
 }
 
-.workSettle {
-  width: 100%;
-  transform-origin: 50% 42%;
-}
-
 .workViewport {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   z-index: 6;
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: transparent;
   pointer-events: none;
 }
 
 .workViewport .workPlane {
+  min-height: 100%;
   pointer-events: auto;
-  box-shadow: -56px 0 90px rgba(8, 8, 9, 0.38);
+  box-shadow: -36px 0 64px rgba(8, 8, 9, 0.22);
 }
 
-.workViewport .workPlane::before {
-  content: "";
+.revealEdge {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   z-index: 5;
   width: 1px;
-  background: rgba(240, 236, 231, 0.92);
-  box-shadow: 0 0 28px rgba(240, 236, 231, 0.45);
+  background: rgba(240, 236, 231, 0.72);
+  box-shadow: 0 0 18px rgba(240, 236, 231, 0.28);
   pointer-events: none;
 }
