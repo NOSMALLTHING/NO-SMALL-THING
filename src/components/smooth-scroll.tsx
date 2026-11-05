@@ -13,7 +13,7 @@ declare global {
 
 /**
  * Cinematic smooth scrolling powered by Lenis.
- * Tuned with a responsive 0.085 lerp for buttery momentum without scroll lag.
+ * The wheel stays close to the picture. A short lerp keeps the handoff scrubbed to the scroll.
  * Automatically bypassed on touch devices and for reduced-motion preferences.
  */
 export function SmoothScroll() {
@@ -27,7 +27,7 @@ export function SmoothScroll() {
     if (reducedMotion || !isFinePointer) return;
 
     const lenis = new Lenis({
-      lerp: 0.085,
+      lerp: 0.22,
       smoothWheel: true,
       syncTouch: false,
     });

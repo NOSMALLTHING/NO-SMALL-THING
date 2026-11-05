@@ -28,7 +28,7 @@
 .workViewport .workPlane {
   min-height: 100%;
   pointer-events: auto;
-  box-shadow: -36px 0 64px rgba(8, 8, 9, 0.22);
+  will-change: transform;
 }
 
 .revealEdge {
@@ -39,6 +39,5 @@
   z-index: 5;
   width: 1px;
   background: rgba(240, 236, 231, 0.72);
-  box-shadow: 0 0 18px rgba(240, 236, 231, 0.28);
   pointer-events: none;
 }

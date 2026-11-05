@@ -57,17 +57,21 @@ function segment(value: number, start: number, end: number) {
   return (value - start) / (end - start);
 }
 
-function glide(amount: number) {
+function silk(amount: number) {
   const t = Math.min(1, Math.max(0, amount));
-  return t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2;
+  return 0.5 - Math.cos(Math.PI * t) / 2;
+}
+
+function glide(amount: number) {
+  return silk(amount);
 }
 
 function useDepart(progress: MotionValue<number>, start: number, end: number, distanceVw: number) {
   const x = useTransform(progress, (value) => `${-glide(segment(value, start, end)) * distanceVw}vw`);
   const opacity = useTransform(progress, (value) => {
     const t = segment(value, start, end);
-    if (t <= 0.68) return 1;
-    return 1 - glide((t - 0.68) / 0.32);
+    if (t <= 0.55) return 1;
+    return 1 - silk((t - 0.55) / 0.45);
   });
   return { x, opacity };
 }
@@ -86,12 +90,12 @@ function NarrativeLine({
   depart,
   enabled,
 }: NarrativeLineProps & { depart: MotionValue<number> }) {
-  const e0 = 0.005 + lineIndex * 0.010;
-  const e1 = e0 + 0.035;
-  const exit = useDepart(depart, 0.02 + lineIndex * 0.055, 0.38 + lineIndex * 0.055, 108);
+  const e0 = 0.01 + lineIndex * 0.014;
+  const e1 = e0 + 0.064;
+  const exit = useDepart(depart, 0.02 + lineIndex * 0.05, 0.5 + lineIndex * 0.05, 108);
 
-  const y = useTransform(scrollYProgress, [0, e0, e1, 1], ["100%", "100%", "0%", "0%"]);
-  const opacity = useTransform(scrollYProgress, [0, e0, e1, 1], [0, 0, 1, 1]);
+  const y = useTransform(scrollYProgress, (value) => `${(1 - silk(segment(value, e0, e1))) * 100}%`);
+  const opacity = useTransform(scrollYProgress, (value) => silk(segment(value, e0, e1)));
 
   const line = enabled ? (
     <motion.span className={styles.narrativeLineInner} style={{ y, opacity }}>
@@ -124,21 +128,16 @@ function HeadlineRow({
   enabled,
 }: HeadlineRowProps & { depart: MotionValue<number>; lineIndex: number }) {
   const [a, b, c] = range;
-  const exit = useDepart(depart, 0.3 + lineIndex * 0.08, 0.62 + lineIndex * 0.08, 124);
+  const exit = useDepart(depart, 0.28 + lineIndex * 0.07, 0.7 + lineIndex * 0.07, 124);
 
-  // Phase 1 (a -> b): sweeps in from left to right, covering line with solid black block
-  // Phase 2 (b -> c): sweeps out towards right, revealing text cleanly
-  const blockClipPath = useTransform(
-    scrollYProgress,
-    [0, a, b, c, 1],
-    [
-      "inset(0% 100% 0% 0%)",
-      "inset(0% 100% 0% 0%)",
-      "inset(0% 0% 0% 0%)",
-      "inset(0% 0% 0% 100%)",
-      "inset(0% 0% 0% 100%)",
-    ]
-  );
+  // Phase 1 (a -> b): the block eases across the line.
+  // Phase 2 (b -> c): it eases away and leaves the type.
+  const blockClipPath = useTransform(scrollYProgress, (value) => {
+    if (value <= a) return "inset(0% 100% 0% 0%)";
+    if (value <= b) return `inset(0% ${(1 - silk(segment(value, a, b))) * 100}% 0% 0%)`;
+    if (value <= c) return `inset(0% 0% 0% ${silk(segment(value, b, c)) * 100}%)`;
+    return "inset(0% 0% 0% 100%)";
+  });
 
   const blockOpacity = useTransform(
     scrollYProgress,
@@ -195,7 +194,7 @@ function ServiceStripButton({
   label: string;
   onSelect: () => void;
 }) {
-  const exit = useDepart(depart, 0.16 + index * 0.06, 0.5 + index * 0.06, 118);
+  const exit = useDepart(depart, 0.06 + index * 0.028, 0.26 + index * 0.02, 28);
   return (
     <motion.button
       type="button"
@@ -365,8 +364,8 @@ export function OurServices({
       p.currentY += dy * LERP_FACTOR;
 
       if (videoWrapRef.current) {
-        const travel = motionEnabledRef.current ? glide(segment(videoDepartRef.current, 0.04, 0.72)) : 0;
-        const fade = travel <= 0.68 ? 1 : 1 - glide((travel - 0.68) / 0.32);
+        const travel = motionEnabledRef.current ? glide(segment(videoDepartRef.current, 0.04, 0.42)) : 0;
+        const fade = travel <= 0.55 ? 1 : 1 - silk((travel - 0.55) / 0.45);
         const shift = -travel * window.innerWidth * 0.92;
         videoWrapRef.current.style.transform = `translate3d(${p.currentX + shift}px, ${p.currentY}px, 0) translate(-50%, -50%)`;
         videoWrapRef.current.style.opacity = motionEnabledRef.current ? String(fade) : "";
@@ -388,32 +387,25 @@ export function OurServices({
 
   const animationsEnabled = isMounted && isDesktop && !prefersReduced;
 
-  // Horizontal links strip entrance from left to right during initial entry (0.01 -> 0.08)
-  const stripClipPath = useTransform(
-    smoothProgress,
-    [0, 0.01, 0.08, 1],
-    [
-      "inset(0% 100% 0% 0%)",
-      "inset(0% 100% 0% 0%)",
-      "inset(0% 0% 0% 0%)",
-      "inset(0% 0% 0% 0%)",
-    ]
-  );
-  const stripOpacity = useTransform(smoothProgress, [0, 0.01, 0.08, 1], [0, 0, 1, 1]);
-  const stripX = useTransform(smoothProgress, [0, 0.01, 0.08, 1], [-30, -30, 0, 0]);
+  // The service bar eases open instead of cutting across.
+  const stripClipPath = useTransform(smoothProgress, (value) => {
+    const eased = silk(segment(value, 0.02, 0.14));
+    return `inset(0% ${(1 - eased) * 100}% 0% 0%)`;
+  });
+  const stripOpacity = useTransform(smoothProgress, (value) => silk(segment(value, 0.02, 0.1)));
+  const stripX = useTransform(smoothProgress, (value) => -24 * (1 - silk(segment(value, 0.02, 0.14))));
 
-  // Sequential entrances for bottom items after headline completes (0.74 -> 0.88)
-  const fbOpacity = useTransform(smoothProgress, [0, 0.75, 0.79, 1], [0, 0, 1, 1]);
-  const fbY = useTransform(smoothProgress, [0, 0.75, 0.79, 1], [10, 10, 0, 0]);
+  const fbOpacity = useTransform(smoothProgress, (value) => silk(segment(value, 0.74, 0.84)));
+  const fbY = useTransform(smoothProgress, (value) => 12 * (1 - silk(segment(value, 0.74, 0.84))));
 
-  const rnOpacity = useTransform(smoothProgress, [0, 0.78, 0.82, 1], [0, 0, 1, 1]);
-  const rnY = useTransform(smoothProgress, [0, 0.78, 0.82, 1], [10, 10, 0, 0]);
+  const rnOpacity = useTransform(smoothProgress, (value) => silk(segment(value, 0.78, 0.88)));
+  const rnY = useTransform(smoothProgress, (value) => 12 * (1 - silk(segment(value, 0.78, 0.88))));
 
-  const igOpacity = useTransform(smoothProgress, [0, 0.81, 0.85, 1], [0, 0, 1, 1]);
-  const igY = useTransform(smoothProgress, [0, 0.81, 0.85, 1], [10, 10, 0, 0]);
+  const igOpacity = useTransform(smoothProgress, (value) => silk(segment(value, 0.82, 0.92)));
+  const igY = useTransform(smoothProgress, (value) => 12 * (1 - silk(segment(value, 0.82, 0.92))));
 
-  const quoteOpacity = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [0, 0, 1, 1]);
-  const quoteY = useTransform(smoothProgress, [0, 0.84, 0.88, 1], [10, 10, 0, 0]);
+  const quoteOpacity = useTransform(smoothProgress, (value) => silk(segment(value, 0.86, 0.96)));
+  const quoteY = useTransform(smoothProgress, (value) => 12 * (1 - silk(segment(value, 0.86, 0.96))));
 
   const idleExit = useMotionValue(0);
   const depart = exitProgress ?? idleExit;
@@ -423,6 +415,7 @@ export function OurServices({
   useEffect(() => {
     motionEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
+  const stripBarExit = useDepart(depart, 0.05, 0.34, 132);
   const facebookExit = useDepart(depart, 0.5, 0.78, 104);
   const rednoteExit = useDepart(depart, 0.56, 0.84, 104);
   const instagramExit = useDepart(depart, 0.62, 0.9, 104);
@@ -510,6 +503,7 @@ export function OurServices({
           </div>
 
           {/* Middle: Full-bleed Horizontal Service Links Strip with left-to-right entrance */}
+          <motion.div className={styles.stripDepart} style={animationsEnabled ? stripBarExit : undefined}>
           <motion.nav
             className={styles.linksStrip}
             aria-label="Core services list"
@@ -533,6 +527,7 @@ export function OurServices({
               />
             ))}
           </motion.nav>
+          </motion.div>
 
           {/* Bottom: Mobile Media Card + Right Massive Typography Headline */}
           <div className={styles.bottomSection}>
@@ -558,7 +553,7 @@ export function OurServices({
                     scrollYProgress={smoothProgress}
                     depart={depart}
                     lineIndex={0}
-                    range={[0.10, 0.19, 0.26]}
+                    range={[0.10, 0.22, 0.32]}
                     enabled={animationsEnabled}
                   >
                     <span className={styles.regMark} aria-hidden="true">®</span>WHAT WE DO.
@@ -569,7 +564,7 @@ export function OurServices({
                     scrollYProgress={smoothProgress}
                     depart={depart}
                     lineIndex={1}
-                    range={[0.26, 0.35, 0.42]}
+                    range={[0.26, 0.38, 0.48]}
                     enabled={animationsEnabled}
                   >
                     FOCUS BUILD WHAT MATTERS.
@@ -580,7 +575,7 @@ export function OurServices({
                     scrollYProgress={smoothProgress}
                     depart={depart}
                     lineIndex={2}
-                    range={[0.42, 0.51, 0.58]}
+                    range={[0.42, 0.54, 0.64]}
                     enabled={animationsEnabled}
                   >
                     <span className={styles.serifWord}>Among</span> THE STARS
@@ -591,7 +586,7 @@ export function OurServices({
                     scrollYProgress={smoothProgress}
                     depart={depart}
                     lineIndex={3}
-                    range={[0.58, 0.67, 0.74]}
+                    range={[0.56, 0.70, 0.82]}
                     enabled={animationsEnabled}
                   >
                     AI &amp; DIGITAL, DONE RIGHT.

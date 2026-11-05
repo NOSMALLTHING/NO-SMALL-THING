@@ -7,24 +7,19 @@ import { SelectedWork } from "./selected-work";
 import { useCinematicMotion } from "./ui/use-cinematic-motion";
 import styles from "./home-stage.module.css";
 
-/** Services plays for 420vh, leaves over 200vh, and the next page begins 160vh before that exit finishes. */
+/** Services plays for 420vh, then leaves over 120vh. The next page covers across the last 110vh of that handoff. */
 const CONTENT_SCROLL = 420;
-const EXIT_SCROLL = 200;
-const REVEAL_LEAD = 160;
-const TOTAL_SCROLL = CONTENT_SCROLL + EXIT_SCROLL + 136;
+const EXIT_SCROLL = 120;
+const REVEAL_LEAD = 80;
+const TOTAL_SCROLL = CONTENT_SCROLL + EXIT_SCROLL + 30;
 const CONTENT_END = CONTENT_SCROLL / TOTAL_SCROLL;
 const EXIT_END = (CONTENT_SCROLL + EXIT_SCROLL) / TOTAL_SCROLL;
 const REVEAL_START = (CONTENT_SCROLL + EXIT_SCROLL - REVEAL_LEAD) / TOTAL_SCROLL;
 
-function arrive(amount: number) {
-  const t = Math.min(1, Math.max(0, amount));
-  return 1 - (1 - t) ** 2.4;
-}
-
 function revealAmount(progress: number) {
   if (progress <= REVEAL_START) return 0;
   if (progress >= 1) return 1;
-  return arrive((progress - REVEAL_START) / (1 - REVEAL_START));
+  return (progress - REVEAL_START) / (1 - REVEAL_START);
 }
 
 export function HomeStage() {
