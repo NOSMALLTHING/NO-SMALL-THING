@@ -106,36 +106,31 @@
 
 .blob {
   position: absolute;
-  opacity: 0.46;
   mix-blend-mode: multiply;
-  will-change: transform, border-radius;
+  will-change: transform;
   backface-visibility: hidden;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
 
 .blob:nth-child(1) {
-  width: 46vw;
-  height: 22vh;
-  background: var(--blob-1);
-  top: 28vh;
-  left: 4vw;
-  filter: blur(46px);
-  opacity: 0.24;
-  border-radius: 58% 42% 64% 36% / 72% 48% 52% 28%;
+  width: 62vw;
+  height: 70vh;
+  top: 6vh;
+  left: -8vw;
+  background: radial-gradient(ellipse at 42% 46%, rgba(92, 92, 98, 0.55) 0%, rgba(92, 92, 98, 0.16) 42%, rgba(92, 92, 98, 0) 70%);
+  filter: blur(28px);
   animation-name: wanderA;
   animation-duration: 16s;
 }
 
 .blob:nth-child(2) {
-  width: 28vw;
-  height: 14vh;
-  background: var(--blob-2);
-  top: 54vh;
-  left: 38vw;
-  filter: blur(40px);
-  opacity: 0.16;
-  border-radius: 42% 58% 36% 64% / 40% 70% 30% 60%;
+  width: 36vw;
+  height: 44vh;
+  top: 22vh;
+  left: 18vw;
+  background: radial-gradient(ellipse at 58% 40%, rgba(120, 120, 126, 0.28) 0%, rgba(120, 120, 126, 0) 68%);
+  filter: blur(36px);
   animation-name: wanderB;
   animation-duration: 13s;
 }
@@ -150,20 +145,18 @@
 }
 
 @keyframes wanderA {
-  0% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); border-radius: 58% 42% 64% 36% / 72% 48% 52% 28%; }
-  18% { transform: translate3d(18vw, -6vh, 0) scale(1.05) rotate(8deg); border-radius: 40% 60% 46% 54% / 58% 34% 66% 42%; }
-  37% { transform: translate3d(36vw, 4vh, 0) scale(0.94) rotate(-6deg); border-radius: 66% 34% 52% 48% / 38% 62% 44% 56%; }
-  55% { transform: translate3d(22vw, 28vh, 0) scale(1.08) rotate(4deg); border-radius: 48% 52% 70% 30% / 64% 40% 36% 60%; }
-  74% { transform: translate3d(2vw, 14vh, 0) scale(0.97) rotate(-3deg); border-radius: 36% 64% 42% 58% / 50% 70% 30% 46%; }
-  100% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); border-radius: 58% 42% 64% 36% / 72% 48% 52% 28%; }
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  20% { transform: translate3d(10vw, 4vh, 0) scale(1.06); }
+  45% { transform: translate3d(18vw, -6vh, 0) scale(0.96); }
+  70% { transform: translate3d(6vw, 10vh, 0) scale(1.04); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
 @keyframes wanderB {
-  0% { transform: translate3d(0, 0, 0) scale(1) rotate(-8deg); border-radius: 42% 58% 36% 64% / 40% 70% 30% 60%; }
-  22% { transform: translate3d(-18vw, -12vh, 0) scale(1.08) rotate(6deg); border-radius: 62% 38% 54% 46% / 68% 32% 58% 42%; }
-  46% { transform: translate3d(14vw, -22vh, 0) scale(0.92) rotate(-12deg); border-radius: 34% 66% 48% 52% / 46% 60% 40% 54%; }
-  68% { transform: translate3d(-6vw, 8vh, 0) scale(1.04) rotate(2deg); border-radius: 54% 46% 32% 68% / 36% 64% 70% 30%; }
-  100% { transform: translate3d(0, 0, 0) scale(1) rotate(-8deg); border-radius: 42% 58% 36% 64% / 40% 70% 30% 60%; }
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  28% { transform: translate3d(-12vw, 8vh, 0) scale(1.08); }
+  56% { transform: translate3d(8vw, -10vh, 0) scale(0.94); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
