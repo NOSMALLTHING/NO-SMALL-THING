@@ -13,6 +13,10 @@
   .scrollTrackHandoff {
     height: 900vh;
   }
+
+  .linksStrip {
+    overflow: visible;
+  }
 }
 
 @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
@@ -67,12 +71,12 @@
   }
 }
 
-/* 1. Organic Fluid Lava Lamp Background (Light subtle tone) */
+/* Slow gray bloom under the type, in the spirit of a soft studio wash. */
 .lavaLamp {
   --base-bg: #fff;
-  --blob-1: #ffffff;
-  --blob-2: #f4f4f4;
-  --vignette: #08080905;
+  --blob-1: #5c5c62;
+  --blob-2: #8d8d93;
+  --vignette: #08080908;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -102,76 +106,85 @@
 
 .blob {
   position: absolute;
-  border-radius: 43% 57% 65% 35% / 55% 45% 61% 39%;
-  opacity: 0.85;
+  border-radius: 50%;
+  opacity: 0.46;
+  mix-blend-mode: multiply;
   will-change: transform;
   backface-visibility: hidden;
   animation: sweep infinite alternate ease-in-out;
 }
 
 .blob:nth-child(1) {
-  width: 90vw;
-  height: 90vh;
+  width: 68vw;
+  height: 74vh;
   background: var(--blob-1);
-  top: -10vh;
-  left: -10vw;
-  filter: blur(80px);
-  animation-duration: 25s;
+  top: 6vh;
+  left: -16vw;
+  filter: blur(70px);
+  animation-duration: 38s;
 }
 
 .blob:nth-child(2) {
-  width: 45vw;
-  height: 45vw;
+  width: 42vw;
+  height: 46vh;
   background: var(--blob-2);
-  top: 10vh;
-  left: 10vw;
-  filter: blur(50px);
-  animation-duration: 15s;
-}
-
-.blob:nth-child(3) {
-  width: 25vw;
-  height: 30vw;
-  background: var(--blob-1);
-  bottom: 0;
-  right: 10vw;
-  filter: blur(40px);
-  animation-duration: 8s;
+  top: 28vh;
+  left: 8vw;
+  filter: blur(90px);
+  opacity: 0.34;
+  animation-duration: 52s;
   animation-direction: alternate-reverse;
 }
 
+.blob:nth-child(3) {
+  width: 36vw;
+  height: 40vh;
+  background: #3f3f44;
+  bottom: -8vh;
+  left: 18vw;
+  filter: blur(80px);
+  opacity: 0.28;
+  animation-duration: 46s;
+}
+
 .blob:nth-child(4) {
-  width: 60vw;
-  height: 50vh;
+  width: 28vw;
+  height: 34vh;
   background: var(--blob-2);
-  top: 40vh;
-  right: -10vw;
-  filter: blur(60px);
-  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-  animation: fig8 20s infinite linear;
+  top: 18vh;
+  right: 6vw;
+  filter: blur(100px);
+  opacity: 0.2;
+  animation-duration: 58s;
 }
 
 .blob:nth-child(5) {
-  width: 35vw;
-  height: 35vw;
+  width: 22vw;
+  height: 22vw;
   background: var(--blob-1);
-  top: 50vh;
-  left: 50vw;
-  filter: blur(45px);
-  animation-duration: 11s;
+  bottom: 10vh;
+  right: 18vw;
+  filter: blur(70px);
+  opacity: 0.16;
+  animation-duration: 44s;
 }
 
 @keyframes sweep {
-  0% { transform: translate3d(0, 0, 0) scale(0.8) rotate(0deg); }
-  50% { transform: translate3d(30vw, 20vh, 0) scale(1.5) rotate(90deg); }
-  100% { transform: translate3d(-20vw, 40vh, 0) scale(0.9) rotate(180deg); }
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(7vw, 5vh, 0) scale(1.08); }
+  100% { transform: translate3d(-5vw, 8vh, 0) scale(0.94); }
 }
 
-@keyframes fig8 {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  25% { transform: translate3d(-40vw, -30vh, 0) scale(1.2); }
-  50% { transform: translate3d(-80vw, 0, 0) scale(0.9); }
-  75% { transform: translate3d(-40vw, 30vh, 0) scale(1.3); }
+@media (prefers-reduced-motion: reduce) {
+  .blob { animation: none; }
+}
+
+.departLine {
+  display: block;
+}
+
+.departItem {
+  display: inline-flex;
 }
 
 /* 2. Content Layout */

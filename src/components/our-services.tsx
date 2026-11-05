@@ -79,30 +79,32 @@ interface NarrativeLineProps {
   enabled: boolean;
 }
 
-function NarrativeLine({ children, lineIndex, scrollYProgress, enabled }: NarrativeLineProps) {
+function NarrativeLine({
+  children,
+  lineIndex,
+  scrollYProgress,
+  depart,
+  enabled,
+}: NarrativeLineProps & { depart: MotionValue<number> }) {
   const e0 = 0.005 + lineIndex * 0.010;
   const e1 = e0 + 0.035;
+  const exit = useDepart(depart, 0.02 + lineIndex * 0.055, 0.38 + lineIndex * 0.055, 108);
 
   const y = useTransform(scrollYProgress, [0, e0, e1, 1], ["100%", "100%", "0%", "0%"]);
   const opacity = useTransform(scrollYProgress, [0, e0, e1, 1], [0, 0, 1, 1]);
 
-  if (!enabled) {
-    return (
-      <span className={styles.narrativeLineMask}>
-        <span className={styles.narrativeLineInner}>{children}</span>
-      </span>
-    );
-  }
+  const line = enabled ? (
+    <motion.span className={styles.narrativeLineInner} style={{ y, opacity }}>
+      {children}
+    </motion.span>
+  ) : (
+    <span className={styles.narrativeLineInner}>{children}</span>
+  );
 
   return (
-    <span className={styles.narrativeLineMask}>
-      <motion.span
-        className={styles.narrativeLineInner}
-        style={{ y, opacity }}
-      >
-        {children}
-      </motion.span>
-    </span>
+    <motion.span className={styles.departLine} style={enabled ? exit : undefined}>
+      <span className={styles.narrativeLineMask}>{line}</span>
+    </motion.span>
   );
 }
 
@@ -113,8 +115,16 @@ interface HeadlineRowProps {
   enabled: boolean;
 }
 
-function HeadlineRow({ children, scrollYProgress, range, enabled }: HeadlineRowProps) {
+function HeadlineRow({
+  children,
+  scrollYProgress,
+  range,
+  depart,
+  lineIndex,
+  enabled,
+}: HeadlineRowProps & { depart: MotionValue<number>; lineIndex: number }) {
   const [a, b, c] = range;
+  const exit = useDepart(depart, 0.3 + lineIndex * 0.08, 0.62 + lineIndex * 0.08, 124);
 
   // Phase 1 (a -> b): sweeps in from left to right, covering line with solid black block
   // Phase 2 (b -> c): sweeps out towards right, revealing text cleanly
@@ -151,7 +161,7 @@ function HeadlineRow({ children, scrollYProgress, range, enabled }: HeadlineRowP
   }
 
   return (
-    <span className={styles.headlineRow}>
+    <motion.span className={styles.headlineRow} style={exit}>
       <motion.span
         className={styles.textInner}
         style={{ opacity: textOpacity }}
@@ -166,7 +176,39 @@ function HeadlineRow({ children, scrollYProgress, range, enabled }: HeadlineRowP
         }}
         aria-hidden="true"
       />
-    </span>
+    </motion.span>
+  );
+}
+
+function ServiceStripButton({
+  depart,
+  index,
+  enabled,
+  selected,
+  label,
+  onSelect,
+}: {
+  depart: MotionValue<number>;
+  index: number;
+  enabled: boolean;
+  selected: boolean;
+  label: string;
+  onSelect: () => void;
+}) {
+  const exit = useDepart(depart, 0.16 + index * 0.06, 0.5 + index * 0.06, 118);
+  return (
+    <motion.button
+      type="button"
+      className={`${styles.stripItem} ${selected ? styles.isActive : ""}`}
+      style={enabled ? exit : undefined}
+      onClick={onSelect}
+      onMouseEnter={onSelect}
+      aria-pressed={selected}
+    >
+      <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+      <span>{label}</span>
+      <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+    </motion.button>
   );
 }
 
@@ -381,10 +423,10 @@ export function OurServices({
   useEffect(() => {
     motionEnabledRef.current = animationsEnabled;
   }, [animationsEnabled]);
-  const narrativeExit = useDepart(depart, 0, 0.7, 108);
-  const stripExit = useDepart(depart, 0.08, 0.8, 120);
-  const headlineExit = useDepart(depart, 0.18, 0.94, 128);
-  const closingExit = useDepart(depart, 0.3, 1, 112);
+  const facebookExit = useDepart(depart, 0.5, 0.78, 104);
+  const rednoteExit = useDepart(depart, 0.56, 0.84, 104);
+  const instagramExit = useDepart(depart, 0.62, 0.9, 104);
+  const quoteExit = useDepart(depart, 0.68, 0.96, 112);
 
   // Render media frame. Desktop pointer movement smears the picture; touch keeps the video.
   const renderMediaFrame = (key: string) => (
@@ -434,41 +476,40 @@ export function OurServices({
         {/* 3. Structured Content Layout Layer */}
         <div className={styles.contentLayer}>
           {/* Top: Upper-Right Narrative Lead */}
-          <motion.div className={styles.topSection} style={animationsEnabled ? narrativeExit : undefined}>
+          <div className={styles.topSection}>
             <div
               className={styles.narrativeBlock}
               onMouseEnter={handleTextEnter}
               onMouseLeave={handleTextLeave}
             >
               <div className={styles.narrativeLead}>
-                <NarrativeLine lineIndex={0} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                <NarrativeLine lineIndex={0} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled}>
                   At NO SMALL THING, every project is guided by three minds with
                 </NarrativeLine>
-                <NarrativeLine lineIndex={1} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                <NarrativeLine lineIndex={1} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled}>
                   one shared ambition.
                 </NarrativeLine>
               </div>
               <div className={styles.narrativeBody}>
-                <NarrativeLine lineIndex={2} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                <NarrativeLine lineIndex={2} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled}>
                   We partner with forward-thinking businesses, founders, and teams to build purposeful
                 </NarrativeLine>
-                <NarrativeLine lineIndex={3} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                <NarrativeLine lineIndex={3} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled}>
                   digital solutions across AI, custom software, UI/UX, and web development. Combining
                 </NarrativeLine>
-                <NarrativeLine lineIndex={4} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                <NarrativeLine lineIndex={4} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled}>
                   strategic foresight with hands-on technical craftsmanship.
                 </NarrativeLine>
               </div>
               <div className={styles.narrativeKicker}>
-                <NarrativeLine lineIndex={5} scrollYProgress={smoothProgress} enabled={animationsEnabled}>
+                <NarrativeLine lineIndex={5} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled}>
                   From AI integration and software engineering to bespoke websites and digital systems.
                 </NarrativeLine>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Middle: Full-bleed Horizontal Service Links Strip with left-to-right entrance */}
-          <motion.div style={animationsEnabled ? stripExit : undefined}>
           <motion.nav
             className={styles.linksStrip}
             aria-label="Core services list"
@@ -480,25 +521,18 @@ export function OurServices({
             onMouseEnter={handleBracketEnter}
             onMouseLeave={handleBracketLeave}
           >
-            {services.map((item, index) => {
-              const isSelected = index === activeService;
-              return (
-                <button
-                  key={item.number}
-                  type="button"
-                  className={`${styles.stripItem} ${isSelected ? styles.isActive : ""}`}
-                  onClick={() => setActiveService(index)}
-                  onMouseEnter={() => setActiveService(index)}
-                  aria-pressed={isSelected}
-                >
-                  <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
-                  <span>{item.shortName}</span>
-                  <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
-                </button>
-              );
-            })}
+            {services.map((item, index) => (
+              <ServiceStripButton
+                key={item.number}
+                depart={depart}
+                index={index}
+                enabled={animationsEnabled}
+                selected={index === activeService}
+                label={item.shortName}
+                onSelect={() => setActiveService(index)}
+              />
+            ))}
           </motion.nav>
-          </motion.div>
 
           {/* Bottom: Mobile Media Card + Right Massive Typography Headline */}
           <div className={styles.bottomSection}>
@@ -509,9 +543,8 @@ export function OurServices({
 
             {/* Right: Massive Typography Poster Headline & Interaction Target */}
             <div className={styles.rightHeadlineCol}>
-              <motion.div
+              <div
                 className={styles.headlineTarget}
-                style={animationsEnabled ? headlineExit : undefined}
                 onMouseEnter={handleTextEnter}
                 onMouseLeave={handleTextLeave}
               >
@@ -523,6 +556,8 @@ export function OurServices({
                   {/* Line 1: ®WHAT WE DO. (0.10 -> 0.19 -> 0.26) */}
                   <HeadlineRow
                     scrollYProgress={smoothProgress}
+                    depart={depart}
+                    lineIndex={0}
                     range={[0.10, 0.19, 0.26]}
                     enabled={animationsEnabled}
                   >
@@ -532,6 +567,8 @@ export function OurServices({
                   {/* Line 2: FOCUS BUILD WHAT MATTERS. (0.26 -> 0.35 -> 0.42) */}
                   <HeadlineRow
                     scrollYProgress={smoothProgress}
+                    depart={depart}
+                    lineIndex={1}
                     range={[0.26, 0.35, 0.42]}
                     enabled={animationsEnabled}
                   >
@@ -541,6 +578,8 @@ export function OurServices({
                   {/* Line 3: Among THE STARS (0.42 -> 0.51 -> 0.58) */}
                   <HeadlineRow
                     scrollYProgress={smoothProgress}
+                    depart={depart}
+                    lineIndex={2}
                     range={[0.42, 0.51, 0.58]}
                     enabled={animationsEnabled}
                   >
@@ -550,85 +589,95 @@ export function OurServices({
                   {/* Line 4: AI & DIGITAL, DONE RIGHT. (0.58 -> 0.67 -> 0.74) */}
                   <HeadlineRow
                     scrollYProgress={smoothProgress}
+                    depart={depart}
+                    lineIndex={3}
                     range={[0.58, 0.67, 0.74]}
                     enabled={animationsEnabled}
                   >
                     AI &amp; DIGITAL, DONE RIGHT.
                   </HeadlineRow>
                 </Heading>
-              </motion.div>
+              </div>
 
               {/* Bottom Socials & Philosophy Statement (0.74 -> 0.88) */}
-              <motion.div className={styles.bottomEnd} style={animationsEnabled ? closingExit : undefined}>
+              <div className={styles.bottomEnd}>
                 <div
                   className={styles.socialGroup}
                   aria-label="Social links"
                   onMouseEnter={handleBracketEnter}
                   onMouseLeave={handleBracketLeave}
                 >
-                  <motion.a
-                    href="https://facebook.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.socialBracketLink}
-                    style={{
-                      opacity: animationsEnabled ? fbOpacity : 1,
-                      y: animationsEnabled ? fbY : 0,
-                    }}
-                    aria-label="Facebook (opens in new tab)"
-                  >
-                    <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
-                    <span>FACEBOOK</span>
-                    <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
-                  </motion.a>
+                  <motion.span className={styles.departItem} style={animationsEnabled ? facebookExit : undefined}>
+                    <motion.a
+                      href="https://facebook.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.socialBracketLink}
+                      style={{
+                        opacity: animationsEnabled ? fbOpacity : 1,
+                        y: animationsEnabled ? fbY : 0,
+                      }}
+                      aria-label="Facebook (opens in new tab)"
+                    >
+                      <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+                      <span>FACEBOOK</span>
+                      <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+                    </motion.a>
+                  </motion.span>
 
-                  <motion.a
-                    href="https://xiaohongshu.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.socialBracketLink}
-                    style={{
-                      opacity: animationsEnabled ? rnOpacity : 1,
-                      y: animationsEnabled ? rnY : 0,
-                    }}
-                    aria-label="Rednote (opens in new tab)"
-                  >
-                    <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
-                    <span>REDNOTE</span>
-                    <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
-                  </motion.a>
+                  <motion.span className={styles.departItem} style={animationsEnabled ? rednoteExit : undefined}>
+                    <motion.a
+                      href="https://xiaohongshu.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.socialBracketLink}
+                      style={{
+                        opacity: animationsEnabled ? rnOpacity : 1,
+                        y: animationsEnabled ? rnY : 0,
+                      }}
+                      aria-label="Rednote (opens in new tab)"
+                    >
+                      <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+                      <span>REDNOTE</span>
+                      <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+                    </motion.a>
+                  </motion.span>
 
-                  <motion.a
-                    href="https://instagram.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.socialBracketLink}
-                    style={{
-                      opacity: animationsEnabled ? igOpacity : 1,
-                      y: animationsEnabled ? igY : 0,
-                    }}
-                    aria-label="Instagram (opens in new tab)"
-                  >
-                    <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
-                    <span>IG</span>
-                    <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
-                  </motion.a>
+                  <motion.span className={styles.departItem} style={animationsEnabled ? instagramExit : undefined}>
+                    <motion.a
+                      href="https://instagram.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.socialBracketLink}
+                      style={{
+                        opacity: animationsEnabled ? igOpacity : 1,
+                        y: animationsEnabled ? igY : 0,
+                      }}
+                      aria-label="Instagram (opens in new tab)"
+                    >
+                      <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+                      <span>IG</span>
+                      <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+                    </motion.a>
+                  </motion.span>
                 </div>
 
-                <motion.p
-                  className={styles.endParagraph}
-                  style={{
-                    opacity: animationsEnabled ? quoteOpacity : 1,
-                    y: animationsEnabled ? quoteY : 0,
-                  }}
-                  onMouseEnter={handleTextEnter}
-                  onMouseLeave={handleTextLeave}
-                >
-                  <span className={styles.dash}>— </span>
-                  The first step is to establish that something is possible then probability will occur.{" "}
-                  <strong className={styles.endHighlight}>From idea to execution.</strong>
-                </motion.p>
-              </motion.div>
+                <motion.div className={styles.departLine} style={animationsEnabled ? quoteExit : undefined}>
+                  <motion.p
+                    className={styles.endParagraph}
+                    style={{
+                      opacity: animationsEnabled ? quoteOpacity : 1,
+                      y: animationsEnabled ? quoteY : 0,
+                    }}
+                    onMouseEnter={handleTextEnter}
+                    onMouseLeave={handleTextLeave}
+                  >
+                    <span className={styles.dash}>— </span>
+                    The first step is to establish that something is possible then probability will occur.{" "}
+                    <strong className={styles.endHighlight}>From idea to execution.</strong>
+                  </motion.p>
+                </motion.div>
+              </div>
             </div>
           </div>
         </div>

@@ -7,10 +7,10 @@ import { SelectedWork } from "./selected-work";
 import { useCinematicMotion } from "./ui/use-cinematic-motion";
 import styles from "./home-stage.module.css";
 
-/** Services plays for 420vh, leaves over 200vh, and the next page begins 64vh before that exit finishes. */
+/** Services plays for 420vh, leaves over 200vh, and the next page begins 160vh before that exit finishes. */
 const CONTENT_SCROLL = 420;
 const EXIT_SCROLL = 200;
-const REVEAL_LEAD = 64;
+const REVEAL_LEAD = 160;
 const TOTAL_SCROLL = CONTENT_SCROLL + EXIT_SCROLL + 136;
 const CONTENT_END = CONTENT_SCROLL / TOTAL_SCROLL;
 const EXIT_END = (CONTENT_SCROLL + EXIT_SCROLL) / TOTAL_SCROLL;
