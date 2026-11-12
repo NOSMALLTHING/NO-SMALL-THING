@@ -6,9 +6,12 @@ import { Arrow } from "./ui/arrow";
 import { ProjectPreview } from "./project-preview";
 import { ProjectReel } from "./project-reel";
 import { EditorialHeading } from "./ui/editorial-heading";
+import { SelectedWorkIndex } from "./selected-work-index";
 import styles from "./selected-work.module.css";
 
 export function SelectedWork({ standalone = false, immediateHeading = false }: { standalone?: boolean; immediateHeading?: boolean }) {
+  if (!standalone) return <SelectedWorkIndex />;
+
   return <section id="selected-work" className={styles.section} aria-labelledby="selected-work-title">
     <Container>
       <SectionLabel>IDEAS, EXPLORED.</SectionLabel>
