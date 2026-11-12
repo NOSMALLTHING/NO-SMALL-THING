@@ -12,6 +12,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import styles from "./our-services.module.css";
+import { ScrollMedia } from "./mobile/scroll-media";
 
 const services = [
   {
@@ -268,7 +269,7 @@ export function OurServices({
   // progress so the horizontal exit can share the same track.
   const { scrollYProgress } = useScroll({
     target: scrollTrackRef,
-    offset: ["start start", "end end"],
+    offset: isDesktop ? ["start start", "end end"] : ["start end", "end start"],
   });
 
   const sprungProgress = useSpring(scrollYProgress, {
@@ -385,7 +386,9 @@ export function OurServices({
     };
   }, [isDesktop]);
 
-  const animationsEnabled = isMounted && isDesktop && !prefersReduced;
+  // Keep the same scroll choreography on touch screens. Pointer-following
+  // media remains desktop-only, while the inline video is the touch equivalent.
+  const animationsEnabled = isMounted && !prefersReduced;
 
   // The service bar eases open instead of cutting across.
   const stripClipPath = useTransform(smoothProgress, (value) => {
@@ -532,9 +535,9 @@ export function OurServices({
           {/* Bottom: Mobile Media Card + Right Massive Typography Headline */}
           <div className={styles.bottomSection}>
             {/* Mobile inline video fallback */}
-            <div className={styles.mobileVideoCard}>
+            <ScrollMedia className={styles.mobileVideoCard}>
               {renderMediaFrame("mobile-media")}
-            </div>
+            </ScrollMedia>
 
             {/* Right: Massive Typography Poster Headline & Interaction Target */}
             <div className={styles.rightHeadlineCol}>

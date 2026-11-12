@@ -5,6 +5,7 @@ import { motion, useMotionValueEvent, useScroll, useTransform } from "motion/rea
 import { OurServices } from "./our-services";
 import { SelectedWork } from "./selected-work";
 import { useCinematicMotion } from "./ui/use-cinematic-motion";
+import { MobileScrollReveal } from "./mobile/scroll-reveal";
 import styles from "./home-stage.module.css";
 
 /** Services plays for 420vh, then leaves over 120vh. The next page covers across the last 110vh of that handoff. */
@@ -95,12 +96,17 @@ export function HomeStage() {
 
   return (
     <>
-      <OurServices trackRef={trackRef} progress={contentProgress} exitProgress={exitProgress} handoff />
+      <OurServices
+        trackRef={trackRef}
+        progress={enabled ? contentProgress : undefined}
+        exitProgress={enabled ? exitProgress : undefined}
+        handoff={enabled}
+      />
       <div ref={anchorRef} className={styles.workAnchor}>
         <div className={pinned ? styles.workViewport : undefined}>
           <motion.div ref={panelRef} className={styles.workPlane} style={{ x: pinned && enabled ? workX : 0 }}>
             {pinned ? <motion.div className={styles.revealEdge} style={{ opacity: edgeOpacity }} /> : null}
-            <SelectedWork immediateHeading />
+            <MobileScrollReveal><SelectedWork immediateHeading /></MobileScrollReveal>
           </motion.div>
         </div>
       </div>

@@ -634,6 +634,10 @@
     width: 100%;
     font-size: 1rem;
   }
+  .topSection {
+    padding-right: 0;
+    margin-bottom: 1.25rem;
+  }
   .bottomSection {
     flex-direction: column-reverse;
     align-items: flex-start;
@@ -651,6 +655,7 @@
     align-items: flex-start;
     text-align: left;
     font-size: clamp(2rem, 8.5vw, 3.4rem);
+    line-height: 0.98;
   }
   .headlineRow {
     display: block;
@@ -675,11 +680,23 @@
     flex-wrap: wrap;
     gap: 0.5rem;
   }
+  .linksStrip {
+    justify-content: flex-start;
+    gap: 1.25rem;
+    padding-inline: 1rem;
+    scroll-padding-inline: 1rem;
+    overscroll-behavior-inline: contain;
+  }
+  .stripItem {
+    min-height: 40px;
+    flex: 0 0 auto;
+  }
+  .mobileVideoCard {
+    max-width: none;
+    margin-top: 0.5rem;
+  }
   .endParagraph {
     text-align: left;
     max-width: 100%;
-  }
-  .blackBlock {
-    display: none;
   }
 }

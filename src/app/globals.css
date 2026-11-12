@@ -1145,6 +1145,16 @@ a:focus-visible .scene-reveal {
     --type-display: clamp(3.5rem, 12.7vw, 6rem);
   }
 
+  .site-header.is-light {
+    background: linear-gradient(180deg, rgb(240 236 231 / 98%) 0%, rgb(240 236 231 / 92%) 76%, rgb(240 236 231 / 0%) 100%) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  html {
+    scroll-padding-top: calc(var(--header-height) + 0.75rem);
+  }
+
   .editorial-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
