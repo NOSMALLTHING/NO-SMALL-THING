@@ -36,7 +36,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
         <section className={styles.chapter} aria-labelledby="technology-title"><h2 id="technology-title"><span className="eyebrow">03</span>Technology</h2><div><p className={`eyebrow ${styles.stackLabel}`}>{project.caseStudy.technology.status === "proposed" ? "PROPOSED STACK" : "IMPLEMENTED STACK"}</p><ul className={styles.stack}>{project.caseStudy.technology.stack.map(item => <li key={item}>{item}</li>)}</ul><p>{project.caseStudy.technology.note}</p></div></section>
         <section className={styles.chapter} aria-labelledby="outcome-title"><h2 id="outcome-title"><span className="eyebrow">04</span>Outcome</h2><p>{project.caseStudy.outcome}</p></section>
       </div>
-      <div className={styles.navigation}><TextLink href="/work">All selected work</TextLink><TextLink href="/contact">Discuss a project</TextLink></div>
+      <div className={styles.navigation}><TextLink href="/#selected-work">All selected work</TextLink><TextLink href="/contact">Discuss a project</TextLink></div>
       {projects.length > 1 && <div className={styles.next}><SectionLabel>NEXT STUDY</SectionLabel><TextLink href={`/work/${nextProject.slug}`}>{nextProject.title}</TextLink></div>}
     </Container>
   </article>;
