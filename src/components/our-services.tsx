@@ -52,6 +52,28 @@ const services = [
   },
 ] as const;
 
+const desktopHeadlineRanges = [
+  [0.10, 0.22, 0.32],
+  [0.26, 0.38, 0.48],
+  [0.42, 0.54, 0.64],
+  [0.56, 0.70, 0.82],
+] as const;
+
+// Natural mobile scrolling has a shorter, unpinned viewport. Finish the
+// editorial reveal before the services section fills the screen.
+const compactHeadlineRanges = [
+  [0.02, 0.08, 0.14],
+  [0.10, 0.17, 0.24],
+  [0.19, 0.26, 0.33],
+  [0.28, 0.35, 0.42],
+] as const;
+
+const mobileHeadlineRanges = [
+  [0.42, 0.51, 0.60],
+  [0.50, 0.59, 0.68],
+  [0.58, 0.67, 0.76],
+] as const;
+
 function segment(value: number, start: number, end: number) {
   if (value <= start) return 0;
   if (value >= end) return 1;
@@ -82,6 +104,7 @@ interface NarrativeLineProps {
   lineIndex: number;
   scrollYProgress: MotionValue<number>;
   enabled: boolean;
+  fadeOutRange?: readonly [number, number];
 }
 
 function NarrativeLine({
@@ -90,13 +113,18 @@ function NarrativeLine({
   scrollYProgress,
   depart,
   enabled,
+  fadeOutRange,
 }: NarrativeLineProps & { depart: MotionValue<number> }) {
   const e0 = 0.01 + lineIndex * 0.014;
   const e1 = e0 + 0.064;
   const exit = useDepart(depart, 0.02 + lineIndex * 0.05, 0.5 + lineIndex * 0.05, 108);
 
   const y = useTransform(scrollYProgress, (value) => `${(1 - silk(segment(value, e0, e1))) * 100}%`);
-  const opacity = useTransform(scrollYProgress, (value) => silk(segment(value, e0, e1)));
+  const opacity = useTransform(scrollYProgress, (value) => {
+    const entrance = silk(segment(value, e0, e1));
+    if (!fadeOutRange) return entrance;
+    return entrance * (1 - silk(segment(value, fadeOutRange[0], fadeOutRange[1])));
+  });
 
   const line = enabled ? (
     <motion.span className={styles.narrativeLineInner} style={{ y, opacity }}>
@@ -116,7 +144,7 @@ function NarrativeLine({
 interface HeadlineRowProps {
   children: React.ReactNode;
   scrollYProgress: MotionValue<number>;
-  range: [number, number, number]; // [enterStart, coverComplete, exitComplete]
+  range: readonly [number, number, number]; // [enterStart, coverComplete, exitComplete]
   enabled: boolean;
 }
 
@@ -230,6 +258,7 @@ export function OurServices({
   const [isOverBracket, setIsOverBracket] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isPhone, setIsPhone] = useState(false);
 
   const textHoverCounter = useRef(0);
   const bracketHoverCounter = useRef(0);
@@ -269,7 +298,7 @@ export function OurServices({
   // progress so the horizontal exit can share the same track.
   const { scrollYProgress } = useScroll({
     target: scrollTrackRef,
-    offset: isDesktop ? ["start start", "end end"] : ["start end", "end start"],
+    offset: isDesktop || handoff || isPhone ? ["start start", "end end"] : ["start end", "end start"],
   });
 
   const sprungProgress = useSpring(scrollYProgress, {
@@ -278,6 +307,8 @@ export function OurServices({
     mass: 0.8,
     restDelta: 0.0005,
   });
+  // HomeStage supplies a track-aware progress value; standalone pages fall
+  // back to this section's local scroll range.
   const smoothProgress = progress ?? sprungProgress;
 
   const Heading = standalone ? "h1" : "h2";
@@ -288,6 +319,7 @@ export function OurServices({
 
     const checkDesktop = () => {
       setIsDesktop(window.innerWidth >= 1024);
+      setIsPhone(window.innerWidth <= 767);
     };
 
     checkDesktop();
@@ -411,7 +443,7 @@ export function OurServices({
   const quoteY = useTransform(smoothProgress, (value) => 12 * (1 - silk(segment(value, 0.86, 0.96))));
 
   const idleExit = useMotionValue(0);
-  const depart = exitProgress ?? idleExit;
+  const depart = (isDesktop ? exitProgress : undefined) ?? idleExit;
   useMotionValueEvent(depart, "change", (value) => {
     videoDepartRef.current = value;
   });
@@ -503,6 +535,21 @@ export function OurServices({
                 </NarrativeLine>
               </div>
             </div>
+            <div className={styles.mobileNarrative}>
+              <div className={styles.narrativeLead}>
+                <NarrativeLine lineIndex={0} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled} fadeOutRange={[0.54, 0.67]}>
+                  Three minds. One ambition.
+                </NarrativeLine>
+              </div>
+              <div className={styles.narrativeBody}>
+                <NarrativeLine lineIndex={2} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled} fadeOutRange={[0.60, 0.73]}>
+                  Purposeful AI, software, UI/UX and web experiences.
+                </NarrativeLine>
+                <NarrativeLine lineIndex={3} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled} fadeOutRange={[0.66, 0.79]}>
+                  Thoughtful design. Hands-on delivery.
+                </NarrativeLine>
+              </div>
+            </div>
           </div>
 
           {/* Middle: Full-bleed Horizontal Service Links Strip with left-to-right entrance */}
@@ -549,14 +596,17 @@ export function OurServices({
                 <Heading
                   id="services-title"
                   className={styles.headline}
-                  aria-label="WHAT WE DO. FOCUS BUILD WHAT MATTERS. Among THE STARS. AI & DIGITAL, DONE RIGHT."
+                  aria-label={isDesktop
+                    ? "WHAT WE DO. FOCUS BUILD WHAT MATTERS. AMONG THE STARS. AI & DIGITAL, DONE RIGHT."
+                    : "WHAT WE DO. BUILD WHAT MATTERS. AI & DIGITAL."}
                 >
+                  <div className={styles.headlineDesktop}>
                   {/* Line 1: ®WHAT WE DO. (0.10 -> 0.19 -> 0.26) */}
                   <HeadlineRow
                     scrollYProgress={smoothProgress}
                     depart={depart}
                     lineIndex={0}
-                    range={[0.10, 0.22, 0.32]}
+                    range={isDesktop ? desktopHeadlineRanges[0] : compactHeadlineRanges[0]}
                     enabled={animationsEnabled}
                   >
                     <span className={styles.regMark} aria-hidden="true">®</span>WHAT WE DO.
@@ -567,7 +617,7 @@ export function OurServices({
                     scrollYProgress={smoothProgress}
                     depart={depart}
                     lineIndex={1}
-                    range={[0.26, 0.38, 0.48]}
+                    range={isDesktop ? desktopHeadlineRanges[1] : compactHeadlineRanges[1]}
                     enabled={animationsEnabled}
                   >
                     FOCUS BUILD WHAT MATTERS.
@@ -578,7 +628,7 @@ export function OurServices({
                     scrollYProgress={smoothProgress}
                     depart={depart}
                     lineIndex={2}
-                    range={[0.42, 0.54, 0.64]}
+                    range={isDesktop ? desktopHeadlineRanges[2] : compactHeadlineRanges[2]}
                     enabled={animationsEnabled}
                   >
                     <span className={styles.serifWord}>Among</span> THE STARS
@@ -589,11 +639,41 @@ export function OurServices({
                     scrollYProgress={smoothProgress}
                     depart={depart}
                     lineIndex={3}
-                    range={[0.56, 0.70, 0.82]}
+                    range={isDesktop ? desktopHeadlineRanges[3] : compactHeadlineRanges[3]}
                     enabled={animationsEnabled}
                   >
                     AI &amp; DIGITAL, DONE RIGHT.
                   </HeadlineRow>
+                  </div>
+                  <div className={styles.headlineMobile}>
+                    <HeadlineRow
+                      scrollYProgress={smoothProgress}
+                      depart={depart}
+                      lineIndex={0}
+                      range={mobileHeadlineRanges[0]}
+                      enabled={animationsEnabled}
+                    >
+                      <span className={styles.regMark} aria-hidden="true">®</span>WHAT WE DO.
+                    </HeadlineRow>
+                    <HeadlineRow
+                      scrollYProgress={smoothProgress}
+                      depart={depart}
+                      lineIndex={1}
+                      range={mobileHeadlineRanges[1]}
+                      enabled={animationsEnabled}
+                    >
+                      BUILD WHAT MATTERS.
+                    </HeadlineRow>
+                    <HeadlineRow
+                      scrollYProgress={smoothProgress}
+                      depart={depart}
+                      lineIndex={2}
+                      range={mobileHeadlineRanges[2]}
+                      enabled={animationsEnabled}
+                    >
+                      AI &amp; DIGITAL.
+                    </HeadlineRow>
+                  </div>
                 </Heading>
               </div>
 

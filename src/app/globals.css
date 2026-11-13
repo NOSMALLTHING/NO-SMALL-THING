@@ -2042,6 +2042,67 @@ a:focus-visible .scene-reveal {
     grid-template-columns: 1fr;
     gap: 3rem;
   }
+
+  /* Keep the home masthead compact and balanced on narrow screens. */
+  .site-header.is-home .header-bar {
+    top: max(8px, env(safe-area-inset-top));
+    height: 36px;
+  }
+
+  .site-header.is-home .header-bar .brand-name {
+    display: none;
+  }
+
+  .site-header.is-home .header-bar .menu {
+    inset: 0 auto auto 50%;
+    transform: translateX(-50%);
+    width: 72px;
+    height: 34px;
+    min-height: 34px;
+    gap: 3px;
+    padding: 0 8px 1px;
+    font-size: 10px;
+    display: inline-flex;
+    pointer-events: auto;
+  }
+
+  .site-header.is-home .header-bar .header-right.actions {
+    position: absolute;
+    inset: 0;
+    display: block;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .site-header.is-home .header-bar .header-right.actions .round-pill,
+  .site-header.is-home .header-bar .header-right.actions .brief-pill {
+    position: absolute;
+    top: 0;
+    bottom: auto;
+    height: 34px;
+    min-height: 34px;
+    padding: 0 6px;
+    font-size: 10px;
+    pointer-events: auto;
+  }
+
+  .site-header.is-home .header-bar .header-right.actions .round-pill {
+    display: inline-flex;
+    left: calc(18vw + 8px);
+    right: auto;
+    width: 36px;
+  }
+
+  .site-header.is-home .header-bar .header-right.actions .brief-pill {
+    left: auto;
+    right: 0;
+    width: auto;
+    min-width: 70px;
+  }
+
+  .site-header.is-home .menu-drawer {
+    transform-origin: 50% 0%;
+  }
 }
 
 /* Responsive header formatting */
