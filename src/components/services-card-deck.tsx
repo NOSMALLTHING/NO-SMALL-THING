@@ -14,6 +14,23 @@ interface ProjectCardData {
   videoSrc?: string;
 }
 
+interface CardPhysicsState {
+  x: number;
+  y: number;
+  z: number;
+  scale: number;
+  rotateX: number;
+  rotateY: number;
+  rotateZ: number;
+}
+
+interface CardMetric {
+  cardTop: number;
+  normalTop: number;
+  cardWidth: number;
+  cardHeight: number;
+}
+
 const PROJECT_CARDS: ProjectCardData[] = [
   {
     id: "project-1",
@@ -71,10 +88,22 @@ const PROJECT_CARDS: ProjectCardData[] = [
   },
 ];
 
-const clamp = (val: number, min: number, max: number) => Math.min(max, Math.max(min, val));
-const lerp = (start: number, end: number, progress: number) => start + (end - start) * progress;
-const easeInOut = (t: number) => 0.5 * (1 - Math.cos(Math.PI * t));
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+// Exact Emblematica mathematical easings and interpolation functions
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const lerp = (from: number, to: number, amount: number) => from + (to - from) * amount;
+const easeOutCubic = (value: number) => {
+  const t = clamp(value, 0, 1);
+  return 1 - Math.pow(1 - t, 3);
+};
+// Smoothstep curve used by Emblematica side entry
+const easeInOut = (value: number) => {
+  const t = clamp(value, 0, 1);
+  return t * t * (3 - 2 * t);
+};
+const easeInOutQuint = (value: number) => {
+  const t = clamp(value, 0, 1);
+  return t < 0.5 ? 16 * Math.pow(t, 5) : 1 - Math.pow(-2 * t + 2, 5) / 2;
+};
 
 export function ServicesCardDeck() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -83,88 +112,237 @@ export function ServicesCardDeck() {
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const reducedMotion = useReducedMotion();
 
-  const updateDeck = useCallback(() => {
+  // Persistent physics states per card for continuous lerp inertia
+  const cardStates = useRef<CardPhysicsState[]>([
+    { x: 0, y: 0, z: 0, scale: 1, rotateX: 0, rotateY: 0, rotateZ: 0 },
+    { x: 0, y: 0, z: 0, scale: 1, rotateX: 0, rotateY: 0, rotateZ: 0 },
+    { x: 0, y: 0, z: 0, scale: 1, rotateX: 0, rotateY: 0, rotateZ: 0 },
+    { x: 0, y: 0, z: 0, scale: 1, rotateX: 0, rotateY: 0, rotateZ: 0 },
+    { x: 0, y: 0, z: 0, scale: 1, rotateX: 0, rotateY: 0, rotateZ: 0 },
+  ]);
+
+  const metricsRef = useRef<CardMetric[]>([]);
+  const geometryRef = useRef({ docTop: 0, boxHeight: 0 });
+  const unitPxRef = useRef(1);
+
+  // Sync geometry and card slot metrics without forced reflow inside render loop
+  const syncMetrics = useCallback(() => {
     const section = sectionRef.current;
-    if (!section || reducedMotion) return;
+    if (!section) return;
 
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-    const vw = window.innerWidth || document.documentElement.clientWidth;
-    const isMobile = vw <= 900;
-    const sectionRect = section.getBoundingClientRect();
+    const sy = window.scrollY || window.pageYOffset || 0;
+    const r = section.getBoundingClientRect();
+    geometryRef.current = {
+      docTop: r.top + sy,
+      boxHeight: r.height,
+    };
 
-    // Skip if section is far offscreen
-    if (sectionRect.bottom < -vh * 0.5 || sectionRect.top > vh * 1.5) return;
+    const probe = document.createElement("div");
+    probe.style.cssText =
+      "position:absolute;width:calc(100*var(--emb-u));height:0;visibility:hidden;pointer-events:none";
+    document.body.appendChild(probe);
+    const u = probe.getBoundingClientRect().width / 100 || 1;
+    probe.remove();
+    unitPxRef.current = u;
 
-    const cards = cardRefs.current.filter(Boolean) as HTMLElement[];
     const slots = slotRefs.current.filter(Boolean) as HTMLDivElement[];
-    if (!cards.length) return;
+    const cards = cardRefs.current.filter(Boolean) as HTMLElement[];
 
-    const enterRange = vh * (isMobile ? 0.46 : 0.78);
-    const unitPx = isMobile ? Math.min(vw * 0.0023, 0.92) : Math.min(vw * 0.0006944, vh * 0.0013158);
-
-    // Kicker exit translation
-    if (kickerRef.current) {
-      const stackTop = Math.min(...cards.map((c) => c.getBoundingClientRect().top));
-      const approach = Math.max(0, 170 * unitPx - stackTop);
-      const kickerExit = clamp(approach / Math.max(1, 130 * unitPx), 0, 1);
-      section.style.setProperty("--services-kicker-exit", kickerExit.toFixed(3));
-    }
-
-    // Measure card progression and depth
-    const cardData = slots.map((slot) => {
-      const slotRect = slot.getBoundingClientRect();
-      const cardTop = parseFloat(window.getComputedStyle(slot).top) || 0;
-      const distance = slotRect.top - cardTop;
-      const progress = clamp(1 - distance / enterRange, 0, 1);
-      return { progress, top: slotRect.top, cardTop };
+    metricsRef.current = slots.map((slot, index) => {
+      const card = cards[index] || slot;
+      return {
+        cardTop: parseFloat(window.getComputedStyle(slot).top) || 228 * u,
+        normalTop: slot.offsetTop,
+        cardWidth: card.offsetWidth,
+        cardHeight: card.offsetHeight,
+      };
     });
+  }, []);
 
-    cards.forEach((card, index) => {
-      const { progress, cardTop } = cardData[index];
+  // Update loop reproducing 1:1 Emblematica updateServiceCards physics and transforms
+  const updateServiceCards = useCallback(
+    (instant = false) => {
+      const section = sectionRef.current;
+      const cards = cardRefs.current.filter(Boolean) as HTMLElement[];
+      const slots = slotRefs.current.filter(Boolean) as HTMLDivElement[];
+      if (!section || !cards.length) return;
 
-      if (isMobile) {
-        card.style.transform = "";
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+      const isMobile = window.matchMedia("(max-width: 900px)").matches;
+      const serviceSideEntryEnabled = true;
+
+      // In case metrics are uninitialized
+      if (!geometryRef.current.boxHeight) {
+        syncMetrics();
+      }
+
+      const { docTop: servicesDocTop, boxHeight: servicesBoxHeight } = geometryRef.current;
+      const sy = window.scrollY || window.pageYOffset || 0;
+      const servicesTop = servicesDocTop - sy;
+
+      // Emblematica runway check: skip whole update when section is well outside viewport
+      if (
+        servicesTop > viewportHeight * 1.5 ||
+        servicesTop + servicesBoxHeight < -viewportHeight * 0.5
+      ) {
         return;
       }
 
-      // Calculate depth based on subsequent cards stacking on top
-      const depth = clamp(
-        cardData.slice(index + 1).reduce((sum, item, laterIndex) => {
-          const nextTop = item.top;
-          const overlapProgress = clamp(
-            (cardTop + 150 * unitPx - nextTop) / Math.max(1, 180 * unitPx),
-            0,
-            1
-          );
-          const weight = Math.max(0.36, 1 - laterIndex * 0.22);
-          return sum + easeOutCubic(overlapProgress) * weight;
-        }, 0),
+      const unitPx = unitPxRef.current;
+      const enterRange = viewportHeight * (serviceSideEntryEnabled && !isMobile ? 0.78 : 0.46);
+      const sectionScroll = -servicesTop;
+      const sectionProgress = clamp(
+        sectionScroll / Math.max(1, servicesBoxHeight - viewportHeight * 0.82),
         0,
-        2.7
+        1
       );
+      const groupCruise = easeInOutQuint(clamp((sectionProgress - 0.54) / 0.28, 0, 1));
+      const groupRelease = easeInOutQuint(clamp((sectionProgress - 0.88) / 0.12, 0, 1));
+      const groupShiftY = lerp(0, -14, groupCruise) + lerp(0, -24, groupRelease);
+      section.style.setProperty("--services-release-y", `${groupShiftY.toFixed(2)}px`);
 
-      const sideDirection = index % 2 === 0 ? -1 : 1;
-      const enterProgress = easeInOut(progress);
-      const sideEntryOffset = vw * 0.52 + card.offsetWidth * 0.58;
-      const sideEntryRest = 1 - enterProgress;
+      // Kicker exit follows visible stack
+      if (cards.length && isMobile) {
+        const frontCard = cards[cards.length - 1];
+        const lockedTop = metricsRef.current[cards.length - 1]?.cardTop || 0;
+        const scrolledUp = Math.max(0, lockedTop - frontCard.getBoundingClientRect().top);
+        const kickerExit = clamp(scrolledUp / Math.max(1, 200 * unitPx), 0, 1);
+        section.style.setProperty("--services-kicker-exit", kickerExit.toFixed(3));
+      } else if (cards.length) {
+        const stackTop = Math.min(...cards.map((c) => c.getBoundingClientRect().top));
+        const approach = Math.max(0, 170 * unitPx - stackTop);
+        const kickerExit = clamp(approach / Math.max(1, 130 * unitPx), 0, 1);
+        section.style.setProperty("--services-kicker-exit", kickerExit.toFixed(3));
+      } else {
+        section.style.setProperty("--services-kicker-exit", "0");
+      }
 
-      const targetX = sideDirection * sideEntryOffset * sideEntryRest;
-      const targetRotateZ = sideDirection * lerp(8.5, 0, enterProgress);
-      const targetRotateY = sideDirection * lerp(-7, 0, enterProgress);
-      const recedeY = lerp(74, 0, enterProgress) - depth * 16;
-      const recedeZ = -depth * 28;
-      const scale = 1 - depth * 0.018;
+      const desktopTimeline = !isMobile;
+      const firstNormalTop = metricsRef.current[0]?.normalTop || 0;
+      const introDelay = viewportHeight * (serviceSideEntryEnabled ? 0.14 : 0.08);
 
-      card.style.transform = `perspective(1800px) translate3d(${targetX.toFixed(
-        2
-      )}px, ${recedeY.toFixed(2)}px, ${recedeZ.toFixed(2)}px) rotateY(${targetRotateY.toFixed(
-        2
-      )}deg) rotateZ(${targetRotateZ.toFixed(2)}deg) scale(${scale.toFixed(4)})`;
+      const cardData = cards.map((card, index) => {
+        const metrics = metricsRef.current[index] || {
+          cardTop: parseFloat(window.getComputedStyle(card).top) || 0,
+          normalTop: card.offsetTop,
+          cardWidth: card.offsetWidth,
+          cardHeight: card.offsetHeight,
+        };
+        const distance = metrics.normalTop - sectionScroll - metrics.cardTop;
+        const entryTrigger = introDelay + (metrics.normalTop - firstNormalTop);
+        const progress = desktopTimeline
+          ? clamp((sectionScroll - entryTrigger) / enterRange, 0, 1)
+          : clamp(1 - distance / enterRange, 0, 1);
 
-      card.classList.toggle("is-active", progress > 0.04);
-    });
-  }, [reducedMotion]);
+        return { progress };
+      });
 
+      // Batch read bounding rects before mutating styles to prevent forced reflows
+      const cardTops = cards.map((c) => c.getBoundingClientRect().top);
+
+      cards.forEach((card, index) => {
+        const state = cardStates.current[index];
+        const metrics = metricsRef.current[index] || {
+          cardTop: 0,
+          normalTop: card.offsetTop,
+          cardWidth: card.offsetWidth,
+          cardHeight: card.offsetHeight,
+        };
+        const ownProgress = cardData[index].progress;
+        const flatStack = isMobile;
+
+        const depth = clamp(
+          cardData.slice(index + 1).reduce((sum, item, laterIndex) => {
+            const nextIndex = index + laterIndex + 1;
+            const nextTop = cardTops[nextIndex] ?? Infinity;
+            const overlapProgress = flatStack
+              ? 0
+              : clamp(
+                  (metrics.cardTop + 150 * unitPx - nextTop) / Math.max(1, 180 * unitPx),
+                  0,
+                  1
+                );
+            const weight = Math.max(0.36, 1 - laterIndex * 0.22);
+            const layeredProgress = flatStack
+              ? easeInOutQuint(clamp((item.progress - 0.04) / 0.82, 0, 1))
+              : Math.max(
+                  easeOutCubic(clamp(item.progress / 0.96, 0, 1)),
+                  easeOutCubic(overlapProgress)
+                );
+            return sum + layeredProgress * weight;
+          }, 0),
+          0,
+          2.7
+        );
+
+        const sideEntry = serviceSideEntryEnabled && !flatStack;
+        const cardSlot = slots[index];
+        if (cardSlot) cardSlot.style.transform = "";
+
+        const enterProgress = sideEntry ? easeInOut(ownProgress) : easeOutCubic(ownProgress);
+        const readLift = lerp(0, -1, groupCruise) + lerp(0, -1, groupRelease);
+
+        const sideDirection = index % 2 === 0 ? -1 : 1;
+        const cardWidth = metrics.cardWidth || card.offsetWidth;
+        const cardHeight = metrics.cardHeight || card.offsetHeight;
+        const sideEntryOffset = viewportWidth * 0.52 + cardWidth * 0.58;
+        const sideEntryRest = 1 - enterProgress;
+
+        const targetX = sideEntry ? sideDirection * sideEntryOffset * sideEntryRest : 0;
+        const targetRotateZ = sideEntry ? sideDirection * lerp(8.5, 0, enterProgress) : 0;
+        const targetRotateY = sideEntry ? sideDirection * lerp(-7, 0, enterProgress) : 0;
+        const bottomEntryOffset = Math.max(viewportHeight * 0.72, cardHeight * 1.15);
+        const recedeY = flatStack
+          ? 0
+          : lerp(sideEntry ? 74 : bottomEntryOffset, 0, enterProgress) - depth * 16 + readLift;
+        const recedeZ = flatStack ? 0 : -depth * 28;
+        const scale = flatStack ? 1 : 1 - depth * 0.018;
+        const active = ownProgress > 0.04;
+
+        card.classList.toggle("is-active", active);
+        card.classList.toggle("is-next", ownProgress < 0.08);
+        card.classList.toggle("is-stacked", depth > 0.01);
+        card.style.zIndex = String(10 + index);
+        if (cardSlot) cardSlot.style.zIndex = String(10 + index);
+
+        if (instant || reducedMotion) {
+          state.x = targetX;
+          state.y = recedeY;
+          state.z = recedeZ;
+          state.scale = scale;
+          state.rotateX = 0;
+          state.rotateY = targetRotateY;
+          state.rotateZ = targetRotateZ;
+        } else {
+          state.x = lerp(state.x, targetX, 0.18);
+          state.y = lerp(state.y, recedeY, 0.18);
+          state.z = lerp(state.z, recedeZ, 0.16);
+          state.scale = lerp(state.scale, scale, 0.18);
+          state.rotateX = lerp(state.rotateX, 0, 0.18);
+          state.rotateY = lerp(state.rotateY, targetRotateY, 0.18);
+          state.rotateZ = lerp(state.rotateZ, targetRotateZ, 0.18);
+        }
+
+        if (flatStack) {
+          card.style.transform = "";
+        } else {
+          const cardPerspective = sideEntry
+            ? `perspective(${(1800 * unitPx).toFixed(2)}px) `
+            : "";
+          card.style.transform =
+            cardPerspective +
+            `translate3d(${state.x.toFixed(2)}px, ${state.y.toFixed(2)}px, ${state.z.toFixed(2)}px) ` +
+            `rotateX(${state.rotateX.toFixed(2)}deg) rotateY(${state.rotateY.toFixed(2)}deg) ` +
+            `rotateZ(${state.rotateZ.toFixed(2)}deg) ` +
+            `scale(${state.scale.toFixed(4)})`;
+        }
+      });
+    },
+    [reducedMotion, syncMetrics]
+  );
+
+  // Set side-entry modifier class on document body
   useEffect(() => {
     document.body.classList.add("services-side-entry");
     return () => {
@@ -172,53 +350,90 @@ export function ServicesCardDeck() {
     };
   }, []);
 
+  // Continuous physics RAF loop (0.18 lerp damping) matching Emblematica render tick
   useEffect(() => {
+    syncMetrics();
+    updateServiceCards(true);
+
     let rafId = 0;
-    const scheduleUpdate = () => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        updateDeck();
+    let isMounted = true;
+
+    const loop = () => {
+      if (!isMounted) return;
+      updateServiceCards(false);
+      rafId = requestAnimationFrame(loop);
+    };
+    rafId = requestAnimationFrame(loop);
+
+    const handleResize = () => {
+      syncMetrics();
+      updateServiceCards(true);
+    };
+
+    window.addEventListener("resize", handleResize, { passive: true });
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        syncMetrics();
       });
-    };
-
-    window.addEventListener("scroll", scheduleUpdate, { passive: true });
-    window.addEventListener("resize", scheduleUpdate, { passive: true });
-
-    const attachLenis = () => {
-      if (window.__lenis) {
-        window.__lenis.on("scroll", scheduleUpdate);
-        return true;
-      }
-      return false;
-    };
-
-    let checkLenisTimer: NodeJS.Timeout | null = null;
-    if (!attachLenis()) {
-      checkLenisTimer = setInterval(() => {
-        if (attachLenis() && checkLenisTimer) clearInterval(checkLenisTimer);
-      }, 100);
-      setTimeout(() => {
-        if (checkLenisTimer) clearInterval(checkLenisTimer);
-      }, 3000);
+      if (sectionRef.current) ro.observe(sectionRef.current);
+      if (document.body) ro.observe(document.body);
     }
 
-    updateDeck();
-    const t1 = setTimeout(updateDeck, 100);
-    const t2 = setTimeout(updateDeck, 400);
+    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        syncMetrics();
+      });
+    }
+
+    const t1 = setTimeout(syncMetrics, 100);
+    const t2 = setTimeout(syncMetrics, 500);
 
     return () => {
-      window.removeEventListener("scroll", scheduleUpdate);
-      window.removeEventListener("resize", scheduleUpdate);
-      if (checkLenisTimer) clearInterval(checkLenisTimer);
-      if (window.__lenis) {
-        window.__lenis.off("scroll", scheduleUpdate);
-      }
+      isMounted = false;
       if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", handleResize);
+      if (ro) ro.disconnect();
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [updateDeck]);
+  }, [reducedMotion, syncMetrics, updateServiceCards]);
+
+  // Video playback management via IntersectionObserver (plays 1 screen ahead, pauses when away)
+  useEffect(() => {
+    const videoEls = sectionRef.current?.querySelectorAll<HTMLVideoElement>(".service-card-video");
+    if (!videoEls || !videoEls.length) return;
+
+    const playVideoSafe = (video: HTMLVideoElement) => {
+      const p = video.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    };
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            const video = entry.target as HTMLVideoElement;
+            if (entry.isIntersecting) {
+              playVideoSafe(video);
+            } else {
+              video.pause();
+            }
+          });
+        },
+        { threshold: 0, rootMargin: "100% 0px" }
+      );
+
+      videoEls.forEach((video) => observer.observe(video));
+
+      return () => {
+        observer.disconnect();
+      };
+    } else {
+      videoEls.forEach(playVideoSafe);
+    }
+  }, []);
 
   return (
     <section
@@ -269,7 +484,6 @@ export function ServicesCardDeck() {
                       muted
                       loop
                       playsInline
-                      autoPlay
                       preload="auto"
                       poster={project.poster}
                     >
