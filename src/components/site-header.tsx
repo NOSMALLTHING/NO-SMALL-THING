@@ -56,9 +56,12 @@ export function SiteHeader() {
 
   const openMenu = useCallback(() => {
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    const overlay = overlayRef.current;
+    if (overlay) overlay.hidden = false;
     setMenuVisible(true);
     window.__lenis?.stop();
 
+    syncMenuGeometry();
     requestAnimationFrame(() => {
       syncMenuGeometry();
       requestAnimationFrame(() => {
@@ -81,6 +84,20 @@ export function SiteHeader() {
     }, 780);
   }, []);
 
+  // ── Sync geometry on mount and window resize ──
+  useEffect(() => {
+    syncMenuGeometry();
+    const t = setTimeout(syncMenuGeometry, 100);
+    const handleResize = () => {
+      syncMenuGeometry();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [syncMenuGeometry]);
+
   // ── Keyboard & outside listeners ──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -91,15 +108,6 @@ export function SiteHeader() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [menuOpen, closeMenu]);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handleResize = () => {
-      syncMenuGeometry();
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [menuOpen, syncMenuGeometry]);
 
   // Cleanup on unmount or route change
   useEffect(() => {
@@ -372,7 +380,11 @@ export function SiteHeader() {
               <span className="menu-primary-line">Web&amp;Digital</span>
             </Link>
             <Link href="/#services" onClick={(e) => handleNavClick(e, "/#services")}>
-              <span className="menu-primary-line">Systems&amp;AI</span>
+              <span className="menu-primary-line">
+                Branding&amp;
+                <br />
+                Design
+              </span>
             </Link>
             <Link href="/#approach" onClick={(e) => handleNavClick(e, "/#approach")}>
               <span className="menu-primary-line">Who We Are</span>
