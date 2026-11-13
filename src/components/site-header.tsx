@@ -2,25 +2,116 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { useReducedMotion, motion } from "motion/react";
-import { navigation, site } from "@/lib/site";
-import { Container } from "./ui/container";
-import { Arrow } from "./ui/arrow";
-import { BrandLogo } from "./brand-logo";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useReducedMotion } from "motion/react";
+import { navigation } from "@/lib/site";
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 export function SiteHeader() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
-  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLight, setIsLight] = useState(false);
-  const dialogRef = useRef<HTMLDialogElement>(null);
+
   const triggerRef = useRef<HTMLButtonElement>(null);
   const logoRef = useRef<HTMLAnchorElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
   const reducedMotion = useReducedMotion();
 
+  // ── Sync FLIP geometry from Menu button to Drawer ──
+  const syncMenuGeometry = useCallback(() => {
+    const overlay = overlayRef.current;
+    const drawer = drawerRef.current;
+    const button = triggerRef.current;
+    if (!overlay || !drawer || !button) return;
+
+    const buttonRect = button.getBoundingClientRect();
+    const drawerStyles = window.getComputedStyle(drawer);
+    const drawerPaddingLeft = Number.parseFloat(drawerStyles.paddingLeft) || 0;
+    const drawerWidth = drawer.offsetWidth;
+    const drawerHeight = drawer.offsetHeight;
+    const drawerTop = Number.parseFloat(drawerStyles.top) || 0;
+    const drawerLeft = buttonRect.left - drawerPaddingLeft;
+
+    const offsetX = buttonRect.left - drawerLeft;
+    const offsetY = buttonRect.top - drawerTop;
+    const scaleX = clamp(buttonRect.width / Math.max(drawerWidth, 1), 0.04, 1);
+    const scaleY = clamp(buttonRect.height / Math.max(drawerHeight, 1), 0.04, 1);
+
+    overlay.style.setProperty("--menu-anchor-left", `${buttonRect.left}px`);
+    overlay.style.setProperty("--menu-anchor-top", `${drawerTop}px`);
+    overlay.style.setProperty("--menu-anchor-center-x", `${buttonRect.left + buttonRect.width / 2}px`);
+    overlay.style.setProperty("--menu-anchor-center-y", `${buttonRect.top + buttonRect.height / 2}px`);
+    overlay.style.setProperty("--menu-origin-x", `${offsetX}px`);
+    overlay.style.setProperty("--menu-origin-y", `${offsetY}px`);
+    overlay.style.setProperty("--menu-origin-scale-x", scaleX.toFixed(4));
+    overlay.style.setProperty("--menu-origin-scale-y", scaleY.toFixed(4));
+  }, []);
+
+  const openMenu = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    setMenuVisible(true);
+    window.__lenis?.stop();
+
+    requestAnimationFrame(() => {
+      syncMenuGeometry();
+      requestAnimationFrame(() => {
+        document.body.classList.add("menu-open");
+        setMenuOpen(true);
+        closeBtnRef.current?.focus({ preventScroll: true });
+      });
+    });
+  }, [syncMenuGeometry]);
+
+  const closeMenu = useCallback(() => {
+    document.body.classList.remove("menu-open");
+    setMenuOpen(false);
+    triggerRef.current?.focus({ preventScroll: true });
+
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => {
+      setMenuVisible(false);
+      window.__lenis?.start();
+    }, 780);
+  }, []);
+
+  // ── Keyboard & outside listeners ──
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && menuOpen) {
+        closeMenu();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen, closeMenu]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleResize = () => {
+      syncMenuGeometry();
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [menuOpen, syncMenuGeometry]);
+
+  // Cleanup on unmount or route change
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove("menu-open");
+      window.__lenis?.start();
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, [pathname]);
+
+  // ── Smart Background Detection at Logo ──
   useEffect(() => {
     const detectLightAtLogo = () => {
       setScrolled(window.scrollY > 15);
@@ -36,18 +127,16 @@ export function SiteHeader() {
         return;
       }
 
-      // Sample elements under the exact center of the logo
       const stack = document.elementsFromPoint(sampleX, sampleY);
       let foundLight = false;
 
       for (let i = 0; i < stack.length; i++) {
         const el = stack[i];
-        if (el.closest(".site-header, dialog, #site-menu, [class*='telemetry-preloader'], [class*='overlay']")) continue;
+        if (el.closest(".site-header, .menu-overlay, dialog, #site-menu, [class*='telemetry-preloader'], [class*='overlay']")) continue;
 
         const cs = window.getComputedStyle(el);
         if (parseFloat(cs.opacity) === 0 || cs.visibility === "hidden") continue;
 
-        // Check explicit theme markers
         const themedEl = el.closest<HTMLElement>("[data-theme], [data-topbar-theme]");
         if (themedEl) {
           const theme = themedEl.getAttribute("data-topbar-theme") || themedEl.getAttribute("data-theme");
@@ -61,20 +150,17 @@ export function SiteHeader() {
           }
         }
 
-        // Hero videos or shade overlays are dark
         if (el.tagName === "VIDEO" || el.closest("video, [class*='videoItem'], [class*='shade']")) {
           foundLight = false;
           break;
         }
 
-        // Check computed background color
         const bg = cs.backgroundColor;
         if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
           const rgb = bg.match(/[\d.]+/g);
           if (rgb && rgb.length >= 3) {
             const alpha = rgb.length >= 4 ? parseFloat(rgb[3]) : 1;
             if (alpha >= 0.35) {
-              // Standard perceptual luminance formula
               const lum = (0.2126 * Number(rgb[0]) + 0.7152 * Number(rgb[1]) + 0.0722 * Number(rgb[2])) / 255;
               foundLight = lum > 0.52;
               break;
@@ -99,7 +185,6 @@ export function SiteHeader() {
     window.addEventListener("resize", scheduleUpdate, { passive: true });
     window.addEventListener("nst-intro-complete", scheduleUpdate);
 
-    // Attach to Lenis whenever ready
     const attachLenis = () => {
       if (window.__lenis) {
         window.__lenis.on("scroll", scheduleUpdate);
@@ -138,139 +223,240 @@ export function SiteHeader() {
     };
   }, [pathname]);
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (open) {
-      dialog.showModal();
-      window.__lenis?.stop();
-      const previousOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = previousOverflow;
-        window.__lenis?.start();
-      };
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (href.startsWith("/#") && isHome) {
+      e.preventDefault();
+      const hash = href.slice(1);
+      const target = document.querySelector(hash);
+      closeMenu();
+      if (target) {
+        if (window.__lenis) {
+          window.__lenis.scrollTo(target as HTMLElement, { offset: 0 });
+        } else {
+          target.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    } else {
+      closeMenu();
     }
-    if (dialog.open) {
-      dialog.close();
-      window.__lenis?.start();
-      triggerRef.current?.focus();
-    }
-  }, [open]);
+  };
 
-  return <>
-    <header className={`site-header${isHome ? " is-cinematic is-home" : ""}${scrolled ? " is-scrolled" : ""}${isLight ? " is-light" : ""}`}>
-      <div className={`header-bar${isHome ? " header-bar--home" : ""}`}>
-        {/* ── Left: Logo ── */}
-        <Link
-          href="/"
-          ref={logoRef}
-          className="brand-name"
-          aria-label="NO SMALL THING — Home"
-          onClick={(event) => {
-            if (reducedMotion) return;
-            if (isHome) event.preventDefault();
-            window.dispatchEvent(new CustomEvent("nst-intro-replay"));
-          }}
-        >
-          <span className="header-logo-text">NO SMALL THING</span>
-        </Link>
-
-        {/* ── Centre: MENU pill (home only) ── */}
-        {isHome ? (
-          <button
-            type="button"
-            ref={triggerRef}
-            className="pill menu menu-pill"
-            aria-haspopup="dialog"
-            aria-expanded={open}
-            aria-controls="site-menu"
-            onClick={() => setOpen(true)}
+  return (
+    <>
+      <header
+        className={`site-header${isHome ? " is-cinematic is-home" : ""}${
+          scrolled ? " is-scrolled" : ""
+        }${isLight ? " is-light" : ""}`}
+      >
+        <div className={`header-bar${isHome ? " header-bar--home" : ""}`}>
+          {/* ── Left: Logo ── */}
+          <Link
+            href="/"
+            ref={logoRef}
+            className="brand-name"
+            aria-label="NO SMALL THING — Home"
+            onClick={(event) => {
+              if (reducedMotion) return;
+              if (isHome) event.preventDefault();
+              window.dispatchEvent(new CustomEvent("nst-intro-replay"));
+            }}
           >
-            <span>Menu</span>
-            <svg
-              className="menu-dot"
-              viewBox="0 0 4.3163 11.5104"
-              fill="none"
-              aria-hidden="true"
-            >
-              <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
-              <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
-            </svg>
-            <svg
-              className="menu-dot"
-              viewBox="0 0 4.3163 11.5104"
-              fill="none"
-              aria-hidden="true"
-            >
-              <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
-              <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
-            </svg>
-          </button>
-        ) : null}
+            <span className="header-logo-text">NO SMALL THING</span>
+          </Link>
 
-        {/* ── Right: US + FIND US pills (home) | desktop-nav + MENU (other pages) ── */}
-        <div className={`header-right${isHome ? " actions" : ""}`}>
+          {/* ── Centre: MENU pill (home only) ── */}
           {isHome ? (
-            <>
-              <Link href="/about" className="round-pill" aria-label="About us">
-                US
-              </Link>
-              <Link href="/contact" className="brief-pill" aria-label="Find us">
-                FIND US
-              </Link>
-            </>
-          ) : (
-            <>
-              <nav className="desktop-nav" aria-label="Main navigation">
-                {navigation.map(item => {
-                  const active = isActive(item.href);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`nav-bracket-link ${active ? "is-active" : ""}`}
-                      aria-current={active ? "page" : undefined}
-                    >
-                      <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
-                      <span className="bracket-label">{item.label}</span>
-                      <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
-                    </Link>
-                  );
-                })}
-              </nav>
-              <button
-                type="button"
-                ref={triggerRef}
-                className="menu-trigger-bracketed"
-                aria-haspopup="dialog"
-                aria-expanded={open}
-                aria-controls="site-menu"
-                onClick={() => setOpen(true)}
+            <button
+              type="button"
+              ref={triggerRef}
+              className="pill menu menu-pill"
+              aria-haspopup="dialog"
+              aria-expanded={menuOpen}
+              aria-controls="menuOverlay"
+              onClick={openMenu}
+            >
+              <span>Menu</span>
+              <svg
+                className="menu-dot"
+                viewBox="0 0 4.3163 11.5104"
+                fill="none"
+                aria-hidden="true"
               >
-                <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
-                <span className="bracket-label">MENU</span>
-                <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
-              </button>
-            </>
-          )}
+                <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+                <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+              </svg>
+              <svg
+                className="menu-dot"
+                viewBox="0 0 4.3163 11.5104"
+                fill="none"
+                aria-hidden="true"
+              >
+                <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+                <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+              </svg>
+            </button>
+          ) : null}
+
+          {/* ── Right: US + FIND US pills (home) | desktop-nav + MENU (other pages) ── */}
+          <div className={`header-right${isHome ? " actions" : ""}`}>
+            {isHome ? (
+              <>
+                <Link href="/about" className="round-pill" aria-label="About us">
+                  US
+                </Link>
+                <Link href="/contact" className="brief-pill" aria-label="Find us">
+                  FIND US
+                </Link>
+              </>
+            ) : (
+              <>
+                <nav className="desktop-nav" aria-label="Main navigation">
+                  {navigation.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`nav-bracket-link ${active ? "is-active" : ""}`}
+                        aria-current={active ? "page" : undefined}
+                      >
+                        <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
+                        <span className="bracket-label">{item.label}</span>
+                        <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
+                      </Link>
+                    );
+                  })}
+                </nav>
+                <button
+                  type="button"
+                  ref={triggerRef}
+                  className="menu-trigger-bracketed"
+                  aria-haspopup="dialog"
+                  aria-expanded={menuOpen}
+                  aria-controls="menuOverlay"
+                  onClick={openMenu}
+                >
+                  <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
+                  <span className="bracket-label">MENU</span>
+                  <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-      <noscript><nav className="no-script-nav" aria-label="Navigation without JavaScript">{navigation.map(item => <Link key={item.href} href={item.href}>{item.label}</Link>)}</nav></noscript>
-    </header>
-    <dialog id="site-menu" className="site-menu" ref={dialogRef} aria-labelledby="menu-title" onCancel={() => setOpen(false)} onClose={() => setOpen(false)}>
-      <Container className="menu-layout">
-        <div className="menu-top"><p id="menu-title" className="eyebrow">NO SMALL THING / INDEX</p><button type="button" className="menu-close eyebrow" onClick={() => setOpen(false)} autoFocus>CLOSE <span aria-hidden="true">×</span></button></div>
-        <motion.div className="menu-main" initial={false} animate={{ y: open && !reducedMotion ? [10, 0] : 0 }} transition={{ duration: .45 }}>
-          <nav aria-label="Expanded navigation" key={open ? "open" : "closed"}>
-            {navigation.map(item => <Link key={item.href} href={item.href} className="menu-item" onClick={() => setOpen(false)} aria-current={isActive(item.href) ? "page" : undefined}>
-              <span className="eyebrow">{item.index}</span><span>{item.label}</span><Arrow />
-            </Link>)}
+        <noscript>
+          <nav className="no-script-nav" aria-label="Navigation without JavaScript">
+            {navigation.map((item) => (
+              <Link key={item.href} href={item.href}>
+                {item.label}
+              </Link>
+            ))}
           </nav>
-          <div className="menu-brand"><BrandLogo sizes="(max-width: 767px) 160px, 320px" /><p className="eyebrow">{site.tagline}</p></div>
-        </motion.div>
-        <p className="menu-bottom eyebrow">THREE MINDS. ONE AMBITION. BEYOND BOUNDARIES.</p>
-      </Container>
-    </dialog>
-  </>;
+        </noscript>
+      </header>
+
+      {/* ── Emblematica-style Animated Menu Overlay ── */}
+      <div
+        className="menu-overlay"
+        id="menuOverlay"
+        ref={overlayRef}
+        hidden={!menuVisible}
+        aria-hidden={!menuOpen}
+      >
+        <div
+          className="menu-backdrop"
+          data-menu-close=""
+          onClick={closeMenu}
+          aria-hidden="true"
+        />
+
+        <img
+          className="menu-parrot"
+          src="/brand/menu-parrot.webp"
+          alt=""
+          aria-hidden="true"
+        />
+
+        <button
+          className="menu-close"
+          id="menuClose"
+          ref={closeBtnRef}
+          type="button"
+          aria-label="Close menu"
+          onClick={closeMenu}
+        >
+          <span className="menu-close-label-desktop">Close</span>
+          <svg
+            className="menu-dot"
+            viewBox="0 0 4.3163 11.5104"
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+            <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+          </svg>
+          <svg
+            className="menu-dot"
+            viewBox="0 0 4.3163 11.5104"
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+            <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+          </svg>
+        </button>
+
+        <aside className="menu-drawer" ref={drawerRef} aria-label="Main menu">
+          <nav className="menu-primary" aria-label="Main navigation">
+            <Link href="/#services" onClick={(e) => handleNavClick(e, "/#services")}>
+              <span className="menu-primary-line">Web&amp;Digital</span>
+            </Link>
+            <Link href="/#services" onClick={(e) => handleNavClick(e, "/#services")}>
+              <span className="menu-primary-line">Systems&amp;AI</span>
+            </Link>
+            <Link href="/#approach" onClick={(e) => handleNavClick(e, "/#approach")}>
+              <span className="menu-primary-line">Who We Are</span>
+            </Link>
+            <Link href="/#selected-work" onClick={(e) => handleNavClick(e, "/#selected-work")}>
+              <span className="menu-primary-line">Projects</span>
+            </Link>
+            <Link
+              href="/#contact"
+              className="menu-primary-accent"
+              onClick={(e) => handleNavClick(e, "/#contact")}
+            >
+              <span className="menu-primary-line">Book A Call</span>
+            </Link>
+          </nav>
+
+          <div className="menu-footer">
+            <div className="menu-footer-links">
+              <a href="mailto:nosmallthing.limited@gmail.com">nosmallthing.limited@gmail.com</a>
+              <a
+                href="https://www.linkedin.com/in/no-small-thing-987899445/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                LinkedIn
+              </a>
+              <a
+                href="https://www.instagram.com/nosmallthing.limited/?hl=en"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Instagram
+              </a>
+              <a
+                href="https://github.com/NOSMALLTHING"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </>
+  );
 }
