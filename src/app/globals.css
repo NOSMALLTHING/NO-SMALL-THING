@@ -49,6 +49,14 @@
   src: url("/fonts/cormorant-garamond-semibold-italic.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "Inter Tight";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/InterTight-ExtraBold.woff") format("woff");
+}
+
 /* Source of truth: semantic tokens are shared by every route and component. */
 :root {
   --black: #080809;
@@ -349,7 +357,7 @@ main#main-content {
   }
 }
 
-/* Global masthead — fixed precision top banner inspired by Production Portugal */
+/* Global masthead — fixed precision top banner inspired by Production Portugal & Emblematica */
 .site-header {
   position: fixed;
   top: 0;
@@ -359,13 +367,28 @@ main#main-content {
   background: transparent !important;
   border-bottom: 0 !important;
   pointer-events: none;
+
+  /* Emblematica proportional sizing system */
+  --emb-u: min(0.0694444444vw, 0.1315789474dvh);
+  --emb-ink: #0e0c0d;
+  --emb-white: #fbfbfb;
+  --emb-acid: #d5ff69;
+  --emb-pink: #ff5490;
+}
+
+@media (max-width: 900px) {
+  .site-header {
+    --emb-u: min(0.23vw, 0.92px);
+  }
 }
 
 .site-header .brand-name,
 .site-header .nav-bracket-link,
 .site-header .menu-trigger-bracketed,
-.site-header .menu-pill,
-.site-header .header-pill,
+.site-header .pill,
+.site-header .round-pill,
+.site-header .brief-pill,
+.site-header .menu,
 .site-header .no-script-nav a {
   pointer-events: auto;
 }
@@ -397,26 +420,15 @@ main#main-content {
 
 /* Full-bleed bar: Logo pinned to far-left, Nav pinned to far-right */
 .header-bar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: var(--header-height);
+  height: clamp(64px, calc(38 * var(--emb-u) + 24px), 92px);
   padding: 0 clamp(1.25rem, 3.5vw, 3rem);
   box-sizing: border-box;
   animation: masthead-enter 1100ms 150ms var(--ease) both;
-}
-
-/* Home layout: Logo | [MENU centred] | [US · FIND US] */
-.header-bar--home {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-}
-
-.header-bar--home .header-right {
-  justify-content: flex-end;
-  margin-left: 0;
 }
 
 @keyframes masthead-enter {
@@ -440,7 +452,7 @@ main#main-content {
 }
 
 .header-logo {
-  width: 155px;
+  width: clamp(140px, calc(155 * var(--emb-u)), 220px);
   height: auto;
   display: block;
   transition: filter 240ms ease;
@@ -454,112 +466,160 @@ main#main-content {
   margin-left: auto;
 }
 
-/* ── Pill buttons (home page header) ── */
-/* Centre MENU pill */
-.menu-pill {
+/* ── Pill buttons (home page header — 100% Emblematica replica) ── */
+.site-header .pill,
+.site-header .round-pill,
+.site-header .brief-pill {
+  min-height: calc(38 * var(--emb-u));
+  height: calc(38 * var(--emb-u));
+  border: 0;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 0.3em;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--black);
-  background: var(--warm-white);
-  border: none;
-  border-radius: 100px;
-  padding: 0.55rem 1.1rem;
-  cursor: pointer;
-  line-height: 1;
-  white-space: nowrap;
-  transition: background 220ms ease, color 220ms ease, transform 220ms ease;
-  pointer-events: auto;
-}
-
-.menu-pill:hover,
-.menu-pill:focus-visible {
-  background: #e8e4de;
-  transform: scale(1.03);
-}
-
-.menu-pill-dots {
-  letter-spacing: 0;
-  font-weight: 400;
-  opacity: 0.6;
-}
-
-/* Ghost outline pill — "US" */
-.header-pill {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  justify-content: center;
   text-decoration: none;
-  border-radius: 100px;
-  padding: 0.5rem 1rem;
-  line-height: 1;
-  white-space: nowrap;
+  text-transform: uppercase;
+  font-family: "Inter Tight", Arial, Helvetica, sans-serif;
+  font-weight: 800;
+  color: var(--emb-ink);
   cursor: pointer;
+  font-size: calc(14 * var(--emb-u));
+  line-height: 1;
+  letter-spacing: 0;
+  background: var(--emb-white);
   pointer-events: auto;
-  transition: background 220ms ease, color 220ms ease, border-color 220ms ease, transform 220ms ease;
+  user-select: none;
+  box-sizing: border-box;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
-.header-pill--ghost {
-  color: var(--warm-white);
-  background: transparent;
-  border: 1.5px solid rgba(240, 236, 231, 0.55);
+/* Centre MENU button on home */
+.site-header .menu {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(90 * var(--emb-u));
+  min-height: calc(38 * var(--emb-u));
+  height: calc(38 * var(--emb-u));
+  gap: calc(4 * var(--emb-u));
+  padding: 0 calc(11 * var(--emb-u)) calc(1 * var(--emb-u));
+  z-index: 100;
 }
 
-.header-pill--ghost:hover,
-.header-pill--ghost:focus-visible {
-  border-color: var(--warm-white);
-  background: rgba(240, 236, 231, 0.1);
+.site-header .menu .menu-dot {
+  width: calc(4.316 * var(--emb-u));
+  height: calc(11.51 * var(--emb-u));
+  display: block;
+  flex-shrink: 0;
 }
 
-/* Solid accent pill — "FIND US" */
-.header-pill--solid {
-  color: var(--black);
-  background: var(--warm-white);
-  border: 1.5px solid transparent;
+.site-header .menu:hover,
+.site-header .menu:focus-visible {
+  background-color: var(--emb-acid);
+  color: var(--emb-ink);
 }
 
-.header-pill--solid:hover,
-.header-pill--solid:focus-visible {
-  background: #e0dbd4;
-  transform: scale(1.03);
+.site-header .menu:focus-visible {
+  outline: calc(2 * var(--emb-u)) solid var(--emb-ink);
+  outline-offset: calc(2 * var(--emb-u));
 }
 
-/* Light theme adaptation for home pills */
-.site-header.is-light .menu-pill {
-  color: var(--black);
-  background: rgba(8, 8, 9, 0.08);
+.site-header .menu::-moz-focus-inner {
+  border: 0;
 }
 
-.site-header.is-light .menu-pill:hover {
-  background: rgba(8, 8, 9, 0.14);
+/* Right-side actions group */
+.site-header .header-right.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  z-index: 100;
 }
 
-.site-header.is-light .header-pill--ghost {
-  color: var(--black);
-  border-color: rgba(8, 8, 9, 0.35);
+/* US button (round-pill) */
+.site-header .round-pill {
+  width: calc(50 * var(--emb-u));
+  padding: 0;
+  background-color: var(--emb-white);
+  color: var(--emb-ink);
 }
 
-.site-header.is-light .header-pill--ghost:hover {
-  border-color: var(--black);
-  background: rgba(8, 8, 9, 0.06);
+.site-header .round-pill:hover,
+.site-header .round-pill:focus-visible {
+  background-color: var(--emb-acid);
+  color: var(--emb-ink);
 }
 
-.site-header.is-light .header-pill--solid {
-  color: var(--warm-white);
-  background: var(--black);
+.site-header .round-pill:focus-visible {
+  outline: calc(2 * var(--emb-u)) solid var(--emb-ink);
+  outline-offset: calc(2 * var(--emb-u));
 }
 
-.site-header.is-light .header-pill--solid:hover {
-  background: #333;
+.site-header .round-pill::-moz-focus-inner {
+  border: 0;
+}
+
+/* FIND US button (brief-pill) */
+.site-header .brief-pill {
+  width: calc(126 * var(--emb-u));
+  padding: 0;
+  background-color: var(--emb-acid);
+  color: var(--emb-ink);
+}
+
+.site-header .brief-pill:hover,
+.site-header .brief-pill:focus-visible {
+  background-color: var(--emb-pink);
+  color: #fbfbfb;
+}
+
+.site-header .brief-pill:focus-visible {
+  outline: calc(2 * var(--emb-u)) solid var(--emb-ink);
+  outline-offset: calc(2 * var(--emb-u));
+}
+
+.site-header .brief-pill::-moz-focus-inner {
+  border: 0;
+}
+
+/* Light theme adaptation */
+.site-header.is-light .menu,
+.site-header.is-light .round-pill {
+  box-shadow: 0 1px 4px rgba(14, 12, 13, 0.1);
+}
+
+@media (max-width: 900px) {
+  .site-header .pill,
+  .site-header .round-pill,
+  .site-header .brief-pill,
+  .site-header .menu {
+    min-height: 38px;
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .site-header .menu {
+    width: auto;
+    gap: 4px;
+    padding: 0 12px 1px;
+    font-size: 14px;
+  }
+
+  .site-header .menu .menu-dot {
+    width: 4.3px;
+    height: 11.5px;
+  }
+
+  .site-header .round-pill {
+    width: 48px;
+  }
+
+  .site-header .brief-pill {
+    width: 104px;
+  }
 }
 
 .desktop-nav {

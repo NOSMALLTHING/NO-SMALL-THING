@@ -19,8 +19,6 @@ export function SiteHeader() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const reducedMotion = useReducedMotion();
-  // ·· dot chars used in MENU button, matching Emblematica style
-  const menuDots = <span className="menu-pill-dots" aria-hidden="true">{" ·· "}</span>;
 
   useEffect(() => {
     const updateHeaderState = () => {
@@ -124,22 +122,44 @@ export function SiteHeader() {
           <button
             type="button"
             ref={triggerRef}
-            className="menu-pill menu-pill--center"
+            className="pill menu menu-pill"
             aria-haspopup="dialog"
             aria-expanded={open}
             aria-controls="site-menu"
             onClick={() => setOpen(true)}
           >
-            MENU <span className="menu-pill-dots" aria-hidden="true">·· </span>
+            <span>Menu</span>
+            <svg
+              className="menu-dot"
+              viewBox="0 0 4.3163 11.5104"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+              <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+            </svg>
+            <svg
+              className="menu-dot"
+              viewBox="0 0 4.3163 11.5104"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+              <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+            </svg>
           </button>
         ) : null}
 
         {/* ── Right: US + FIND US pills (home) | desktop-nav + MENU (other pages) ── */}
-        <div className="header-right">
+        <div className={`header-right${isHome ? " actions" : ""}`}>
           {isHome ? (
             <>
-              <Link href="/about" className="header-pill header-pill--ghost">US</Link>
-              <Link href="/contact" className="header-pill header-pill--solid">FIND US</Link>
+              <Link href="/about" className="round-pill" aria-label="About us">
+                US
+              </Link>
+              <Link href="/contact" className="brief-pill" aria-label="Find us">
+                FIND US
+              </Link>
             </>
           ) : (
             <>
