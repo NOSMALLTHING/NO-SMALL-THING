@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useReducedMotion } from "motion/react";
 import { navigation } from "@/lib/site";
+import { MobileBrandTransition } from "./mobile/mobile-brand-transition";
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -38,10 +39,11 @@ export function SiteHeader() {
     const drawerWidth = drawer.offsetWidth;
     const drawerHeight = drawer.offsetHeight;
     const drawerTop = Number.parseFloat(drawerStyles.top) || 0;
+    const centeredMobileReveal = window.matchMedia("(max-width: 900px)").matches;
     const drawerLeft = buttonRect.left - drawerPaddingLeft;
 
-    const offsetX = buttonRect.left - drawerLeft;
-    const offsetY = buttonRect.top - drawerTop;
+    const offsetX = centeredMobileReveal ? 0 : buttonRect.left - drawerLeft;
+    const offsetY = centeredMobileReveal ? 0 : buttonRect.top - drawerTop;
     const scaleX = clamp(buttonRect.width / Math.max(drawerWidth, 1), 0.04, 1);
     const scaleY = clamp(buttonRect.height / Math.max(drawerHeight, 1), 0.04, 1);
 
@@ -115,6 +117,13 @@ export function SiteHeader() {
   useEffect(() => {
     const detectLightAtLogo = () => {
       setScrolled(window.scrollY > 15);
+
+      if (isHome && window.innerWidth <= 767) {
+        const servicesRect = document.getElementById("services")?.getBoundingClientRect();
+        const threshold = 35;
+        setIsLight(Boolean(servicesRect && servicesRect.top <= threshold && servicesRect.bottom >= threshold));
+        return;
+      }
 
       const logoEl = logoRef.current;
       if (!logoEl) return;
@@ -263,7 +272,6 @@ export function SiteHeader() {
           >
             <span className="header-logo-text">NO SMALL THING</span>
           </Link>
-
           {/* ── Centre: MENU pill (home only) ── */}
           {isHome ? (
             <button
@@ -344,6 +352,7 @@ export function SiteHeader() {
             )}
           </div>
         </div>
+        {isHome ? <MobileBrandTransition isLight={isLight} /> : null}
         <noscript>
           <nav className="no-script-nav" aria-label="Navigation without JavaScript">
             {navigation.map((item) => (

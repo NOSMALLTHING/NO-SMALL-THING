@@ -204,6 +204,10 @@
   text-align: left;
 }
 
+.mobileNarrative {
+  display: none;
+}
+
 .narrativeLineMask {
   display: block;
   overflow: hidden;
@@ -508,6 +512,18 @@
   user-select: none;
 }
 
+.headlineDesktop,
+.headlineMobile {
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  width: 100%;
+}
+
+.headlineMobile {
+  display: none;
+}
+
 /* Individual Headline Rows for Pinned Block Wipe Animation */
 .headlineRow {
   position: relative;
@@ -624,15 +640,20 @@
   }
   .plane {
     min-height: auto;
-    padding-top: 70px;
+    padding-top: 84px;
     padding-bottom: 2rem;
   }
   .topSection {
     justify-content: flex-start;
   }
   .narrativeBlock {
+    display: none;
+  }
+  .mobileNarrative {
+    display: block;
     width: 100%;
-    font-size: 1rem;
+    font-family: var(--font-brand-sans);
+    color: var(--black);
   }
   .topSection {
     padding-right: 0;
@@ -642,6 +663,7 @@
     flex-direction: column-reverse;
     align-items: flex-start;
     gap: 1.5rem;
+    padding-top: 1.5rem;
   }
   .rightHeadlineCol {
     align-items: flex-start;
@@ -654,8 +676,14 @@
   .headline {
     align-items: flex-start;
     text-align: left;
-    font-size: clamp(2rem, 8.5vw, 3.4rem);
+    font-size: clamp(1.85rem, 7.8vw, 2.25rem);
     line-height: 0.98;
+  }
+  .headlineDesktop {
+    display: none;
+  }
+  .headlineMobile {
+    display: flex;
   }
   .headlineRow {
     display: block;
@@ -698,5 +726,23 @@
   .endParagraph {
     text-align: left;
     max-width: 100%;
+  }
+}
+
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  .scrollTrack {
+    height: 195svh;
+  }
+
+  .stickySection {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    min-height: 0;
+  }
+
+  .plane {
+    height: 100%;
+    min-height: 100%;
   }
 }

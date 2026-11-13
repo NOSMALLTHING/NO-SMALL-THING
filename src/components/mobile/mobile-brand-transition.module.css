@@ -1,0 +1,39 @@
+.brand {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .brand {
+    position: fixed;
+    z-index: 1001;
+    display: block;
+    line-height: 0;
+    will-change: left, top, width, transform;
+  }
+
+  .brand a {
+    display: block;
+    width: 100%;
+    pointer-events: auto;
+  }
+
+  .wordmark {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: filter 180ms ease;
+  }
+
+  .brand[data-light="true"] .wordmark {
+    filter: brightness(0);
+  }
+}
+
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .brand {
+    left: 14px !important;
+    top: 22px !important;
+    width: 18vw !important;
+    transform: none !important;
+  }
+}

@@ -30,6 +30,23 @@ export function HomeStage() {
   const revealDoneRef = useRef(false);
   const enabled = useCinematicMotion(true);
   const [pinned, setPinned] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isPhone, setIsPhone] = useState(false);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 1024px)");
+    const phoneQuery = window.matchMedia("(max-width: 767px)");
+    const updateDesktop = () => setIsDesktop(desktopQuery.matches);
+    const updatePhone = () => setIsPhone(phoneQuery.matches);
+    updateDesktop();
+    updatePhone();
+    desktopQuery.addEventListener("change", updateDesktop);
+    phoneQuery.addEventListener("change", updatePhone);
+    return () => {
+      desktopQuery.removeEventListener("change", updateDesktop);
+      phoneQuery.removeEventListener("change", updatePhone);
+    };
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: trackRef,
@@ -54,7 +71,7 @@ export function HomeStage() {
   });
 
   const syncPin = (value: number) => {
-    if (!enabled) {
+    if (!enabled || !isDesktop) {
       revealDoneRef.current = false;
       setPinned(false);
       return;
@@ -68,7 +85,7 @@ export function HomeStage() {
 
   useEffect(() => {
     syncPin(scrollYProgress.get());
-  }, [enabled, scrollYProgress]);
+  }, [enabled, isDesktop, scrollYProgress]);
 
   useLayoutEffect(() => {
     const track = trackRef.current;
@@ -98,8 +115,8 @@ export function HomeStage() {
     <>
       <OurServices
         trackRef={trackRef}
-        progress={enabled ? contentProgress : undefined}
-        exitProgress={enabled ? exitProgress : undefined}
+        progress={enabled ? (isPhone ? scrollYProgress : contentProgress) : undefined}
+        exitProgress={enabled && isDesktop ? exitProgress : undefined}
         handoff={enabled}
       />
       <div ref={anchorRef} className={styles.workAnchor}>
