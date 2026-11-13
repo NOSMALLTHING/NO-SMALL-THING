@@ -364,6 +364,8 @@ main#main-content {
 .site-header .brand-name,
 .site-header .nav-bracket-link,
 .site-header .menu-trigger-bracketed,
+.site-header .menu-pill,
+.site-header .header-pill,
 .site-header .no-script-nav a {
   pointer-events: auto;
 }
@@ -405,6 +407,18 @@ main#main-content {
   animation: masthead-enter 1100ms 150ms var(--ease) both;
 }
 
+/* Home layout: Logo | [MENU centred] | [US · FIND US] */
+.header-bar--home {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.header-bar--home .header-right {
+  justify-content: flex-end;
+  margin-left: 0;
+}
+
 @keyframes masthead-enter {
   from {
     opacity: 0;
@@ -438,6 +452,114 @@ main#main-content {
   align-items: center;
   gap: clamp(1rem, 2vw, 2.25rem);
   margin-left: auto;
+}
+
+/* ── Pill buttons (home page header) ── */
+/* Centre MENU pill */
+.menu-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+  background: var(--warm-white);
+  border: none;
+  border-radius: 100px;
+  padding: 0.55rem 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background 220ms ease, color 220ms ease, transform 220ms ease;
+  pointer-events: auto;
+}
+
+.menu-pill:hover,
+.menu-pill:focus-visible {
+  background: #e8e4de;
+  transform: scale(1.03);
+}
+
+.menu-pill-dots {
+  letter-spacing: 0;
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+/* Ghost outline pill — "US" */
+.header-pill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 100px;
+  padding: 0.5rem 1rem;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 220ms ease, color 220ms ease, border-color 220ms ease, transform 220ms ease;
+}
+
+.header-pill--ghost {
+  color: var(--warm-white);
+  background: transparent;
+  border: 1.5px solid rgba(240, 236, 231, 0.55);
+}
+
+.header-pill--ghost:hover,
+.header-pill--ghost:focus-visible {
+  border-color: var(--warm-white);
+  background: rgba(240, 236, 231, 0.1);
+}
+
+/* Solid accent pill — "FIND US" */
+.header-pill--solid {
+  color: var(--black);
+  background: var(--warm-white);
+  border: 1.5px solid transparent;
+}
+
+.header-pill--solid:hover,
+.header-pill--solid:focus-visible {
+  background: #e0dbd4;
+  transform: scale(1.03);
+}
+
+/* Light theme adaptation for home pills */
+.site-header.is-light .menu-pill {
+  color: var(--black);
+  background: rgba(8, 8, 9, 0.08);
+}
+
+.site-header.is-light .menu-pill:hover {
+  background: rgba(8, 8, 9, 0.14);
+}
+
+.site-header.is-light .header-pill--ghost {
+  color: var(--black);
+  border-color: rgba(8, 8, 9, 0.35);
+}
+
+.site-header.is-light .header-pill--ghost:hover {
+  border-color: var(--black);
+  background: rgba(8, 8, 9, 0.06);
+}
+
+.site-header.is-light .header-pill--solid {
+  color: var(--warm-white);
+  background: var(--black);
+}
+
+.site-header.is-light .header-pill--solid:hover {
+  background: #333;
 }
 
 .desktop-nav {

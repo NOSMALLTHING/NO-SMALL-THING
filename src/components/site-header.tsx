@@ -19,6 +19,8 @@ export function SiteHeader() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const reducedMotion = useReducedMotion();
+  // ·· dot chars used in MENU button, matching Emblematica style
+  const menuDots = <span className="menu-pill-dots" aria-hidden="true">{" ·· "}</span>;
 
   useEffect(() => {
     const updateHeaderState = () => {
@@ -101,8 +103,9 @@ export function SiteHeader() {
   }, [open]);
 
   return <>
-    <header className={`site-header${isHome ? " is-cinematic" : ""}${scrolled ? " is-scrolled" : ""}${isLight ? " is-light" : ""}`}>
-      <div className="header-bar">
+    <header className={`site-header${isHome ? " is-cinematic is-home" : ""}${scrolled ? " is-scrolled" : ""}${isLight ? " is-light" : ""}`}>
+      <div className={`header-bar${isHome ? " header-bar--home" : ""}`}>
+        {/* ── Left: Logo ── */}
         <Link
           href="/"
           className="brand-name"
@@ -115,37 +118,63 @@ export function SiteHeader() {
         >
           <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 115px, 155px" eager />
         </Link>
-        <div className="header-right">
-          <nav className="desktop-nav" aria-label="Main navigation">
-            {navigation.map(item => {
-              const active = isActive(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`nav-bracket-link ${active ? "is-active" : ""}`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
-                  <span className="bracket-label">{item.label}</span>
-                  <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
-                </Link>
-              );
-            })}
-          </nav>
+
+        {/* ── Centre: MENU pill (home only) ── */}
+        {isHome ? (
           <button
             type="button"
             ref={triggerRef}
-            className="menu-trigger-bracketed"
+            className="menu-pill menu-pill--center"
             aria-haspopup="dialog"
             aria-expanded={open}
             aria-controls="site-menu"
             onClick={() => setOpen(true)}
           >
-            <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
-            <span className="bracket-label">MENU</span>
-            <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
+            MENU <span className="menu-pill-dots" aria-hidden="true">·· </span>
           </button>
+        ) : null}
+
+        {/* ── Right: US + FIND US pills (home) | desktop-nav + MENU (other pages) ── */}
+        <div className="header-right">
+          {isHome ? (
+            <>
+              <Link href="/about" className="header-pill header-pill--ghost">US</Link>
+              <Link href="/contact" className="header-pill header-pill--solid">FIND US</Link>
+            </>
+          ) : (
+            <>
+              <nav className="desktop-nav" aria-label="Main navigation">
+                {navigation.map(item => {
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`nav-bracket-link ${active ? "is-active" : ""}`}
+                      aria-current={active ? "page" : undefined}
+                    >
+                      <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
+                      <span className="bracket-label">{item.label}</span>
+                      <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+              <button
+                type="button"
+                ref={triggerRef}
+                className="menu-trigger-bracketed"
+                aria-haspopup="dialog"
+                aria-expanded={open}
+                aria-controls="site-menu"
+                onClick={() => setOpen(true)}
+              >
+                <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
+                <span className="bracket-label">MENU</span>
+                <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
       <noscript><nav className="no-script-nav" aria-label="Navigation without JavaScript">{navigation.map(item => <Link key={item.href} href={item.href}>{item.label}</Link>)}</nav></noscript>
