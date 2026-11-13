@@ -11,7 +11,6 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 export function SiteHeader() {
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -248,7 +247,7 @@ export function SiteHeader() {
           scrolled ? " is-scrolled" : ""
         }${isLight ? " is-light" : ""}`}
       >
-        <div className={`header-bar${isHome ? " header-bar--home" : ""}`}>
+        <div className="header-bar">
           {/* ── Left: Logo ── */}
           <Link
             href="/"
@@ -264,84 +263,45 @@ export function SiteHeader() {
             <span className="header-logo-text">NO SMALL THING</span>
           </Link>
 
-          {/* ── Centre: MENU pill (home only) ── */}
-          {isHome ? (
-            <button
-              type="button"
-              ref={triggerRef}
-              className="pill menu menu-pill"
-              aria-haspopup="dialog"
-              aria-expanded={menuOpen}
-              aria-controls="menuOverlay"
-              onClick={openMenu}
+          {/* ── Centre: MENU pill ── */}
+          <button
+            type="button"
+            ref={triggerRef}
+            className="pill menu menu-pill"
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
+            aria-controls="menuOverlay"
+            onClick={openMenu}
+          >
+            <span>Menu</span>
+            <svg
+              className="menu-dot"
+              viewBox="0 0 4.3163 11.5104"
+              fill="none"
+              aria-hidden="true"
             >
-              <span>Menu</span>
-              <svg
-                className="menu-dot"
-                viewBox="0 0 4.3163 11.5104"
-                fill="none"
-                aria-hidden="true"
-              >
-                <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
-                <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
-              </svg>
-              <svg
-                className="menu-dot"
-                viewBox="0 0 4.3163 11.5104"
-                fill="none"
-                aria-hidden="true"
-              >
-                <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
-                <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
-              </svg>
-            </button>
-          ) : null}
+              <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+              <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+            </svg>
+            <svg
+              className="menu-dot"
+              viewBox="0 0 4.3163 11.5104"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+              <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+            </svg>
+          </button>
 
-          {/* ── Right: US + FIND US pills (home) | desktop-nav + MENU (other pages) ── */}
-          <div className={`header-right${isHome ? " actions" : ""}`}>
-            {isHome ? (
-              <>
-                <Link href="/about" className="round-pill" aria-label="About us">
-                  US
-                </Link>
-                <Link href="/contact" className="brief-pill" aria-label="Find us">
-                  FIND US
-                </Link>
-              </>
-            ) : (
-              <>
-                <nav className="desktop-nav" aria-label="Main navigation">
-                  {navigation.map((item) => {
-                    const active = isActive(item.href);
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`nav-bracket-link ${active ? "is-active" : ""}`}
-                        aria-current={active ? "page" : undefined}
-                      >
-                        <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
-                        <span className="bracket-label">{item.label}</span>
-                        <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
-                      </Link>
-                    );
-                  })}
-                </nav>
-                <button
-                  type="button"
-                  ref={triggerRef}
-                  className="menu-trigger-bracketed"
-                  aria-haspopup="dialog"
-                  aria-expanded={menuOpen}
-                  aria-controls="menuOverlay"
-                  onClick={openMenu}
-                >
-                  <span className="bracket-mark bracket-left" aria-hidden="true">[</span>
-                  <span className="bracket-label">MENU</span>
-                  <span className="bracket-mark bracket-right" aria-hidden="true">]</span>
-                </button>
-              </>
-            )}
+          {/* ── Right: US + FIND US pills ── */}
+          <div className="header-right actions">
+            <Link href="/studio" className="round-pill" aria-label="About us">
+              US
+            </Link>
+            <Link href="/contact" className="brief-pill" aria-label="Find us">
+              FIND US
+            </Link>
           </div>
         </div>
         <noscript>
