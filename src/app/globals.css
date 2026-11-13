@@ -425,10 +425,59 @@ main#main-content {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: clamp(64px, calc(38 * var(--emb-u) + 24px), 92px);
+  height: var(--header-height);
   padding: 0 clamp(1.25rem, 3.5vw, 3rem);
   box-sizing: border-box;
   animation: masthead-enter 1100ms 150ms var(--ease) both;
+}
+
+/* Home topbar: 100% exact replica of Emblematica topbar layout & positioning */
+.header-bar--home {
+  position: fixed;
+  left: calc(28 * var(--emb-u));
+  right: calc(23 * var(--emb-u));
+  top: calc(26px + (31 * var(--emb-u) - 38 * var(--emb-u)) / 2);
+  height: calc(38 * var(--emb-u));
+  width: auto;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-bar--home .brand-name {
+  position: absolute;
+  left: calc(18px - calc(28 * var(--emb-u)));
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.header-bar--home .header-logo {
+  width: calc(155 * var(--emb-u));
+  height: auto;
+}
+
+.header-bar--home .menu {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: calc(90 * var(--emb-u));
+  min-height: calc(38 * var(--emb-u));
+  height: calc(38 * var(--emb-u));
+  gap: calc(4 * var(--emb-u));
+  padding: 0 calc(11 * var(--emb-u)) calc(1 * var(--emb-u));
+  z-index: 100;
+}
+
+.header-bar--home .header-right.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  z-index: 145;
 }
 
 @keyframes masthead-enter {
@@ -452,7 +501,7 @@ main#main-content {
 }
 
 .header-logo {
-  width: clamp(140px, calc(155 * var(--emb-u)), 220px);
+  width: 155px;
   height: auto;
   display: block;
   transition: filter 240ms ease;
@@ -497,8 +546,8 @@ main#main-content {
 .site-header .menu {
   position: absolute;
   left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  transform: translateX(-50%);
   width: calc(90 * var(--emb-u));
   min-height: calc(38 * var(--emb-u));
   height: calc(38 * var(--emb-u));

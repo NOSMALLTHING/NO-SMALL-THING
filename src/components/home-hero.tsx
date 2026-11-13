@@ -150,10 +150,6 @@ export function HomeHero() {
       </div>
       <div className={styles.shade} aria-hidden="true" />
 
-      <Link href="/contact" className={`${styles.contact} ${mono.className}`}>
-        GET IN TOUCH
-      </Link>
-
       <div className={styles.copy}>
         <p className={`${styles.kicker} ${mono.className}`}>[ WE ARE NO SMALL THING ]</p>
         <h1 id="home-title" className={`${styles.title} ${display.className}`}>

@@ -75,30 +75,6 @@
   pointer-events: none;
 }
 
-.contact {
-  position: absolute;
-  z-index: 2;
-  top: calc(var(--header-height) + 1.25rem);
-  right: clamp(1.25rem, 3vw, 2.75rem);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 168px;
-  min-height: 64px;
-  padding: 0.85rem 1.1rem;
-  background: #f6f6f4;
-  color: #111;
-  text-decoration: none;
-  font-size: 0.68rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  border-radius: 2px;
-}
-
-.contact:hover {
-  background: #fff;
-}
-
 .copy {
   position: absolute;
   z-index: 2;
@@ -193,11 +169,6 @@
     grid-template-columns: 1fr;
     row-gap: 0.4rem;
     font-size: 0.58rem;
-  }
-
-  .contact {
-    min-width: 132px;
-    min-height: 48px;
   }
 }
 
