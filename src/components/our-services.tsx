@@ -258,6 +258,7 @@ export function OurServices({
   const [isOverBracket, setIsOverBracket] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [isPhone, setIsPhone] = useState(false);
 
   const textHoverCounter = useRef(0);
   const bracketHoverCounter = useRef(0);
@@ -297,7 +298,7 @@ export function OurServices({
   // progress so the horizontal exit can share the same track.
   const { scrollYProgress } = useScroll({
     target: scrollTrackRef,
-    offset: isDesktop || handoff ? ["start start", "end end"] : ["start end", "end start"],
+    offset: isDesktop || handoff || isPhone ? ["start start", "end end"] : ["start end", "end start"],
   });
 
   const sprungProgress = useSpring(scrollYProgress, {
@@ -318,6 +319,7 @@ export function OurServices({
 
     const checkDesktop = () => {
       setIsDesktop(window.innerWidth >= 1024);
+      setIsPhone(window.innerWidth <= 767);
     };
 
     checkDesktop();
