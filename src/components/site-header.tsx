@@ -18,47 +18,66 @@ export function SiteHeader() {
   const [isLight, setIsLight] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const logoRef = useRef<HTMLAnchorElement>(null);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    const updateHeaderState = () => {
+    const detectLightAtLogo = () => {
       setScrolled(window.scrollY > 15);
 
-      const headerThreshold = 35; // vertical center of header in px
-      const lightElements = document.querySelectorAll<HTMLElement>('[data-theme="light"]');
-      let foundLight = false;
+      const logoEl = logoRef.current;
+      if (!logoEl) return;
 
-      for (let i = 0; i < lightElements.length; i++) {
-        const rect = lightElements[i].getBoundingClientRect();
-        if (rect.top <= headerThreshold && rect.bottom >= headerThreshold) {
-          foundLight = true;
-          break;
-        }
+      const rect = logoEl.getBoundingClientRect();
+      const sampleX = Math.round(rect.left + rect.width / 2);
+      const sampleY = Math.round(rect.top + rect.height / 2);
+
+      if (sampleX <= 0 || sampleY <= 0 || sampleX >= window.innerWidth || sampleY >= window.innerHeight) {
+        return;
       }
 
-      if (!foundLight) {
-        // Fallback: sample element under right side of header
-        const sampleX = Math.max(10, window.innerWidth - 80);
-        const el = document.elementFromPoint(sampleX, headerThreshold);
-        if (el) {
-          if (el.closest('[data-theme="light"], .theme-light')) {
+      // Sample elements under the exact center of the logo
+      const stack = document.elementsFromPoint(sampleX, sampleY);
+      let foundLight = false;
+
+      for (let i = 0; i < stack.length; i++) {
+        const el = stack[i];
+        if (el.closest(".site-header, dialog, #site-menu, [class*='telemetry-preloader'], [class*='overlay']")) continue;
+
+        const cs = window.getComputedStyle(el);
+        if (parseFloat(cs.opacity) === 0 || cs.visibility === "hidden") continue;
+
+        // Check explicit theme markers
+        const themedEl = el.closest<HTMLElement>("[data-theme], [data-topbar-theme]");
+        if (themedEl) {
+          const theme = themedEl.getAttribute("data-topbar-theme") || themedEl.getAttribute("data-theme");
+          if (theme === "light") {
             foundLight = true;
-          } else {
-            let cur: HTMLElement | null = el as HTMLElement;
-            while (cur && cur !== document.body && cur !== document.documentElement) {
-              const bg = window.getComputedStyle(cur).backgroundColor;
-              if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
-                const rgb = bg.match(/\d+/g);
-                if (rgb && rgb.length >= 3) {
-                  const lum = 0.299 * Number(rgb[0]) + 0.587 * Number(rgb[1]) + 0.114 * Number(rgb[2]);
-                  if (lum > 160) {
-                    foundLight = true;
-                    break;
-                  }
-                  if (lum < 100) break;
-                }
-              }
-              cur = cur.parentElement;
+            break;
+          }
+          if (theme === "dark") {
+            foundLight = false;
+            break;
+          }
+        }
+
+        // Hero videos or shade overlays are dark
+        if (el.tagName === "VIDEO" || el.closest("video, [class*='videoItem'], [class*='shade']")) {
+          foundLight = false;
+          break;
+        }
+
+        // Check computed background color
+        const bg = cs.backgroundColor;
+        if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") {
+          const rgb = bg.match(/[\d.]+/g);
+          if (rgb && rgb.length >= 3) {
+            const alpha = rgb.length >= 4 ? parseFloat(rgb[3]) : 1;
+            if (alpha >= 0.35) {
+              // Standard perceptual luminance formula
+              const lum = (0.2126 * Number(rgb[0]) + 0.7152 * Number(rgb[1]) + 0.0722 * Number(rgb[2])) / 255;
+              foundLight = lum > 0.52;
+              break;
             }
           }
         }
@@ -67,16 +86,55 @@ export function SiteHeader() {
       setIsLight(foundLight);
     };
 
-    window.addEventListener("scroll", updateHeaderState, { passive: true });
-    window.addEventListener("resize", updateHeaderState, { passive: true });
-    updateHeaderState();
+    let rafId = 0;
+    const scheduleUpdate = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        detectLightAtLogo();
+      });
+    };
 
-    const timer = setTimeout(updateHeaderState, 150);
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate, { passive: true });
+    window.addEventListener("nst-intro-complete", scheduleUpdate);
+
+    // Attach to Lenis whenever ready
+    const attachLenis = () => {
+      if (window.__lenis) {
+        window.__lenis.on("scroll", scheduleUpdate);
+        return true;
+      }
+      return false;
+    };
+
+    let checkLenisTimer: NodeJS.Timeout | null = null;
+    if (!attachLenis()) {
+      checkLenisTimer = setInterval(() => {
+        if (attachLenis() && checkLenisTimer) clearInterval(checkLenisTimer);
+      }, 100);
+      setTimeout(() => {
+        if (checkLenisTimer) clearInterval(checkLenisTimer);
+      }, 3000);
+    }
+
+    detectLightAtLogo();
+    const t1 = setTimeout(detectLightAtLogo, 60);
+    const t2 = setTimeout(detectLightAtLogo, 200);
+    const t3 = setTimeout(detectLightAtLogo, 600);
 
     return () => {
-      window.removeEventListener("scroll", updateHeaderState);
-      window.removeEventListener("resize", updateHeaderState);
-      clearTimeout(timer);
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener("nst-intro-complete", scheduleUpdate);
+      if (checkLenisTimer) clearInterval(checkLenisTimer);
+      if (window.__lenis) {
+        window.__lenis.off("scroll", scheduleUpdate);
+      }
+      if (rafId) cancelAnimationFrame(rafId);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
     };
   }, [pathname]);
 
@@ -106,6 +164,7 @@ export function SiteHeader() {
         {/* ── Left: Logo ── */}
         <Link
           href="/"
+          ref={logoRef}
           className="brand-name"
           aria-label="NO SMALL THING — Home"
           onClick={(event) => {
@@ -114,7 +173,7 @@ export function SiteHeader() {
             window.dispatchEvent(new CustomEvent("nst-intro-replay"));
           }}
         >
-          <BrandLogo className="header-logo" variant="wordmark" sizes="(max-width: 767px) 115px, 155px" eager />
+          <span className="header-logo-text">NO SMALL THING</span>
         </Link>
 
         {/* ── Centre: MENU pill (home only) ── */}

@@ -498,6 +498,27 @@ main#main-content {
   line-height: 1;
   flex-shrink: 0;
   text-decoration: none;
+  color: #fbfbfb;
+  transition: color 240ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms ease;
+  user-select: none;
+}
+
+.header-logo-text {
+  font-family: "Inter Tight", Arial, Helvetica, sans-serif;
+  font-weight: 800;
+  font-size: calc(18 * var(--emb-u));
+  line-height: 1;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  color: currentColor;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+@media (max-width: 900px) {
+  .header-logo-text {
+    font-size: 15px;
+  }
 }
 
 .header-logo {
@@ -766,6 +787,11 @@ main#main-content {
 /* Color adaptation when scrolling over light / white sections */
 .site-header.is-light {
   color: var(--black);
+}
+
+.site-header.is-light .brand-name,
+.site-header.is-light .header-logo-text {
+  color: #0e0c0d;
 }
 
 .site-header.is-light .header-logo {
