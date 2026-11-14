@@ -49,7 +49,9 @@ export function SiteHeader() {
     const drawerLeft = buttonRect.left - drawerPaddingLeft;
 
     const offsetX = centeredMobileReveal ? 0 : buttonRect.left - drawerLeft;
-    const offsetY = centeredMobileReveal ? 0 : buttonRect.top - drawerTop;
+    const offsetY = centeredMobileReveal
+      ? buttonRect.top + buttonRect.height / 2 - (drawerTop + drawerHeight)
+      : buttonRect.top - drawerTop;
     const scaleX = clamp(buttonRect.width / Math.max(drawerWidth, 1), 0.04, 1);
     const scaleY = clamp(buttonRect.height / Math.max(drawerHeight, 1), 0.04, 1);
 
@@ -71,6 +73,8 @@ export function SiteHeader() {
     menuOpenRef.current = true;
     const overlay = overlayRef.current;
     if (overlay) overlay.hidden = false;
+    document.body.classList.add("menu-scroll-locked");
+    document.documentElement.classList.add("menu-scroll-locked");
     setMenuVisible(true);
     window.__lenis?.stop();
 
@@ -89,6 +93,8 @@ export function SiteHeader() {
   const closeMenu = useCallback(() => {
     menuOpenRef.current = false;
     document.body.classList.remove("menu-open");
+    document.body.classList.remove("menu-scroll-locked");
+    document.documentElement.classList.remove("menu-scroll-locked");
     setMenuOpen(false);
     triggerRef.current?.focus({ preventScroll: true });
 
@@ -98,6 +104,8 @@ export function SiteHeader() {
         setMenuVisible(false);
         const overlay = overlayRef.current;
         if (overlay) overlay.hidden = true;
+        document.body.classList.remove("menu-scroll-locked");
+        document.documentElement.classList.remove("menu-scroll-locked");
         window.__lenis?.start();
       }
     }, 780);
@@ -130,11 +138,34 @@ export function SiteHeader() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && menuOpenRef.current) {
         closeMenu();
+        return;
+      }
+
+      const pageScrollKeys = [" ", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"];
+      const target = e.target as HTMLElement | null;
+      const isEditing = target?.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target?.tagName ?? "");
+      if (menuOpenRef.current && pageScrollKeys.includes(e.key) && !isEditing) {
+        e.preventDefault();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [closeMenu]);
+
+  // Stop native touch and wheel scrolling for the full menu transition, including
+  // the opening and closing frames around the visible overlay.
+  useEffect(() => {
+    if (!menuVisible) return;
+
+    const preventScroll = (event: Event) => event.preventDefault();
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
+    };
+  }, [menuVisible]);
 
   // Cleanup on unmount or route change
   useEffect(() => {
@@ -144,6 +175,8 @@ export function SiteHeader() {
     return () => {
       menuOpenRef.current = false;
       document.body.classList.remove("menu-open");
+      document.body.classList.remove("menu-scroll-locked");
+      document.documentElement.classList.remove("menu-scroll-locked");
       window.__lenis?.start();
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
@@ -429,17 +462,22 @@ export function SiteHeader() {
           <aside className="menu-drawer" ref={drawerRef} aria-label="Main menu">
             <nav className="menu-primary" aria-label="Main navigation">
               <Link href="/#services" onClick={(e) => handleNavClick(e, "/#services")}>
-                <span className="menu-primary-line">Web&amp;Digital</span>
+                <span className="menu-primary-line">
+                  <span className="menu-label-desktop">Web&amp;Digital</span>
+                  <span className="menu-label-mobile">Web Design</span>
+                </span>
               </Link>
               <Link href="/#method" onClick={(e) => handleNavClick(e, "/#method")}>
                 <span className="menu-primary-line">
-                  Branding&amp;
-                  <br />
-                  Design
+                  <span className="menu-label-desktop">Branding&amp;<br />Design</span>
+                  <span className="menu-label-mobile">Branding<br />and Design</span>
                 </span>
               </Link>
               <Link href="/studio" onClick={(e) => handleNavClick(e, "/studio")}>
-                <span className="menu-primary-line">Who We Are</span>
+                <span className="menu-primary-line">
+                  <span className="menu-label-desktop">Who We Are</span>
+                  <span className="menu-label-mobile">Who Are We</span>
+                </span>
               </Link>
               <Link href="/#what-we-do-best" onClick={(e) => handleNavClick(e, "/#what-we-do-best")}>
                 <span className="menu-primary-line">Projects</span>
@@ -449,7 +487,10 @@ export function SiteHeader() {
                 className="menu-primary-accent"
                 onClick={(e) => handleNavClick(e, "/#contact")}
               >
-                <span className="menu-primary-line">Book A Call</span>
+                <span className="menu-primary-line">
+                  <span className="menu-label-desktop">Book A Call</span>
+                  <span className="menu-label-mobile">Book A Call</span>
+                </span>
               </Link>
             </nav>
 
@@ -476,6 +517,16 @@ export function SiteHeader() {
                   rel="noopener noreferrer"
                 >
                   GitHub
+                </a>
+              </div>
+              <div className="menu-mobile-footer">
+                <div className="menu-mobile-social" aria-label="Social links">
+                  <a href="https://www.instagram.com/nosmallthing.limited/?hl=en" target="_blank" rel="noopener noreferrer">Instagram</a>
+                  <a href="https://www.facebook.com/profile.php?id=61595602914132" target="_blank" rel="noopener noreferrer">Facebook</a>
+                  <a href="https://github.com/NOSMALLTHING" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </div>
+                <a className="menu-mobile-email" href="mailto:nosmallthing.limited@gmail.com">
+                  nosmallthing.limited@gmail.com
                 </a>
               </div>
             </div>

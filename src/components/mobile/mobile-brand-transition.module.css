@@ -38,4 +38,9 @@
     color: #080809;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.48), 0 3px 10px rgba(8, 8, 9, 0.12);
   }
+
+  :global(body.menu-open) .brand[data-parked="true"] .wordmark {
+    color: #080809;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.48), 0 3px 10px rgba(8, 8, 9, 0.12);
+  }
 }

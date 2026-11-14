@@ -13,9 +13,19 @@ const BRAND_TOP = 21;
 export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
   const [viewport, setViewport] = useState({ width: 390, height: 844 });
   const [wordmarkSize, setWordmarkSize] = useState({ width: 140, height: 23 });
+  const [isParked, setIsParked] = useState(false);
   const wordmarkRef = useRef<HTMLSpanElement>(null);
   const { scrollY } = useScroll();
   const reducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    const updateParkedState = (value: number) => {
+      setIsParked(reducedMotion || value >= BRAND_SCROLL_DISTANCE);
+    };
+
+    updateParkedState(scrollY.get());
+    return scrollY.on("change", updateParkedState);
+  }, [reducedMotion, scrollY]);
 
   useEffect(() => {
     const updateViewport = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
@@ -52,6 +62,7 @@ export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
     <motion.div
       className={`${styles.brand} mobile-brand-transition`}
       data-light={isLight ? "true" : "false"}
+      data-parked={isParked ? "true" : "false"}
       style={reducedMotion ? { x: 0, y: 0, scale: 1 } : { x, y, scale }}
     >
       <Link
