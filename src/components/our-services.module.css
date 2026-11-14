@@ -270,6 +270,15 @@
   will-change: clip-path, transform, opacity;
 }
 
+.tickerTrack,
+.tickerGroup {
+  display: contents;
+}
+
+.stripClone {
+  display: none;
+}
+
 .linksStrip::-webkit-scrollbar {
   display: none;
 }
@@ -710,10 +719,33 @@
   }
   .linksStrip {
     justify-content: flex-start;
-    gap: 1.25rem;
+    gap: 0;
     padding-inline: 1rem;
-    scroll-padding-inline: 1rem;
     overscroll-behavior-inline: contain;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .tickerTrack {
+    display: flex;
+    width: max-content;
+    min-width: max-content;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  .tickerGroup {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding-right: 1.25rem;
+    width: max-content;
+    flex: 0 0 auto;
+  }
+  .stripClone {
+    display: inline-flex;
+    pointer-events: none;
   }
   .stripItem {
     min-height: 40px;

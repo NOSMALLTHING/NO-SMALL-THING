@@ -115,20 +115,28 @@ export function CreativeMethod() {
     const chars = Array.from(copyEl.querySelectorAll<HTMLSpanElement>(".scroll-char"));
     if (!chars.length) return;
 
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+
     if (reducedMotion) {
       chars.forEach((c) => {
-        c.style.color = "#dadada";
+        c.style.color = isMobile ? "#ffffff" : "#dadada";
       });
       return;
     }
 
     const vh = window.innerHeight || document.documentElement.clientHeight;
     const rect = copyEl.getBoundingClientRect();
+    let progress: number;
 
-    if (rect.bottom < 0 || rect.top > vh) return;
+    if (isMobile) {
+      const sectionTop = sectionRef.current?.getBoundingClientRect().top ?? rect.top;
+      progress = clamp((vh - sectionTop) / vh, 0, 1);
+    } else {
+      if (rect.bottom < 0 || rect.top > vh) return;
+      const scrollRange = Math.max(1, rect.height + vh * 0.32);
+      progress = clamp((vh * 0.82 - rect.top) / scrollRange, 0, 1);
+    }
 
-    const scrollRange = Math.max(1, rect.height + vh * 0.32);
-    const progress = clamp((vh * 0.82 - rect.top) / scrollRange, 0, 1);
     const activeIndex = Math.floor(progress * chars.length) - 1;
 
     if (lastActiveIndexRef.current === activeIndex) return;
@@ -401,6 +409,21 @@ export function CreativeMethod() {
         .forEach((preview) => preview.remove());
     };
   }, [stopMethodPreview]);
+
+  useEffect(() => {
+    if (!isPhone) return;
+    const cancelPreviewOnScroll = () => {
+      if (!activeGroupRef.current) return;
+      activeGroupRef.current = "";
+      isPinnedRef.current = false;
+      stopMethodPreview();
+    };
+
+    window.addEventListener("scroll", cancelPreviewOnScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", cancelPreviewOnScroll);
+    };
+  }, [isPhone, stopMethodPreview]);
 
   return (
     <>
