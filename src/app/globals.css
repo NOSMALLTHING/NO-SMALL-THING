@@ -73,6 +73,80 @@
   src: url("/fonts/InterTight-ExtraBold.woff") format("woff");
 }
 
+@font-face {
+  font-family: "Sometype";
+  src: url("/fonts/Sometype-Mono.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SuisseBPIntl";
+  src: url("/fonts/SuisseBPIntl-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SuisseBPIntl";
+  src: url("/fonts/SuisseBPIntl-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SuisseBPIntl";
+  src: url("/fonts/SuisseBPIntl-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SuisseBPIntl";
+  src: url("/fonts/SuisseBPIntl-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ==========================================================================
+   Page Loading State: Homepage stays hidden until Loader finishes
+   ========================================================================== */
+html.is-loading body,
+body.is-loading {
+  overflow: hidden !important;
+}
+
+body.is-loading #main-content,
+body.is-loading .site-header,
+body.is-loading .site-footer {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+body.is-loaded #main-content,
+body.is-loaded .site-header,
+body.is-loaded .site-footer {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  animation: pageFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Source of truth: semantic tokens are shared by every route and component. */
 :root {
   --black: #080809;

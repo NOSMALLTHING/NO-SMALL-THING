@@ -85,9 +85,29 @@
 
 .kicker {
   margin-bottom: 0.85rem;
-  font-size: 0.68rem;
+  font-family: "Sometype", monospace;
+  font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.kickerActive {
+  opacity: 1;
+}
+
+.lineMask {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+.lineInner {
+  display: inline-block;
+  will-change: transform, clip-path;
 }
 
 .title {

@@ -343,8 +343,9 @@ export function SiteHeader() {
             onClick={(event) => {
               if (isHome) {
                 event.preventDefault();
+                window.dispatchEvent(new CustomEvent("nst-loader-replay"));
                 if (window.__lenis) {
-                  window.__lenis.scrollTo(0, { duration: 1.2 });
+                  window.__lenis.scrollTo(0, { duration: 0.8 });
                 } else {
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }

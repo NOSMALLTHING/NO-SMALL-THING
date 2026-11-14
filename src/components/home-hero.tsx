@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import localFont from "next/font/local";
+import gsap from "gsap";
 import styles from "./home-hero.module.css";
 
 const display = localFont({
@@ -20,6 +21,149 @@ const mono = localFont({
 
 function pad(value: number) {
   return String(value).padStart(2, "0");
+}
+
+class MonoTextReveal {
+  element: HTMLElement;
+  animationTarget: HTMLElement | null;
+  chars: string[];
+  charLength: number;
+  varMap: Map<string, string>;
+  originalText: string;
+  length: number;
+  duration: number;
+  shownChars: number;
+  swappedChars: number;
+  randomizedText: string;
+  tl: gsap.core.Timeline | null;
+
+  constructor(element: HTMLElement, target: HTMLElement | null, duration = 0.45) {
+    this.element = element;
+    this.animationTarget = target || element;
+    this.chars = ["#", "#", "#", "#", "#", "$", "*", "@", "(", "0", "%", "1", ">"];
+    this.charLength = this.chars.length;
+    this.varMap = new Map([
+      [" ", " "],
+      ["[", "["],
+      ["]", "]"],
+    ]);
+    const extracted = (this.animationTarget?.textContent || "").trim();
+    this.originalText = extracted.length > 0 ? extracted : "[ We are no small thing ]";
+    this.length = this.originalText.length;
+    this.duration = duration;
+    this.shownChars = 0;
+    this.swappedChars = 0;
+    this.randomizedText = "";
+    this.tl = null;
+    this.randomize();
+  }
+
+  randomize() {
+    this.randomizedText = "";
+    for (let i = 0; i < this.length; i++) {
+      const char = this.originalText[i];
+      this.randomizedText +=
+        this.varMap.get(char) ?? this.chars[Math.floor(Math.random() * this.charLength)];
+    }
+  }
+
+  updateDisplay() {
+    let str = "";
+    for (let i = 0; i < this.length; i++) {
+      if (i < this.swappedChars) {
+        str += this.originalText[i];
+      } else if (i < this.shownChars) {
+        str += this.randomizedText[i];
+      } else {
+        break;
+      }
+    }
+    if (this.animationTarget) {
+      this.animationTarget.textContent = str;
+    }
+  }
+
+  showCharLoop(obj: { value: number }) {
+    const current = Math.floor(obj.value);
+    if (current > this.shownChars) {
+      this.shownChars = Math.min(this.length, current);
+      for (let i = this.swappedChars; i < this.shownChars; i++) {
+        const char = this.originalText[i];
+        if (this.varMap.has(char)) continue;
+        if (Math.random() < 0.25) {
+          const randChar = this.chars[Math.floor(Math.random() * this.charLength)];
+          this.randomizedText =
+            this.randomizedText.slice(0, i) + randChar + this.randomizedText.slice(i + 1);
+        }
+      }
+      this.updateDisplay();
+    }
+  }
+
+  replaceCharLoop(obj: { value: number }) {
+    const current = Math.floor(obj.value);
+    if (current > this.swappedChars) {
+      this.swappedChars = Math.min(this.length, current);
+      this.updateDisplay();
+    }
+  }
+
+  play() {
+    if (this.tl) this.tl.kill();
+    this.randomize();
+    this.shownChars = 0;
+    this.swappedChars = 0;
+    this.element.classList.add(styles.kickerActive);
+
+    const t = (this.duration ?? 0.25) + this.length * 0.005;
+    this.tl = gsap.timeline({
+      onComplete: () => {
+        this.shownChars = this.length;
+        this.swappedChars = this.length;
+        if (this.animationTarget) {
+          this.animationTarget.textContent = this.originalText;
+        }
+      },
+    });
+
+    const n = { value: 0 };
+    this.tl.to(
+      n,
+      {
+        value: this.length,
+        ease: "power2.out",
+        duration: t,
+        onUpdate: () => {
+          this.showCharLoop(n);
+        },
+      },
+      0
+    );
+
+    const r = { value: 0 };
+    this.tl.to(
+      r,
+      {
+        value: this.length,
+        ease: "power2.out",
+        duration: t,
+        onUpdate: () => {
+          this.replaceCharLoop(r);
+        },
+      },
+      0.2
+    );
+  }
+
+  reset() {
+    if (this.tl) this.tl.kill();
+    this.shownChars = 0;
+    this.swappedChars = 0;
+    this.element.classList.remove(styles.kickerActive);
+    if (this.animationTarget) {
+      this.animationTarget.textContent = "";
+    }
+  }
 }
 
 function HeroClock() {
@@ -52,6 +196,82 @@ export function HomeHero() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const isTransitioningRef = useRef(false);
+
+  const kickerRef = useRef<HTMLParagraphElement>(null);
+  const targetRef = useRef<HTMLSpanElement>(null);
+  const monoRevealRef = useRef<MonoTextReveal | null>(null);
+  const titleLinesRef = useRef<(HTMLSpanElement | null)[]>([]);
+
+  const playHeroEntrance = useCallback(() => {
+    // 1. Text decode on [ WE ARE NO SMALL THING ]
+    setTimeout(() => {
+      if (monoRevealRef.current) {
+        monoRevealRef.current.play();
+      }
+    }, 200);
+
+    // 2. Title lines staggered slide up
+    const lines = titleLinesRef.current.filter(Boolean);
+    if (lines.length) {
+      gsap.fromTo(
+        lines,
+        { yPercent: 120, clipPath: "inset(-10% -10% 120% -10%)" },
+        {
+          yPercent: 0,
+          clipPath: "inset(-10% -10% -10% -10%)",
+          duration: 1.1,
+          stagger: 0.14,
+          ease: "power4.out",
+          delay: 0.35,
+        }
+      );
+    }
+  }, []);
+
+  const resetHeroEntrance = useCallback(() => {
+    if (monoRevealRef.current) {
+      monoRevealRef.current.reset();
+    }
+    const lines = titleLinesRef.current.filter(Boolean);
+    if (lines.length) {
+      gsap.set(lines, { yPercent: 120, clipPath: "inset(-10% -10% 120% -10%)" });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (kickerRef.current) {
+      monoRevealRef.current = new MonoTextReveal(kickerRef.current, targetRef.current, 0.45);
+    }
+
+    let seen = false;
+    try {
+      seen = sessionStorage.getItem("nst-loader-seen") === "1";
+    } catch {}
+
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (seen || reduced) {
+      playHeroEntrance();
+    } else {
+      resetHeroEntrance();
+    }
+
+    const onLoaderComplete = () => {
+      playHeroEntrance();
+    };
+
+    const onLoaderStart = () => {
+      resetHeroEntrance();
+    };
+
+    window.addEventListener("nst-loader-complete", onLoaderComplete);
+    window.addEventListener("nst-loader-start", onLoaderStart);
+
+    return () => {
+      window.removeEventListener("nst-loader-complete", onLoaderComplete);
+      window.removeEventListener("nst-loader-start", onLoaderStart);
+    };
+  }, [playHeroEntrance, resetHeroEntrance]);
 
   useEffect(() => {
     const firstVideo = videoRefs.current[0];
@@ -150,13 +370,44 @@ export function HomeHero() {
       <div className={styles.shade} aria-hidden="true" />
 
       <div className={styles.copy}>
-        <p className={`${styles.kicker} ${mono.className}`}>[ WE ARE NO SMALL THING ]</p>
+        <p className={styles.kicker} ref={kickerRef}>
+          <span className="js-animation-target" ref={targetRef}>
+            [ We are no small thing ]
+          </span>
+        </p>
         <h1 id="home-title" className={`${styles.title} ${display.className}`}>
-          WE BUILD
+          <span className={styles.lineMask}>
+            <span
+              className={styles.lineInner}
+              ref={(el) => {
+                titleLinesRef.current[0] = el;
+              }}
+            >
+              WE BUILD
+            </span>
+          </span>
           <br />
-          WEBSITES, SYSTEMS
+          <span className={styles.lineMask}>
+            <span
+              className={styles.lineInner}
+              ref={(el) => {
+                titleLinesRef.current[1] = el;
+              }}
+            >
+              WEBSITES, SYSTEMS
+            </span>
+          </span>
           <br />
-          AND THE AI.
+          <span className={styles.lineMask}>
+            <span
+              className={styles.lineInner}
+              ref={(el) => {
+                titleLinesRef.current[2] = el;
+              }}
+            >
+              AND THE AI.
+            </span>
+          </span>
         </h1>
       </div>
 
