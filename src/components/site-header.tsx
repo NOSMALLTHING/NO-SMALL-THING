@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useReducedMotion } from "motion/react";
 import { navigation } from "@/lib/site";
@@ -11,9 +11,11 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const isHome = pathname === "/";
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const menuOpenRef = useRef(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLight, setIsLight] = useState(false);
   const [lang, setLang] = useState<"CH" | "EN">("CH");
@@ -62,7 +64,11 @@ export function SiteHeader() {
   }, []);
 
   const openMenu = useCallback(() => {
-    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+    menuOpenRef.current = true;
     const overlay = overlayRef.current;
     if (overlay) overlay.hidden = false;
     setMenuVisible(true);
@@ -72,6 +78,7 @@ export function SiteHeader() {
     requestAnimationFrame(() => {
       syncMenuGeometry();
       requestAnimationFrame(() => {
+        if (!menuOpenRef.current) return;
         document.body.classList.add("menu-open");
         setMenuOpen(true);
         closeBtnRef.current?.focus({ preventScroll: true });
@@ -80,16 +87,29 @@ export function SiteHeader() {
   }, [syncMenuGeometry]);
 
   const closeMenu = useCallback(() => {
+    menuOpenRef.current = false;
     document.body.classList.remove("menu-open");
     setMenuOpen(false);
     triggerRef.current?.focus({ preventScroll: true });
 
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
-      setMenuVisible(false);
-      window.__lenis?.start();
+      if (!menuOpenRef.current) {
+        setMenuVisible(false);
+        const overlay = overlayRef.current;
+        if (overlay) overlay.hidden = true;
+        window.__lenis?.start();
+      }
     }, 780);
   }, []);
+
+  const toggleMenu = useCallback(() => {
+    if (menuOpenRef.current) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  }, [closeMenu, openMenu]);
 
   // ── Sync geometry on mount and window resize ──
   useEffect(() => {
@@ -108,22 +128,26 @@ export function SiteHeader() {
   // ── Keyboard & outside listeners ──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && menuOpen) {
+      if (e.key === "Escape" && menuOpenRef.current) {
         closeMenu();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [menuOpen, closeMenu]);
+  }, [closeMenu]);
 
   // Cleanup on unmount or route change
   useEffect(() => {
+    if (menuOpenRef.current) {
+      closeMenu();
+    }
     return () => {
+      menuOpenRef.current = false;
       document.body.classList.remove("menu-open");
       window.__lenis?.start();
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
-  }, [pathname]);
+  }, [pathname, closeMenu]);
 
   // ── Smart Background Detection at Logo ──
   useEffect(() => {
@@ -238,23 +262,30 @@ export function SiteHeader() {
   }, [pathname]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith("/#") && isHome) {
-      e.preventDefault();
+    e.preventDefault();
+    closeMenu();
+
+    if (href.startsWith("/#")) {
       const hash = href.slice(1);
-      const target = document.querySelector(hash);
-      closeMenu();
-      window.__lenis?.start();
-      if (target) {
-        setTimeout(() => {
-          if (window.__lenis) {
-            window.__lenis.scrollTo(target as HTMLElement, { offset: 0, duration: 1.2 });
-          } else {
-            target.scrollIntoView({ behavior: "smooth" });
-          }
-        }, 80);
+      if (isHome) {
+        window.__lenis?.start();
+        const target = document.querySelector(hash);
+        if (target) {
+          setTimeout(() => {
+            if (window.__lenis) {
+              window.__lenis.scrollTo(target as HTMLElement, { offset: 0, duration: 1.2 });
+            } else {
+              target.scrollIntoView({ behavior: "smooth" });
+            }
+          }, 60);
+        }
+      } else {
+        sessionStorage.setItem("nst_scroll_target", hash);
+        router.push("/" + hash);
       }
     } else {
-      closeMenu();
+      if (pathname === href) return;
+      router.push(href);
     }
   };
 
@@ -289,7 +320,7 @@ export function SiteHeader() {
             aria-haspopup="dialog"
             aria-expanded={menuOpen}
             aria-controls="menuOverlay"
-            onClick={openMenu}
+            onClick={toggleMenu}
           >
             <span>Menu</span>
             <svg
@@ -401,7 +432,7 @@ export function SiteHeader() {
                   Design
                 </span>
               </Link>
-              <Link href="/studio" onClick={() => closeMenu()}>
+              <Link href="/studio" onClick={(e) => handleNavClick(e, "/studio")}>
                 <span className="menu-primary-line">Who We Are</span>
               </Link>
               <Link href="/#what-we-do-best" onClick={(e) => handleNavClick(e, "/#what-we-do-best")}>
