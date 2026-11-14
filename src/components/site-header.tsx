@@ -16,6 +16,11 @@ export function SiteHeader() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLight, setIsLight] = useState(false);
+  const [lang, setLang] = useState<"CH" | "EN">("CH");
+
+  const toggleLang = useCallback(() => {
+    setLang((prev) => (prev === "CH" ? "EN" : "CH"));
+  }, []);
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const logoRef = useRef<HTMLAnchorElement>(null);
@@ -238,12 +243,15 @@ export function SiteHeader() {
       const hash = href.slice(1);
       const target = document.querySelector(hash);
       closeMenu();
+      window.__lenis?.start();
       if (target) {
-        if (window.__lenis) {
-          window.__lenis.scrollTo(target as HTMLElement, { offset: 0 });
-        } else {
-          target.scrollIntoView({ behavior: "smooth" });
-        }
+        setTimeout(() => {
+          if (window.__lenis) {
+            window.__lenis.scrollTo(target as HTMLElement, { offset: 0, duration: 1.2 });
+          } else {
+            target.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 80);
       }
     } else {
       closeMenu();
@@ -304,11 +312,16 @@ export function SiteHeader() {
             </svg>
           </button>
 
-          {/* ── Right: US + FIND US pills ── */}
+          {/* ── Right: Language switcher (CH/EN) + FIND US pills ── */}
           <div className="header-right actions">
-            <Link href="/studio" className="round-pill" aria-label="About us">
-              US
-            </Link>
+            <button
+              type="button"
+              className="round-pill"
+              aria-label="Switch language (CH/EN)"
+              onClick={toggleLang}
+            >
+              {lang}
+            </button>
             <Link href="/contact" className="brief-pill" aria-label="Find us">
               FIND US
             </Link>
@@ -382,17 +395,17 @@ export function SiteHeader() {
             <Link href="/#services" onClick={(e) => handleNavClick(e, "/#services")}>
               <span className="menu-primary-line">Web&amp;Digital</span>
             </Link>
-            <Link href="/#services" onClick={(e) => handleNavClick(e, "/#services")}>
+            <Link href="/#method" onClick={(e) => handleNavClick(e, "/#method")}>
               <span className="menu-primary-line">
                 Branding&amp;
                 <br />
                 Design
               </span>
             </Link>
-            <Link href="/#approach" onClick={(e) => handleNavClick(e, "/#approach")}>
+            <Link href="/studio" onClick={() => closeMenu()}>
               <span className="menu-primary-line">Who We Are</span>
             </Link>
-            <Link href="/#selected-work" onClick={(e) => handleNavClick(e, "/#selected-work")}>
+            <Link href="/#what-we-do-best" onClick={(e) => handleNavClick(e, "/#what-we-do-best")}>
               <span className="menu-primary-line">Projects</span>
             </Link>
             <Link
@@ -406,6 +419,14 @@ export function SiteHeader() {
 
           <div className="menu-footer">
             <div className="menu-footer-links">
+              <button
+                type="button"
+                className="menu-lang-toggle"
+                onClick={toggleLang}
+                aria-label="Switch language (CH/EN)"
+              >
+                {lang === "CH" ? "中文 / EN" : "EN / 中文"}
+              </button>
               <a href="mailto:nosmallthing.limited@gmail.com">nosmallthing.limited@gmail.com</a>
               <a
                 href="https://www.linkedin.com/in/no-small-thing-987899445/"

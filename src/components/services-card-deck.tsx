@@ -439,10 +439,15 @@ export function ServicesCardDeck() {
     <section
       ref={sectionRef}
       className="services"
-      id="selected-work"
+      id="what-we-do-best"
       aria-label="What we do best"
       data-theme="dark"
     >
+      <span
+        id="selected-work"
+        style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+        aria-hidden="true"
+      />
       <div className="services-shell">
         <p className="services-kicker" ref={kickerRef}>
           what we do best

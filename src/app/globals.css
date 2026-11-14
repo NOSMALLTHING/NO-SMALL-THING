@@ -1371,7 +1371,7 @@ body.services-side-entry .services-shell {
 .menu-overlay {
   position: fixed;
   inset: 0;
-  z-index: 120;
+  z-index: 1200;
   pointer-events: none;
   font-family: "Inter Tight", Arial, Helvetica, sans-serif;
   font-weight: 800;
@@ -1508,7 +1508,8 @@ body.menu-open .menu-footer {
   position: fixed;
   left: var(--menu-anchor-center-x, 50vw);
   top: var(--menu-anchor-center-y, calc(31 * var(--emb-u)));
-  z-index: 146;
+  z-index: 1500;
+  pointer-events: auto;
   min-height: calc(38 * var(--emb-u));
   height: calc(38 * var(--emb-u));
   padding: 0 calc(6 * var(--emb-u));
@@ -1649,6 +1650,28 @@ body.menu-open .menu-primary-line {
 .menu-footer-links a:nth-child(3) { justify-self: center; }
 .menu-footer-links a:nth-child(4) { justify-self: end; }
 
+.menu-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 12, 13, 0.08);
+  color: var(--emb-ink);
+  font-family: inherit;
+  font-size: calc(13 * var(--emb-u));
+  font-weight: 800;
+  padding: calc(6 * var(--emb-u)) calc(12 * var(--emb-u));
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease;
+  user-select: none;
+}
+
+.menu-lang-toggle:hover {
+  background: var(--emb-ink);
+  color: #fff;
+}
+
 /* Main page backdrop blur and header elements layering */
 body.menu-open .home-hero,
 body.menu-open .home-over,
@@ -1669,9 +1692,15 @@ body.menu-open .site-header {
   z-index: 1010 !important;
 }
 
+body.menu-open .header-bar {
+  pointer-events: none !important;
+}
+
 body.menu-open .header-bar .actions,
-body.menu-open .site-header .brand-name {
-  z-index: 1015 !important;
+body.menu-open .site-header .brand-name,
+body.menu-open .header-bar .brand-name {
+  pointer-events: auto !important;
+  z-index: 1500 !important;
 }
 
 body.menu-open .site-header .brand-name,
@@ -1768,6 +1797,12 @@ body.menu-open .header-bar .header-logo-text {
     letter-spacing: 0;
   }
 
+  .menu-lang-toggle {
+    font-size: 14px;
+    padding: 8px 18px;
+    margin-bottom: 6px;
+  }
+
   .menu-close {
     left: auto;
     right: calc(50% + 30px);
@@ -1779,7 +1814,9 @@ body.menu-open .header-bar .header-logo-text {
     gap: 3px;
     font-size: 14px;
     font-weight: 800;
-    z-index: 150;
+    z-index: 1500;
+    pointer-events: auto;
+    cursor: pointer;
     transform: none;
     background: transparent;
     border: none;
@@ -1998,15 +2035,6 @@ a:focus-visible .scene-reveal {
     grid-template-columns: repeat(8, minmax(0, 1fr));
   }
 
-  .header-bar {
-    height: var(--header-height);
-    padding: 0 1.25rem;
-  }
-
-  .header-logo {
-    width: 135px;
-  }
-
   .type-display {
     font-size: clamp(3.75rem, 9vw, 6.25rem);
   }
@@ -2028,7 +2056,6 @@ a:focus-visible .scene-reveal {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-
   .ds-palette {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -2041,67 +2068,6 @@ a:focus-visible .scene-reveal {
   .ds-assets {
     grid-template-columns: 1fr;
     gap: 3rem;
-  }
-
-  /* Keep the home masthead compact and balanced on narrow screens. */
-  .site-header.is-home .header-bar {
-    top: max(8px, env(safe-area-inset-top));
-    height: 36px;
-  }
-
-  .site-header.is-home .header-bar .brand-name {
-    display: none;
-  }
-
-  .site-header.is-home .header-bar .menu {
-    inset: 0 auto auto 50%;
-    transform: translateX(-50%);
-    width: 72px;
-    height: 34px;
-    min-height: 34px;
-    gap: 3px;
-    padding: 0 8px 1px;
-    font-size: 10px;
-    display: inline-flex;
-    pointer-events: auto;
-  }
-
-  .site-header.is-home .header-bar .header-right.actions {
-    position: absolute;
-    inset: 0;
-    display: block;
-    margin: 0;
-    pointer-events: none;
-  }
-
-  .site-header.is-home .header-bar .header-right.actions .round-pill,
-  .site-header.is-home .header-bar .header-right.actions .brief-pill {
-    position: absolute;
-    top: 0;
-    bottom: auto;
-    height: 34px;
-    min-height: 34px;
-    padding: 0 6px;
-    font-size: 10px;
-    pointer-events: auto;
-  }
-
-  .site-header.is-home .header-bar .header-right.actions .round-pill {
-    display: inline-flex;
-    left: calc(18vw + 8px);
-    right: auto;
-    width: 36px;
-  }
-
-  .site-header.is-home .header-bar .header-right.actions .brief-pill {
-    left: auto;
-    right: 0;
-    width: auto;
-    min-width: 70px;
-  }
-
-  .site-header.is-home .menu-drawer {
-    transform-origin: 50% 0%;
   }
 }
 
