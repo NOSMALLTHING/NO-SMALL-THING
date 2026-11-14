@@ -264,16 +264,17 @@ export function SiteHeader() {
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     closeMenu();
+    window.__lenis?.start();
 
     if (href.startsWith("/#")) {
       const hash = href.slice(1);
       if (isHome) {
-        window.__lenis?.start();
         const target = document.querySelector(hash);
         if (target) {
           setTimeout(() => {
             if (window.__lenis) {
-              window.__lenis.scrollTo(target as HTMLElement, { offset: 0, duration: 1.2 });
+              window.__lenis.resize();
+              window.__lenis.scrollTo(target as HTMLElement, { offset: 0, duration: 1.2, force: true });
             } else {
               target.scrollIntoView({ behavior: "smooth" });
             }
@@ -281,7 +282,7 @@ export function SiteHeader() {
         }
       } else {
         sessionStorage.setItem("nst_scroll_target", hash);
-        router.push("/" + hash);
+        router.push(href);
       }
     } else {
       if (pathname === href) return;
