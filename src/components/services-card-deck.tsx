@@ -131,7 +131,7 @@ export function ServicesCardDeck() {
   ]);
 
   const metricsRef = useRef<CardMetric[]>([]);
-  const geometryRef = useRef({ docTop: 0, boxHeight: 0 });
+  const wasOutsideRef = useRef(true);
   const unitPxRef = useRef(1);
 
   // Sync geometry and card slot metrics without forced reflow inside render loop
@@ -139,19 +139,13 @@ export function ServicesCardDeck() {
     const section = sectionRef.current;
     if (!section) return;
 
-    const sy = window.scrollY || window.pageYOffset || 0;
-    const r = section.getBoundingClientRect();
-    geometryRef.current = {
-      docTop: r.top + sy,
-      boxHeight: r.height,
-    };
-
-    const probe = document.createElement("div");
-    probe.style.cssText =
-      "position:absolute;width:calc(100*var(--emb-u));height:0;visibility:hidden;pointer-events:none";
-    document.body.appendChild(probe);
-    const u = probe.getBoundingClientRect().width / 100 || 1;
-    probe.remove();
+    const u =
+      typeof window !== "undefined"
+        ? Math.min(
+            window.innerWidth * 0.000694444444,
+            (window.innerHeight || document.documentElement.clientHeight) * 0.001315789474
+          ) || 1
+        : 1;
     unitPxRef.current = u;
 
     const slots = slotRefs.current.filter(Boolean) as HTMLDivElement[];
@@ -182,21 +176,61 @@ export function ServicesCardDeck() {
       const serviceSideEntryEnabled = true;
 
       // In case metrics are uninitialized
-      if (!geometryRef.current.boxHeight) {
+      if (!metricsRef.current.length) {
         syncMetrics();
       }
 
-      const { docTop: servicesDocTop, boxHeight: servicesBoxHeight } = geometryRef.current;
-      const sy = window.scrollY || window.pageYOffset || 0;
-      const servicesTop = servicesDocTop - sy;
+      // Read live compositor position directly to prevent any scroll/layout drift
+      const sectionRect = section.getBoundingClientRect();
+      const servicesTop = sectionRect.top;
+      const servicesBoxHeight = sectionRect.height;
 
       // Emblematica runway check: skip whole update when section is well outside viewport
-      if (
-        servicesTop > viewportHeight * 1.5 ||
-        servicesTop + servicesBoxHeight < -viewportHeight * 0.5
-      ) {
+      if (servicesTop > viewportHeight * 1.5) {
+        wasOutsideRef.current = true;
+        const u = unitPxRef.current || 1;
+        const cardPerspective = `perspective(${(1800 * u).toFixed(2)}px) `;
+        const cardWidthFallback = viewportWidth * 0.8;
+
+        cards.forEach((card, index) => {
+          const state = cardStates.current[index];
+          if (!state) return;
+          const sideDirection = index % 2 === 0 ? -1 : 1;
+          const cardWidth = metricsRef.current[index]?.cardWidth || card.offsetWidth || cardWidthFallback;
+          const sideEntryOffset = viewportWidth * 0.52 + cardWidth * 0.58;
+
+          state.x = sideDirection * sideEntryOffset;
+          state.y = 74;
+          state.z = 0;
+          state.scale = 1;
+          state.rotateX = 0;
+          state.rotateY = sideDirection * -7;
+          state.rotateZ = sideDirection * 8.5;
+
+          card.classList.remove("is-active", "is-stacked");
+          card.classList.add("is-next");
+
+          if (isMobile) {
+            card.style.transform = "";
+          } else {
+            card.style.transform =
+              cardPerspective +
+              `translate3d(${state.x.toFixed(2)}px, ${state.y.toFixed(2)}px, ${state.z.toFixed(2)}px) ` +
+              `rotateX(${state.rotateX.toFixed(2)}deg) rotateY(${state.rotateY.toFixed(2)}deg) ` +
+              `rotateZ(${state.rotateZ.toFixed(2)}deg) ` +
+              `scale(${state.scale.toFixed(4)})`;
+          }
+        });
         return;
       }
+
+      if (servicesTop + servicesBoxHeight < -viewportHeight * 0.5) {
+        wasOutsideRef.current = true;
+        return;
+      }
+
+      const shouldSnap = instant || wasOutsideRef.current;
+      wasOutsideRef.current = false;
 
       const unitPx = unitPxRef.current;
       const enterRange = viewportHeight * (serviceSideEntryEnabled && !isMobile ? 0.78 : 0.46);
@@ -315,7 +349,7 @@ export function ServicesCardDeck() {
         card.style.zIndex = String(10 + index);
         if (cardSlot) cardSlot.style.zIndex = String(10 + index);
 
-        if (instant || reducedMotion) {
+        if (shouldSnap || reducedMotion) {
           state.x = targetX;
           state.y = recedeY;
           state.z = recedeZ;
@@ -416,7 +450,11 @@ export function ServicesCardDeck() {
 
     const loop = () => {
       if (!isMounted) return;
-      updateServiceCards(false);
+      try {
+        updateServiceCards(false);
+      } catch (err) {
+        console.error("Error updating service cards:", err);
+      }
       rafId = requestAnimationFrame(loop);
     };
     rafId = requestAnimationFrame(loop);
@@ -434,7 +472,6 @@ export function ServicesCardDeck() {
         syncMetrics();
       });
       if (sectionRef.current) ro.observe(sectionRef.current);
-      if (document.body) ro.observe(document.body);
     }
 
     if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
@@ -501,6 +538,11 @@ export function ServicesCardDeck() {
     >
       <span
         id="selected-work"
+        style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+        aria-hidden="true"
+      />
+      <span
+        id="work"
         style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
         aria-hidden="true"
       />

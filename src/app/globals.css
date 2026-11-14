@@ -1410,12 +1410,14 @@ body.menu-open .menu-overlay {
   backdrop-filter: blur(calc(18 * var(--emb-u)));
   -webkit-backdrop-filter: blur(calc(18 * var(--emb-u)));
   opacity: 0;
+  pointer-events: none;
   transition: opacity 360ms ease;
   cursor: pointer;
 }
 
 body.menu-open .menu-backdrop {
   opacity: 1;
+  pointer-events: auto;
 }
 
 /* 3D Quirky Character peeking behind drawer */
@@ -1453,6 +1455,7 @@ body.menu-open .menu-parrot {
 .menu-drawer {
   position: absolute;
   z-index: 3;
+  pointer-events: none;
   top: var(--menu-anchor-top);
   left: calc(var(--menu-anchor-left) - var(--menu-drawer-padding-left));
   width: min(
@@ -1487,6 +1490,7 @@ body.menu-open .menu-parrot {
 body.menu-open .menu-drawer {
   transform: translate3d(0, 0, 0) scale(1);
   opacity: 1;
+  pointer-events: auto;
 }
 
 /* Content wrapper transitions */
@@ -1519,7 +1523,7 @@ body.menu-open .menu-footer {
   left: var(--menu-anchor-center-x, 50vw);
   top: var(--menu-anchor-center-y, calc(31 * var(--emb-u)));
   z-index: 1500;
-  pointer-events: auto;
+  pointer-events: none;
   min-height: calc(38 * var(--emb-u));
   height: calc(38 * var(--emb-u));
   padding: 0 calc(6 * var(--emb-u));
@@ -1546,6 +1550,7 @@ body.menu-open .menu-footer {
 
 body.menu-open .menu-close {
   opacity: 1;
+  pointer-events: auto;
   transition-delay: 160ms;
 }
 
@@ -1798,12 +1803,16 @@ body.menu-open .header-bar .header-logo-text {
     font-size: 14px;
     font-weight: 800;
     z-index: 1500;
-    pointer-events: auto;
+    pointer-events: none;
     cursor: pointer;
     transform: none;
     background: transparent;
     border: none;
     box-shadow: none;
+  }
+
+  body.menu-open .menu-close {
+    pointer-events: auto;
   }
 
   body.menu-open .header-bar .actions .brief-pill {

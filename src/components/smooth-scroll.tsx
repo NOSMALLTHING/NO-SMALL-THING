@@ -48,8 +48,13 @@ export function SmoothScroll() {
       if (!anchor) return;
 
       const url = new URL(anchor.href, window.location.href);
-      // Only handle in-page anchors on the same path
-      if (url.pathname !== window.location.pathname) return;
+      // If navigating to another page with a hash, record it for post-transition scroll
+      if (url.pathname !== window.location.pathname) {
+        if (url.hash && url.hash !== "#top") {
+          sessionStorage.setItem("nst_scroll_target", url.hash);
+        }
+        return;
+      }
 
       const hash = url.hash;
       if (!hash) return;
@@ -63,7 +68,8 @@ export function SmoothScroll() {
       const target = document.querySelector(hash);
       if (target) {
         event.preventDefault();
-        lenis.scrollTo(target as HTMLElement, { offset: -32, duration: 1.2 });
+        lenis.resize();
+        lenis.scrollTo(target as HTMLElement, { offset: 0, duration: 1.2, force: true });
       }
     };
 
@@ -78,10 +84,54 @@ export function SmoothScroll() {
     };
   }, [reducedMotion]);
 
-  // Reset scroll position on route transitions
+  // Reset scroll position on route transitions or scroll to pending anchor target
   useEffect(() => {
     if (lenisRef.current) {
-      lenisRef.current.scrollTo(0, { immediate: true });
+      lenisRef.current.start();
+      lenisRef.current.resize();
+    }
+
+    const pendingTarget =
+      typeof window !== "undefined"
+        ? sessionStorage.getItem("nst_scroll_target") || (window.location.hash && window.location.hash !== "#top" ? window.location.hash : null)
+        : null;
+
+    if (pendingTarget && pendingTarget.startsWith("#") && pendingTarget !== "#top") {
+      sessionStorage.removeItem("nst_scroll_target");
+      let attempts = 0;
+      let lastTop = -1;
+      const scrollToPending = () => {
+        if (lenisRef.current) {
+          lenisRef.current.start();
+          lenisRef.current.resize();
+        }
+        const target = document.querySelector(pendingTarget);
+        if (target) {
+          const rect = target.getBoundingClientRect();
+          const currentTop = rect.top + window.scrollY;
+          // If the page layout is still calculating/expanding, wait for position to stabilize
+          if (attempts < 6 && (lastTop === -1 || Math.abs(currentTop - lastTop) > 10)) {
+            lastTop = currentTop;
+            attempts++;
+            setTimeout(scrollToPending, 80);
+            return;
+          }
+          if (lenisRef.current) {
+            lenisRef.current.resize();
+            lenisRef.current.scrollTo(target as HTMLElement, { offset: 0, duration: 1.2, force: true });
+          } else {
+            target.scrollIntoView({ behavior: "smooth" });
+          }
+        } else if (attempts < 20) {
+          attempts++;
+          setTimeout(scrollToPending, 80);
+        }
+      };
+      setTimeout(scrollToPending, 100);
+    } else {
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { immediate: true });
+      }
     }
   }, [pathname]);
 
