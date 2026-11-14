@@ -448,6 +448,11 @@ export function ServicesCardDeck() {
         style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
         aria-hidden="true"
       />
+      <span
+        id="work"
+        style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+        aria-hidden="true"
+      />
       <div className="services-shell">
         <p className="services-kicker" ref={kickerRef}>
           what we do best

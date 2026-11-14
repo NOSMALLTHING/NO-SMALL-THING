@@ -14,7 +14,7 @@ try {
     server.once("error", reject);
     server.once("exit", code => { clearTimeout(timer); reject(new Error(`Preview exited: ${code}`)); });
   });
-  const pages = ["/", "/work", "/work/", "/expertise", "/studio", "/contact", "/work/orbit", "/work/form-and-field", "/design-system"];
+  const pages = ["/", "/expertise", "/studio", "/contact", "/work/orbit", "/work/form-and-field", "/design-system"];
   let assets = new Set();
   for (const path of pages) {
     const result = await fetch(origin + path);
@@ -48,7 +48,7 @@ try {
   assert.match(sitemap, /<urlset/);
   assert.ok(!sitemap.includes("design-system"));
   const rootHtml = await readFile("out/index.html", "utf8");
-  for (const phrase of ["WHAT WE DO.", "SELECTED WORK.", "THINK BEYOND.", "THREE MINDS.", "SOMETHING MATTER."]) assert.ok(rootHtml.includes(phrase), phrase);
+  for (const phrase of ["Three minds", "SOMETHING MATTER.", "what we do best", "creative method"]) assert.ok(rootHtml.includes(phrase), phrase);
   assert.ok(!rootHtml.includes("__about-qa") && !rootHtml.includes("__review-qa"));
   console.log(JSON.stringify({ pages: pages.length, assetRequests: assets.size, routeStatus: "passed", headings: "passed", metadata: "passed", conceptDisclosures: "passed", honestContactMode: "passed", fallback404: "passed", unsupportedPost: "405", sitemap: "passed" }));
 } finally { server.kill(); }

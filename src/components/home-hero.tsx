@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import localFont from "next/font/local";
 import styles from "./home-hero.module.css";
@@ -118,7 +117,7 @@ export function HomeHero() {
   }, [currentIndex]);
 
   return (
-    <section className={styles.hero} data-theme="dark" aria-labelledby="home-title">
+    <section className={`${styles.hero} home-hero`} data-theme="dark" aria-labelledby="home-title">
       <div className={styles.mediaWrap}>
         <picture>
           <source srcSet="/hero/poster.webp" type="image/webp" />

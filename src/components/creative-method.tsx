@@ -381,6 +381,11 @@ export function CreativeMethod() {
         aria-label="Creative method"
         data-theme="dark"
       >
+        <span
+          id="approach"
+          style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+          aria-hidden="true"
+        />
         <div className="method-shell">
           <p className="method-kicker">creative method</p>
 
