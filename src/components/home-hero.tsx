@@ -164,6 +164,16 @@ class MonoTextReveal {
       this.animationTarget.textContent = "";
     }
   }
+
+  destroy() {
+    if (this.tl) {
+      this.tl.kill();
+      this.tl = null;
+    }
+    if (this.animationTarget) {
+      this.animationTarget.textContent = this.originalText;
+    }
+  }
 }
 
 function HeroClock() {
@@ -204,38 +214,24 @@ export function HomeHero() {
 
   const playHeroEntrance = useCallback(() => {
     // 1. Text decode on [ WE ARE NO SMALL THING ]
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       if (monoRevealRef.current) {
         monoRevealRef.current.play();
       }
-    }, 200);
+    }, 150);
 
-    // 2. Title lines staggered slide up
+    // 2. Ensure title lines display normally without blocking or flash
     const lines = titleLinesRef.current.filter(Boolean);
     if (lines.length) {
-      gsap.fromTo(
-        lines,
-        { yPercent: 120, clipPath: "inset(-10% -10% 120% -10%)" },
-        {
-          yPercent: 0,
-          clipPath: "inset(-10% -10% -10% -10%)",
-          duration: 1.1,
-          stagger: 0.14,
-          ease: "power4.out",
-          delay: 0.35,
-        }
-      );
+      gsap.set(lines, { yPercent: 0, clipPath: "none" });
     }
-  }, []);
 
-  const resetHeroEntrance = useCallback(() => {
-    if (monoRevealRef.current) {
-      monoRevealRef.current.reset();
-    }
-    const lines = titleLinesRef.current.filter(Boolean);
-    if (lines.length) {
-      gsap.set(lines, { yPercent: 120, clipPath: "inset(-10% -10% 120% -10%)" });
-    }
+    return () => {
+      clearTimeout(timer);
+      if (monoRevealRef.current) {
+        monoRevealRef.current.destroy();
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -243,35 +239,20 @@ export function HomeHero() {
       monoRevealRef.current = new MonoTextReveal(kickerRef.current, targetRef.current, 0.45);
     }
 
-    let seen = false;
-    try {
-      seen = sessionStorage.getItem("nst-loader-seen") === "1";
-    } catch {}
-
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (seen || reduced) {
-      playHeroEntrance();
-    } else {
-      resetHeroEntrance();
+    if (reduced) {
+      const lines = titleLinesRef.current.filter(Boolean);
+      if (lines.length) {
+        gsap.set(lines, { yPercent: 0, clipPath: "none" });
+      }
+      return () => {
+        monoRevealRef.current?.destroy();
+      };
     }
 
-    const onLoaderComplete = () => {
-      playHeroEntrance();
-    };
-
-    const onLoaderStart = () => {
-      resetHeroEntrance();
-    };
-
-    window.addEventListener("nst-loader-complete", onLoaderComplete);
-    window.addEventListener("nst-loader-start", onLoaderStart);
-
-    return () => {
-      window.removeEventListener("nst-loader-complete", onLoaderComplete);
-      window.removeEventListener("nst-loader-start", onLoaderStart);
-    };
-  }, [playHeroEntrance, resetHeroEntrance]);
+    return playHeroEntrance();
+  }, [playHeroEntrance]);
 
   useEffect(() => {
     const firstVideo = videoRefs.current[0];

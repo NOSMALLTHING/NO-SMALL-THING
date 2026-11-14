@@ -208,7 +208,7 @@ export function SiteHeader() {
 
       for (let i = 0; i < stack.length; i++) {
         const el = stack[i];
-        if (el.closest(".site-header, .menu-overlay, dialog, #site-menu, [class*='telemetry-preloader'], [class*='overlay']")) continue;
+        if (el.closest(".site-header, .menu-overlay, dialog, #site-menu, [class*='overlay']")) continue;
 
         const cs = window.getComputedStyle(el);
         if (parseFloat(cs.opacity) === 0 || cs.visibility === "hidden") continue;
@@ -343,7 +343,6 @@ export function SiteHeader() {
             onClick={(event) => {
               if (isHome) {
                 event.preventDefault();
-                window.dispatchEvent(new CustomEvent("nst-loader-replay"));
                 if (window.__lenis) {
                   window.__lenis.scrollTo(0, { duration: 0.8 });
                 } else {
