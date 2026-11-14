@@ -419,14 +419,6 @@ export function SiteHeader() {
 
           <div className="menu-footer">
             <div className="menu-footer-links">
-              <button
-                type="button"
-                className="menu-lang-toggle"
-                onClick={toggleLang}
-                aria-label="Switch language (CH/EN)"
-              >
-                {lang === "CH" ? "中文 / EN" : "EN / 中文"}
-              </button>
               <a href="mailto:nosmallthing.limited@gmail.com">nosmallthing.limited@gmail.com</a>
               <a
                 href="https://www.linkedin.com/in/no-small-thing-987899445/"

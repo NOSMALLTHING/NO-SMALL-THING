@@ -547,7 +547,17 @@ main#main-content {
   }
 
   .header-bar .header-right.actions .round-pill {
-    display: none;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    min-height: 32px;
+    height: 32px;
+    font-size: 13px;
+    padding: 0;
+    z-index: 1015;
+    display: inline-flex;
   }
 
   .header-bar .header-right.actions .brief-pill {
@@ -771,7 +781,7 @@ main#main-content {
 
   .site-header .round-pill,
   .header-bar .round-pill {
-    display: none !important;
+    display: inline-flex !important;
   }
 
   .site-header .brief-pill,
@@ -1650,28 +1660,6 @@ body.menu-open .menu-primary-line {
 .menu-footer-links a:nth-child(3) { justify-self: center; }
 .menu-footer-links a:nth-child(4) { justify-self: end; }
 
-.menu-lang-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(14, 12, 13, 0.08);
-  color: var(--emb-ink);
-  font-family: inherit;
-  font-size: calc(13 * var(--emb-u));
-  font-weight: 800;
-  padding: calc(6 * var(--emb-u)) calc(12 * var(--emb-u));
-  border: 0;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: background 180ms ease, color 180ms ease;
-  user-select: none;
-}
-
-.menu-lang-toggle:hover {
-  background: var(--emb-ink);
-  color: #fff;
-}
-
 /* Main page backdrop blur and header elements layering */
 body.menu-open .home-hero,
 body.menu-open .home-over,
@@ -1795,12 +1783,6 @@ body.menu-open .header-bar .header-logo-text {
     font-weight: 800;
     line-height: 1;
     letter-spacing: 0;
-  }
-
-  .menu-lang-toggle {
-    font-size: 14px;
-    padding: 8px 18px;
-    margin-bottom: 6px;
   }
 
   .menu-close {
