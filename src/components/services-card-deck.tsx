@@ -426,7 +426,6 @@ export function ServicesCardDeck() {
           scheduleUpdate();
         });
         if (sectionRef.current) ro.observe(sectionRef.current);
-        if (document.body) ro.observe(document.body);
       }
       if (typeof document !== "undefined" && document.fonts?.ready) {
         document.fonts.ready.then(() => {

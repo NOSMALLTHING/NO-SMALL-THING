@@ -1279,7 +1279,7 @@ body.services-side-entry .services-shell {
    ========================================================================== */
 @media (max-width: 900px) {
   .services {
-    --services-kicker-top: calc(96 * var(--emb-u));
+    --services-kicker-top: calc(92 * var(--emb-u));
     --services-kicker-gap: calc(44 * var(--emb-u));
     --services-stack-intro: calc(72 * var(--emb-u));
     --services-flow-gap: calc(64 * var(--emb-u));
