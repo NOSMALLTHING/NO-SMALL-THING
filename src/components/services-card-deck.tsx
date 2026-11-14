@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 interface ProjectCardData {
@@ -111,6 +111,15 @@ export function ServicesCardDeck() {
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const reducedMotion = useReducedMotion();
+  const [isTouchLayout, setIsTouchLayout] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 900px)");
+    const update = () => setIsTouchLayout(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
   // Persistent physics states per card for continuous lerp inertia
   const cardStates = useRef<CardPhysicsState[]>([
@@ -358,6 +367,53 @@ export function ServicesCardDeck() {
     let rafId = 0;
     let isMounted = true;
 
+    if (isTouchLayout) {
+      // Cards are flat on touch layouts, so update once per scroll frame instead
+      // of running a perpetual physics loop while the page is idle.
+      const scheduleUpdate = () => {
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = 0;
+          if (!isMounted) return;
+          updateServiceCards(true);
+        });
+      };
+      const handleResize = () => {
+        syncMetrics();
+        scheduleUpdate();
+      };
+
+      window.addEventListener("scroll", scheduleUpdate, { passive: true });
+      window.addEventListener("resize", handleResize, { passive: true });
+      let ro: ResizeObserver | null = null;
+      if (typeof ResizeObserver !== "undefined") {
+        ro = new ResizeObserver(() => {
+          syncMetrics();
+          scheduleUpdate();
+        });
+        if (sectionRef.current) ro.observe(sectionRef.current);
+        if (document.body) ro.observe(document.body);
+      }
+      if (typeof document !== "undefined" && document.fonts?.ready) {
+        document.fonts.ready.then(() => {
+          syncMetrics();
+          scheduleUpdate();
+        });
+      }
+      const t1 = setTimeout(() => { syncMetrics(); scheduleUpdate(); }, 100);
+      const t2 = setTimeout(() => { syncMetrics(); scheduleUpdate(); }, 500);
+
+      return () => {
+        isMounted = false;
+        if (rafId) cancelAnimationFrame(rafId);
+        window.removeEventListener("scroll", scheduleUpdate);
+        window.removeEventListener("resize", handleResize);
+        ro?.disconnect();
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+
     const loop = () => {
       if (!isMounted) return;
       updateServiceCards(false);
@@ -398,7 +454,7 @@ export function ServicesCardDeck() {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [reducedMotion, syncMetrics, updateServiceCards]);
+  }, [isTouchLayout, reducedMotion, syncMetrics, updateServiceCards]);
 
   // Video playback management via IntersectionObserver (plays 1 screen ahead, pauses when away)
   useEffect(() => {

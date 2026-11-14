@@ -130,7 +130,12 @@ export function SiteHeader() {
     const detectLightAtLogo = () => {
       setScrolled(window.scrollY > 15);
 
-      const logoEl = logoRef.current;
+      // On the mobile home page, the animated wordmark replaces the hidden
+      // masthead wordmark, so sample the visible mark as it moves during scroll.
+      const useMobileBrand = isHome && window.matchMedia("(max-width: 767px)").matches;
+      const logoEl = useMobileBrand
+        ? document.querySelector<HTMLElement>(".mobile-brand-transition")
+        : logoRef.current;
       if (!logoEl) return;
 
       const rect = logoEl.getBoundingClientRect();
@@ -235,7 +240,7 @@ export function SiteHeader() {
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [pathname]);
+  }, [isHome, pathname]);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith("/#") && isHome) {

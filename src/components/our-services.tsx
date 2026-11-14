@@ -309,7 +309,7 @@ export function OurServices({
   });
   // HomeStage supplies a track-aware progress value; standalone pages fall
   // back to this section's local scroll range.
-  const smoothProgress = progress ?? sprungProgress;
+  const smoothProgress = isPhone ? scrollYProgress : progress ?? sprungProgress;
 
   const Heading = standalone ? "h1" : "h2";
 
@@ -537,15 +537,15 @@ export function OurServices({
             </div>
             <div className={styles.mobileNarrative}>
               <div className={styles.narrativeLead}>
-                <NarrativeLine lineIndex={0} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled} fadeOutRange={[0.54, 0.67]}>
+                <NarrativeLine lineIndex={0} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled}>
                   Three minds. One ambition.
                 </NarrativeLine>
               </div>
               <div className={styles.narrativeBody}>
-                <NarrativeLine lineIndex={2} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled} fadeOutRange={[0.60, 0.73]}>
+                <NarrativeLine lineIndex={2} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled}>
                   Purposeful AI, software, UI/UX and web experiences.
                 </NarrativeLine>
-                <NarrativeLine lineIndex={3} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled} fadeOutRange={[0.66, 0.79]}>
+                <NarrativeLine lineIndex={3} scrollYProgress={smoothProgress} depart={depart} enabled={animationsEnabled}>
                   Thoughtful design. Hands-on delivery.
                 </NarrativeLine>
               </div>

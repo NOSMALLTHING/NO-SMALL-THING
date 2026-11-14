@@ -1,42 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "motion/react";
+import { useEffect, useState, useRef } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import styles from "./mobile-brand-transition.module.css";
 
 const BRAND_SCROLL_DISTANCE = 460;
+const BRAND_LEFT = 14;
+const BRAND_TOP = 21;
 
-/** Uses the official wordmark and moves it into the mobile masthead as the hero scrolls away. */
+/** The hero wordmark scales into the exact mobile masthead position. */
 export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
   const [viewport, setViewport] = useState({ width: 390, height: 844 });
+  const [wordmarkSize, setWordmarkSize] = useState({ width: 140, height: 23 });
+  const wordmarkRef = useRef<HTMLSpanElement>(null);
   const { scrollY } = useScroll();
-  const easedScroll = useSpring(scrollY, { stiffness: 110, damping: 26, mass: 0.55 });
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     const updateViewport = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+    const updateWordmarkSize = () => {
+      const bounds = wordmarkRef.current?.getBoundingClientRect();
+      if (bounds && bounds.width > 0 && bounds.height > 0) {
+        setWordmarkSize({ width: bounds.width, height: bounds.height });
+      }
+    };
+
     updateViewport();
+    updateWordmarkSize();
     window.addEventListener("resize", updateViewport, { passive: true });
-    return () => window.removeEventListener("resize", updateViewport);
+    const observer = wordmarkRef.current && typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(updateWordmarkSize)
+      : null;
+    if (observer && wordmarkRef.current) observer.observe(wordmarkRef.current);
+    document.fonts?.ready.then(updateWordmarkSize);
+
+    return () => {
+      window.removeEventListener("resize", updateViewport);
+      observer?.disconnect();
+    };
   }, []);
 
-  const startWidth = viewport.width * 0.82;
-  const endWidth = viewport.width * 0.18;
-  const logoHeight = startWidth * (148 / 1220);
-  const left = useTransform(easedScroll, [0, BRAND_SCROLL_DISTANCE], [viewport.width / 2, 14]);
-  const top = useTransform(easedScroll, [0, BRAND_SCROLL_DISTANCE], [viewport.height * 0.45, 22]);
-  const width = useTransform(easedScroll, [0, BRAND_SCROLL_DISTANCE], [startWidth, endWidth]);
-  const x = useTransform(easedScroll, [0, BRAND_SCROLL_DISTANCE], [-startWidth / 2, 0]);
-  const y = useTransform(easedScroll, [0, BRAND_SCROLL_DISTANCE], [-logoHeight / 2, 0]);
+  const startScale = (viewport.width * 0.82) / Math.max(wordmarkSize.width, 1);
+  const startX = viewport.width / 2 - BRAND_LEFT - (wordmarkSize.width * startScale) / 2;
+  const startY = viewport.height * 0.45 - BRAND_TOP - (wordmarkSize.height * startScale) / 2;
+  const x = useTransform(scrollY, [0, BRAND_SCROLL_DISTANCE], [startX, 0]);
+  const y = useTransform(scrollY, [0, BRAND_SCROLL_DISTANCE], [startY, 0]);
+  const scale = useTransform(scrollY, [0, BRAND_SCROLL_DISTANCE], [startScale, 1]);
 
   return (
     <motion.div
       className={`${styles.brand} mobile-brand-transition`}
       data-light={isLight ? "true" : "false"}
-      style={reducedMotion
-        ? { left: 14, top: 22, width: endWidth, x: 0, y: 0 }
-        : { left, top, width, x, y }}
+      style={reducedMotion ? { x: 0, y: 0, scale: 1 } : { x, y, scale }}
     >
       <Link
         href="/"
@@ -46,7 +62,7 @@ export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
           window.dispatchEvent(new CustomEvent("nst-intro-replay"));
         }}
       >
-        <img src="/brand/wordmark-white.png" alt="" className={styles.wordmark} />
+        <span ref={wordmarkRef} className={styles.wordmark} aria-hidden="true">NO SMALL THING</span>
       </Link>
     </motion.div>
   );

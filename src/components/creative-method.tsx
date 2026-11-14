@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 const clamp = (val: number, min: number, max: number) => Math.min(max, Math.max(min, val));
@@ -85,11 +85,20 @@ const METHOD_PREVIEWS: Record<string, string[]> = {
 };
 
 export function CreativeMethod() {
+  const [isPhone, setIsPhone] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLParagraphElement>(null);
   const transitionRef = useRef<HTMLElement>(null);
   const lastActiveIndexRef = useRef<number>(-999);
   const reducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    const query = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsPhone(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
 
   // Floating cursor preview state
   const previewTimerRef = useRef<number>(0);
@@ -175,10 +184,31 @@ export function CreativeMethod() {
     );
   }, []);
 
-  // Continuous animation RAF loop for illumination and transition arc
+  // Mobile scroll is native and event-driven; avoid running an idle RAF loop.
   useEffect(() => {
     let rafId = 0;
     let isMounted = true;
+
+    if (isPhone) {
+      const scheduleUpdate = () => {
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = 0;
+          updateScrollCopy();
+          updateMethodTransition();
+        });
+      };
+
+      scheduleUpdate();
+      window.addEventListener("scroll", scheduleUpdate, { passive: true });
+      window.addEventListener("resize", scheduleUpdate, { passive: true });
+      return () => {
+        isMounted = false;
+        if (rafId) cancelAnimationFrame(rafId);
+        window.removeEventListener("scroll", scheduleUpdate);
+        window.removeEventListener("resize", scheduleUpdate);
+      };
+    }
 
     const loop = () => {
       if (!isMounted) return;
@@ -209,7 +239,7 @@ export function CreativeMethod() {
         window.__lenis.off("scroll", scheduleUpdate);
       }
     };
-  }, [updateScrollCopy, updateMethodTransition]);
+  }, [isPhone, updateScrollCopy, updateMethodTransition]);
 
   // Method Cursor Preview (Polaroid/Moodboard Card Spawner)
   const stopMethodPreview = useCallback(() => {
