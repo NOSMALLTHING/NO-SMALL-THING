@@ -2061,6 +2061,10 @@ a:focus-visible .scene-reveal {
     grid-template-columns: 1fr;
     gap: 3rem;
   }
+
+  .site-header.is-home .header-bar .brand-name {
+    display: none;
+  }
 }
 
 /* Responsive header formatting */
