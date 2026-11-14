@@ -259,7 +259,6 @@ export function SiteHeader() {
 
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", scheduleUpdate, { passive: true });
-    window.addEventListener("nst-intro-complete", scheduleUpdate);
 
     const attachLenis = () => {
       if (window.__lenis) {
@@ -287,7 +286,6 @@ export function SiteHeader() {
     return () => {
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", scheduleUpdate);
-      window.removeEventListener("nst-intro-complete", scheduleUpdate);
       if (checkLenisTimer) clearInterval(checkLenisTimer);
       if (window.__lenis) {
         window.__lenis.off("scroll", scheduleUpdate);
@@ -343,9 +341,14 @@ export function SiteHeader() {
             className="brand-name"
             aria-label="NO SMALL THING — Home"
             onClick={(event) => {
-              if (reducedMotion) return;
-              if (isHome) event.preventDefault();
-              window.dispatchEvent(new CustomEvent("nst-intro-replay"));
+              if (isHome) {
+                event.preventDefault();
+                if (window.__lenis) {
+                  window.__lenis.scrollTo(0, { duration: 1.2 });
+                } else {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }
             }}
           >
             <span className="header-logo-text">NO SMALL THING</span>

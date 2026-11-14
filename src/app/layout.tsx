@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { TelemetryPreloader } from "@/components/telemetry-preloader";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SmoothScroll } from "@/components/smooth-scroll";
@@ -28,7 +27,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   </head><body id="top">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, "\\u003c") }} />
     <a href="#main-content" className="skip-link">Skip to content</a>
-    <TelemetryPreloader />
     <SmoothScroll />
     <SiteHeader />
     <main id="main-content" tabIndex={-1}>{children}</main>
