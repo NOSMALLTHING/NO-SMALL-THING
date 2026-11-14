@@ -337,114 +337,114 @@ export function SiteHeader() {
             ))}
           </nav>
         </noscript>
-      </header>
 
-      {/* ── Emblematica-style Animated Menu Overlay ── */}
-      <div
-        className="menu-overlay"
-        id="menuOverlay"
-        ref={overlayRef}
-        hidden={!menuVisible}
-        aria-hidden={!menuOpen}
-      >
+        {/* ── Emblematica-style Animated Menu Overlay ── */}
         <div
-          className="menu-backdrop"
-          data-menu-close=""
-          onClick={closeMenu}
-          aria-hidden="true"
-        />
-
-        <img
-          className="menu-parrot"
-          src="/brand/menu-parrot.webp"
-          alt=""
-          aria-hidden="true"
-        />
-
-        <button
-          className="menu-close"
-          id="menuClose"
-          ref={closeBtnRef}
-          type="button"
-          aria-label="Close menu"
-          onClick={closeMenu}
+          className="menu-overlay"
+          id="menuOverlay"
+          ref={overlayRef}
+          hidden={!menuVisible}
+          aria-hidden={!menuOpen}
         >
-          <span className="menu-close-label-desktop">Close</span>
-          <svg
-            className="menu-dot"
-            viewBox="0 0 4.3163 11.5104"
-            fill="none"
+          <div
+            className="menu-backdrop"
+            data-menu-close=""
+            onClick={closeMenu}
             aria-hidden="true"
-          >
-            <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
-            <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
-          </svg>
-          <svg
-            className="menu-dot"
-            viewBox="0 0 4.3163 11.5104"
-            fill="none"
-            aria-hidden="true"
-          >
-            <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
-            <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
-          </svg>
-        </button>
+          />
 
-        <aside className="menu-drawer" ref={drawerRef} aria-label="Main menu">
-          <nav className="menu-primary" aria-label="Main navigation">
-            <Link href="/#services" onClick={(e) => handleNavClick(e, "/#services")}>
-              <span className="menu-primary-line">Web&amp;Digital</span>
-            </Link>
-            <Link href="/#method" onClick={(e) => handleNavClick(e, "/#method")}>
-              <span className="menu-primary-line">
-                Branding&amp;
-                <br />
-                Design
-              </span>
-            </Link>
-            <Link href="/studio" onClick={() => closeMenu()}>
-              <span className="menu-primary-line">Who We Are</span>
-            </Link>
-            <Link href="/#what-we-do-best" onClick={(e) => handleNavClick(e, "/#what-we-do-best")}>
-              <span className="menu-primary-line">Projects</span>
-            </Link>
-            <Link
-              href="/#contact"
-              className="menu-primary-accent"
-              onClick={(e) => handleNavClick(e, "/#contact")}
+          <img
+            className="menu-parrot"
+            src="/brand/menu-parrot.webp"
+            alt=""
+            aria-hidden="true"
+          />
+
+          <button
+            className="menu-close"
+            id="menuClose"
+            ref={closeBtnRef}
+            type="button"
+            aria-label="Close menu"
+            onClick={closeMenu}
+          >
+            <span className="menu-close-label-desktop">Close</span>
+            <svg
+              className="menu-dot"
+              viewBox="0 0 4.3163 11.5104"
+              fill="none"
+              aria-hidden="true"
             >
-              <span className="menu-primary-line">Book A Call</span>
-            </Link>
-          </nav>
+              <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+              <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+            </svg>
+            <svg
+              className="menu-dot"
+              viewBox="0 0 4.3163 11.5104"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle cx="2.15816" cy="2.15814" r="2.15814" fill="currentColor" />
+              <circle cx="2.15816" cy="9.35228" r="2.15814" fill="currentColor" />
+            </svg>
+          </button>
 
-          <div className="menu-footer">
-            <div className="menu-footer-links">
-              <a href="mailto:nosmallthing.limited@gmail.com">nosmallthing.limited@gmail.com</a>
-              <a
-                href="https://www.linkedin.com/in/no-small-thing-987899445/"
-                target="_blank"
-                rel="noopener noreferrer"
+          <aside className="menu-drawer" ref={drawerRef} aria-label="Main menu">
+            <nav className="menu-primary" aria-label="Main navigation">
+              <Link href="/#services" onClick={(e) => handleNavClick(e, "/#services")}>
+                <span className="menu-primary-line">Web&amp;Digital</span>
+              </Link>
+              <Link href="/#method" onClick={(e) => handleNavClick(e, "/#method")}>
+                <span className="menu-primary-line">
+                  Branding&amp;
+                  <br />
+                  Design
+                </span>
+              </Link>
+              <Link href="/studio" onClick={() => closeMenu()}>
+                <span className="menu-primary-line">Who We Are</span>
+              </Link>
+              <Link href="/#what-we-do-best" onClick={(e) => handleNavClick(e, "/#what-we-do-best")}>
+                <span className="menu-primary-line">Projects</span>
+              </Link>
+              <Link
+                href="/#contact"
+                className="menu-primary-accent"
+                onClick={(e) => handleNavClick(e, "/#contact")}
               >
-                LinkedIn
-              </a>
-              <a
-                href="https://www.instagram.com/nosmallthing.limited/?hl=en"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Instagram
-              </a>
-              <a
-                href="https://github.com/NOSMALLTHING"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                GitHub
-              </a>
+                <span className="menu-primary-line">Book A Call</span>
+              </Link>
+            </nav>
+
+            <div className="menu-footer">
+              <div className="menu-footer-links">
+                <a href="mailto:nosmallthing.limited@gmail.com">nosmallthing.limited@gmail.com</a>
+                <a
+                  href="https://www.linkedin.com/in/no-small-thing-987899445/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  LinkedIn
+                </a>
+                <a
+                  href="https://www.instagram.com/nosmallthing.limited/?hl=en"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Instagram
+                </a>
+                <a
+                  href="https://github.com/NOSMALLTHING"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub
+                </a>
+              </div>
             </div>
-          </div>
-        </aside>
-      </div>
+          </aside>
+        </div>
+      </header>
     </>
   );
 }

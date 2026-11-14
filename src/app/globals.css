@@ -1381,7 +1381,7 @@ body.services-side-entry .services-shell {
 .menu-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1200;
+  z-index: 120;
   pointer-events: none;
   font-family: "Inter Tight", Arial, Helvetica, sans-serif;
   font-weight: 800;
@@ -1677,18 +1677,19 @@ body.menu-open .header-bar .menu-pill {
 }
 
 body.menu-open .site-header {
-  z-index: 1010 !important;
+  z-index: 1200 !important;
 }
 
 body.menu-open .header-bar {
   pointer-events: none !important;
+  z-index: 200 !important;
 }
 
 body.menu-open .header-bar .actions,
 body.menu-open .site-header .brand-name,
 body.menu-open .header-bar .brand-name {
   pointer-events: auto !important;
-  z-index: 1500 !important;
+  z-index: 145 !important;
 }
 
 body.menu-open .site-header .brand-name,
