@@ -53,6 +53,29 @@ const STATEMENT_BLOCKS = [
   },
 ];
 
+const FUTURE_INFLATE_LETTERS = [
+  { char: "f", src: "/marketing-assets/images/text-effects/inflate/f.png", width: 122, height: 187, className: "story-inflate-f", percent: 16.35 },
+  { char: "u", src: "/marketing-assets/images/text-effects/inflate/u.png", width: 127, height: 148, className: "story-inflate-u1", percent: 17.02 },
+  { char: "t", src: "/marketing-assets/images/text-effects/inflate/t.png", width: 111, height: 175, className: "story-inflate-t", percent: 14.88 },
+  { char: "u", src: "/marketing-assets/images/text-effects/inflate/u.png", width: 127, height: 148, className: "story-inflate-u2", percent: 17.02 },
+  { char: "r", src: "/marketing-assets/images/text-effects/inflate/r.png", width: 130, height: 148, className: "story-inflate-r", percent: 17.43 },
+  { char: "e", src: "/marketing-assets/images/text-effects/inflate/e.png", width: 129, height: 148, className: "story-inflate-e", percent: 17.30 },
+];
+
+const AI_INFLATE_LETTERS = [
+  { char: "A", src: "/marketing-assets/images/text-effects/inflate/a.png", width: 179, height: 186, className: "story-inflate-a", percent: 59.67 },
+  { char: "I", src: "/marketing-assets/images/text-effects/inflate/i.png", width: 121, height: 186, className: "story-inflate-i", percent: 40.33 },
+];
+
+const INFLATE_LETTERS = [
+  { char: "b", src: "/marketing-assets/images/text-effects/inflate/b.png", width: 139, height: 187, className: "dSFIkm", percent: 19.6 },
+  { char: "l", src: "/marketing-assets/images/text-effects/inflate/l.png", width: 61, height: 186, className: "hBBHrG", percent: 8.6 },
+  { char: "o", src: "/marketing-assets/images/text-effects/inflate/o.png", width: 133, height: 147, className: "bZXNyl", percent: 18.8 },
+  { char: "c", src: "/marketing-assets/images/text-effects/inflate/c.png", width: 123, height: 149, className: "ipkyZC", percent: 17.4 },
+  { char: "k", src: "/marketing-assets/images/text-effects/inflate/k.png", width: 130, height: 187, className: "PyBAF", percent: 18.4 },
+  { char: "s", src: "/marketing-assets/images/text-effects/inflate/s.png", width: 122, height: 149, className: "jtEPpI", percent: 17.2 },
+];
+
 const TEXT_EFFECT_ITEMS = [
   { id: "inflate", label: "Inflate", image: "/marketing-assets/images/text-effects/inflate.png" },
   { id: "glow", label: "Glow", image: "/marketing-assets/images/text-effects/glow.png" },
@@ -413,6 +436,9 @@ export function ButterServices() {
   const [hoveredEffect, setHoveredEffect] = useState<string | null>(null);
   const activeEffect = hoveredEffect || pinnedEffect;
 
+  const futureInflateLettersRef = useRef<(HTMLImageElement | null)[]>([]);
+  const aiInflateLettersRef = useRef<(HTMLImageElement | null)[]>([]);
+  const inflateLettersRef = useRef<(HTMLImageElement | null)[]>([]);
   const futureLettersRef = useRef<(HTMLSpanElement | null)[]>([]);
   const aiLettersRef = useRef<(HTMLSpanElement | null)[]>([]);
   const buildingWordRef = useRef<HTMLSpanElement | null>(null);
@@ -467,11 +493,12 @@ export function ButterServices() {
     }
   }, [activeEffect]);
 
-  // Inflate effect: 3D bounce letters & adjacent word push
+  // Inflate effect: 3D bounce letters & adjacent word push matching Butter 1:1
   useEffect(() => {
     const isInflate = activeEffect === "inflate";
-    const futureLetters = futureLettersRef.current.filter((l): l is HTMLSpanElement => Boolean(l));
-    const aiLetters = aiLettersRef.current.filter((l): l is HTMLSpanElement => Boolean(l));
+    const futureInflateLetters = futureInflateLettersRef.current.filter((l): l is HTMLImageElement => Boolean(l));
+    const aiInflateLetters = aiInflateLettersRef.current.filter((l): l is HTMLImageElement => Boolean(l));
+    const allInflateLetters = [...futureInflateLetters, ...aiInflateLetters];
     const wordBuilding = buildingWordRef.current;
     const wordWhere = whereWordRef.current;
     const wordThe = theWordRef.current;
@@ -482,45 +509,53 @@ export function ButterServices() {
     }
     hasEverAnimatedInflateRef.current = true;
 
-    const duration = isInflate ? 0.75 : 0.4;
-    const ease = isInflate ? "back.out(1.5)" : "power2.out";
+    const duration = isInflate ? 0.8 : 0.4;
+    const ease = isInflate ? "back.out(1.2)" : "power2.out";
     const tl = gsap.timeline();
 
-    gsap.killTweensOf([...futureLetters, ...aiLetters]);
+    gsap.killTweensOf(allInflateLetters);
     if (wordBuilding) gsap.killTweensOf(wordBuilding);
     if (wordWhere) gsap.killTweensOf(wordWhere);
     if (wordThe) gsap.killTweensOf(wordThe);
     if (wordIs) gsap.killTweensOf(wordIs);
 
     if (isInflate) {
-      futureLetters.forEach((el, idx) => {
+      futureInflateLetters.forEach((el, idx) => {
         const delay = 0.025 * idx;
-        const rot = (idx % 2 === 0 ? -1 : 1) * (4 + ((idx * 2) % 4));
+        const rot = 36 * Math.random() - 18;
         tl.to(
           el,
           {
-            scale: 1.25,
-            y: -5,
-            rotate: rot,
+            scale: 1,
             duration,
             ease,
           },
           delay
         );
+        tl.fromTo(
+          el,
+          { rotate: rot },
+          { rotate: 0, duration, ease },
+          delay
+        );
       });
 
-      aiLetters.forEach((el, idx) => {
-        const delay = 0.12 + 0.03 * idx;
-        const rot = idx === 0 ? -5 : 5;
+      aiInflateLetters.forEach((el, idx) => {
+        const delay = 0.06 + 0.03 * idx;
+        const rot = 36 * Math.random() - 18;
         tl.to(
           el,
           {
-            scale: 1.28,
-            y: -6,
-            rotate: rot,
+            scale: 1,
             duration,
             ease,
           },
+          delay
+        );
+        tl.fromTo(
+          el,
+          { rotate: rot },
+          { rotate: 0, duration, ease },
           delay
         );
       });
@@ -529,11 +564,11 @@ export function ButterServices() {
         tl.to(
           wordBuilding,
           {
-            x: "-0.08em",
+            x: "-0.15em",
             duration: 0.5 * duration,
             ease,
           },
-          0.05
+          0.06
         );
       }
 
@@ -541,7 +576,7 @@ export function ButterServices() {
         tl.to(
           wordWhere,
           {
-            x: "0.08em",
+            x: "0.15em",
             duration: 0.5 * duration,
             ease,
           },
@@ -553,7 +588,7 @@ export function ButterServices() {
         tl.to(
           wordThe,
           {
-            x: "-0.07em",
+            x: "-0.15em",
             duration: 0.5 * duration,
             ease,
           },
@@ -565,32 +600,45 @@ export function ButterServices() {
         tl.to(
           wordIs,
           {
-            x: "0.07em",
+            x: "0.15em",
             duration: 0.5 * duration,
             ease,
           },
-          0.2
+          0.18
         );
       }
     } else {
-      tl.to([...futureLetters, ...aiLetters], {
-        scale: 1,
-        y: 0,
-        rotate: 0,
-        duration: 0.4,
-        ease: "power2.out",
-        stagger: 0.015,
+      allInflateLetters.forEach((el) => {
+        const rot = 36 * Math.random() - 18;
+        tl.to(
+          el,
+          {
+            scale: 0,
+            duration,
+            ease,
+          },
+          0
+        );
+        tl.to(
+          el,
+          {
+            rotate: rot,
+            duration,
+            ease,
+          },
+          0
+        );
       });
 
-      if (wordBuilding) tl.to(wordBuilding, { x: "0em", duration: 0.35, ease: "power2.out" }, 0);
-      if (wordWhere) tl.to(wordWhere, { x: "0em", duration: 0.35, ease: "power2.out" }, 0);
-      if (wordThe) tl.to(wordThe, { x: "0em", duration: 0.35, ease: "power2.out" }, 0);
-      if (wordIs) tl.to(wordIs, { x: "0em", duration: 0.35, ease: "power2.out" }, 0);
+      if (wordBuilding) tl.to(wordBuilding, { x: "0em", duration: 0.4, ease: "power2.out" }, 0);
+      if (wordWhere) tl.to(wordWhere, { x: "0em", duration: 0.4, ease: "power2.out" }, 0);
+      if (wordThe) tl.to(wordThe, { x: "0em", duration: 0.4, ease: "power2.out" }, 0);
+      if (wordIs) tl.to(wordIs, { x: "0em", duration: 0.4, ease: "power2.out" }, 0);
     }
 
     return () => {
       tl.kill();
-      gsap.killTweensOf([...futureLetters, ...aiLetters]);
+      gsap.killTweensOf(allInflateLetters);
       if (wordBuilding) gsap.killTweensOf(wordBuilding);
       if (wordWhere) gsap.killTweensOf(wordWhere);
       if (wordThe) gsap.killTweensOf(wordThe);
@@ -859,10 +907,41 @@ export function ButterServices() {
                       {" "}
                       <div className="index-style__StoryOneDecorativeTextWrapper-sc-be78c17d-4 ddmokf story-keyword-wrapper">
                         {/* Glow effect radiant aura */}
-                        <div className="story-glow-aura story-glow-future" aria-hidden="true" />
+                        <div className="index-style__StoryOneGlow-sc-be78c17d-6 iFeYpC story-glow-aura story-glow-future">
+                          <img
+                            alt=""
+                            loading="lazy"
+                            width={169}
+                            height={52}
+                            decoding="async"
+                            style={{ color: "transparent" }}
+                            src="/marketing-assets/images/text-effects/word_glow_future.png"
+                          />
+                        </div>
+
+                        {/* Inflate effect letters */}
+                        <div className="index-style__StoryOneInflate-sc-be78c17d-7 jICMZH">
+                          {FUTURE_INFLATE_LETTERS.map((letter, i) => (
+                            <img
+                              key={`${letter.char}-${i}`}
+                              ref={(el) => {
+                                futureInflateLettersRef.current[i] = el;
+                              }}
+                              alt=""
+                              data-effect-elem="inflate"
+                              loading="lazy"
+                              width={letter.width}
+                              height={letter.height}
+                              decoding="async"
+                              className={`index-style__StoryOneInflateLetter-sc-be78c17d-8 ${letter.className}`}
+                              style={{ color: "transparent" }}
+                              src={letter.src}
+                            />
+                          ))}
+                        </div>
 
                         {/* Interactive keyword letters */}
-                        <span className="story-keyword-text story-keyword-future">
+                        <span className="index-style__StoryOneDecorativeText-sc-be78c17d-5 ktBmdf story-keyword-text story-keyword-future">
                           {"future".split("").map((c, i) => {
                             const idx = 9 + i;
                             return (
@@ -896,10 +975,41 @@ export function ButterServices() {
                       {" "}
                       <div className="index-style__StoryOneDecorativeTextWrapper-sc-be78c17d-4 ddmokf story-keyword-wrapper">
                         {/* Glow effect radiant aura */}
-                        <div className="story-glow-aura story-glow-ai" aria-hidden="true" />
+                        <div className="index-style__StoryOneGlow-sc-be78c17d-6 iFeYpC story-glow-aura story-glow-ai">
+                          <img
+                            alt=""
+                            loading="lazy"
+                            width={100}
+                            height={52}
+                            decoding="async"
+                            style={{ color: "transparent" }}
+                            src="/marketing-assets/images/text-effects/word_glow_ai.png"
+                          />
+                        </div>
+
+                        {/* Inflate effect letters */}
+                        <div className="index-style__StoryOneInflate-sc-be78c17d-7 jICMZH">
+                          {AI_INFLATE_LETTERS.map((letter, i) => (
+                            <img
+                              key={`${letter.char}-${i}`}
+                              ref={(el) => {
+                                aiInflateLettersRef.current[i] = el;
+                              }}
+                              alt=""
+                              data-effect-elem="inflate"
+                              loading="lazy"
+                              width={letter.width}
+                              height={letter.height}
+                              decoding="async"
+                              className={`index-style__StoryOneInflateLetter-sc-be78c17d-8 ${letter.className}`}
+                              style={{ color: "transparent" }}
+                              src={letter.src}
+                            />
+                          ))}
+                        </div>
 
                         {/* Interactive keyword letters */}
-                        <span className="story-keyword-text story-keyword-ai">
+                        <span className="index-style__StoryOneDecorativeText-sc-be78c17d-5 ktBmdf story-keyword-text story-keyword-ai">
                           {"AI".split("").map((c, i) => {
                             const idx = 52 + i;
                             return (
