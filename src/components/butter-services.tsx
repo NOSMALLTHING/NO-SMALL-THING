@@ -100,14 +100,40 @@ export function ButterServices() {
       const wrapper = tickerWrapperRef.current;
       const el = tickerLogosRef.current;
       if (!wrapper || !el) return;
-      const singleSetWidth = (LOGOS.length * 270); // approx logo + gap
-      const needed = Math.max(Math.ceil((2.5 * wrapper.clientWidth) / singleSetWidth), 2);
-      setRepeatCount(needed);
+      const singleSetWidth = LOGOS.length * 270; // approx logo + gap
+      const viewportW = typeof window !== "undefined" ? window.innerWidth : 0;
+      const containerW = Math.max(wrapper.clientWidth, viewportW);
+      const needed = Math.max(Math.ceil((2.8 * containerW) / singleSetWidth), 2);
+      setRepeatCount((prev) => (prev !== needed ? needed : prev));
     };
 
     updateRepeat();
-    window.addEventListener("resize", updateRepeat);
-    return () => window.removeEventListener("resize", updateRepeat);
+
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    const handleResize = () => {
+      if (typeof window !== "undefined" && window.__lenis) {
+        window.__lenis.resize();
+      }
+      updateRepeat();
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(updateRepeat, 150);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && tickerWrapperRef.current) {
+      ro = new ResizeObserver(() => {
+        handleResize();
+      });
+      ro.observe(tickerWrapperRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (debounceTimer) clearTimeout(debounceTimer);
+      ro?.disconnect();
+    };
   }, []);
 
   // IntersectionObserver for ticker entrance animation and visibility
@@ -279,10 +305,54 @@ export function ButterServices() {
       });
     }
 
-    const onResize = () => {
-      updateBlockPositions();
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+    let resizeRafId: number | null = null;
+
+    const handleResize = () => {
+      if (typeof window !== "undefined" && window.__lenis) {
+        window.__lenis.resize();
+      }
+
+      if (resizeRafId) cancelAnimationFrame(resizeRafId);
+      resizeRafId = requestAnimationFrame(() => {
+        if (!isMounted) return;
+        updateBlockPositions();
+      });
+
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!isMounted) return;
+        if (typeof window !== "undefined" && window.__lenis) {
+          window.__lenis.resize();
+        }
+
+        const tCont = timelineContainerRef.current;
+        if (tCont) {
+          const tRect = tCont.getBoundingClientRect();
+          const windowH = window.innerHeight;
+          if (tRect.top <= windowH * 0.88) {
+            isInTimelineRef.current = true;
+          } else if (tRect.top > windowH * 0.92) {
+            isInTimelineRef.current = false;
+          }
+        }
+
+        timelineAnimRef.current?.kill();
+        updateBlockPositions();
+        onScroll();
+      }, 100);
     };
-    window.addEventListener("resize", onResize);
+
+    window.addEventListener("resize", handleResize, { passive: true });
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        handleResize();
+      });
+      if (statementContainerRef.current) ro.observe(statementContainerRef.current);
+      if (timelineContainerRef.current) ro.observe(timelineContainerRef.current);
+    }
 
     let lastScrollY = window.scrollY;
 
@@ -419,7 +489,10 @@ export function ButterServices() {
     return () => {
       isMounted = false;
       clearTimeout(initialTimer);
-      window.removeEventListener("resize", onResize);
+      if (resizeTimer) clearTimeout(resizeTimer);
+      if (resizeRafId) cancelAnimationFrame(resizeRafId);
+      ro?.disconnect();
+      window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", onScroll);
       if (typeof window !== "undefined" && window.__lenis) {
         window.__lenis.off("scroll", onScroll);

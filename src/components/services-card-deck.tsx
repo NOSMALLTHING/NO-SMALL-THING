@@ -412,9 +412,21 @@ export function ServicesCardDeck() {
           updateServiceCards(true);
         });
       };
+      let resizeTimer: ReturnType<typeof setTimeout> | null = null;
       const handleResize = () => {
+        const isTouch = window.matchMedia("(max-width: 900px)").matches;
+        setIsTouchLayout((prev) => (prev !== isTouch ? isTouch : prev));
+        if (typeof window !== "undefined" && window.__lenis) {
+          window.__lenis.resize();
+        }
         syncMetrics();
         scheduleUpdate();
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          if (!isMounted) return;
+          syncMetrics();
+          scheduleUpdate();
+        }, 120);
       };
 
       window.addEventListener("scroll", scheduleUpdate, { passive: true });
@@ -422,6 +434,8 @@ export function ServicesCardDeck() {
       let ro: ResizeObserver | null = null;
       if (typeof ResizeObserver !== "undefined") {
         ro = new ResizeObserver(() => {
+          const isTouch = window.matchMedia("(max-width: 900px)").matches;
+          setIsTouchLayout((prev) => (prev !== isTouch ? isTouch : prev));
           syncMetrics();
           scheduleUpdate();
         });
@@ -441,6 +455,7 @@ export function ServicesCardDeck() {
         if (rafId) cancelAnimationFrame(rafId);
         window.removeEventListener("scroll", scheduleUpdate);
         window.removeEventListener("resize", handleResize);
+        if (resizeTimer) clearTimeout(resizeTimer);
         ro?.disconnect();
         clearTimeout(t1);
         clearTimeout(t2);
@@ -458,9 +473,21 @@ export function ServicesCardDeck() {
     };
     rafId = requestAnimationFrame(loop);
 
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
     const handleResize = () => {
+      const isTouch = window.matchMedia("(max-width: 900px)").matches;
+      setIsTouchLayout((prev) => (prev !== isTouch ? isTouch : prev));
+      if (typeof window !== "undefined" && window.__lenis) {
+        window.__lenis.resize();
+      }
       syncMetrics();
       updateServiceCards(true);
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!isMounted) return;
+        syncMetrics();
+        updateServiceCards(true);
+      }, 120);
     };
 
     window.addEventListener("resize", handleResize, { passive: true });
@@ -468,7 +495,10 @@ export function ServicesCardDeck() {
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== "undefined") {
       ro = new ResizeObserver(() => {
+        const isTouch = window.matchMedia("(max-width: 900px)").matches;
+        setIsTouchLayout((prev) => (prev !== isTouch ? isTouch : prev));
         syncMetrics();
+        updateServiceCards(true);
       });
       if (sectionRef.current) ro.observe(sectionRef.current);
     }
@@ -476,16 +506,18 @@ export function ServicesCardDeck() {
     if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
         syncMetrics();
+        updateServiceCards(true);
       });
     }
 
-    const t1 = setTimeout(syncMetrics, 100);
-    const t2 = setTimeout(syncMetrics, 500);
+    const t1 = setTimeout(() => { syncMetrics(); updateServiceCards(true); }, 100);
+    const t2 = setTimeout(() => { syncMetrics(); updateServiceCards(true); }, 500);
 
     return () => {
       isMounted = false;
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("resize", handleResize);
+      if (resizeTimer) clearTimeout(resizeTimer);
       if (ro) ro.disconnect();
       clearTimeout(t1);
       clearTimeout(t2);
