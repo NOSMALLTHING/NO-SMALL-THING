@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { useLayoutEffect, useState, useRef } from "react";
+import { motion, useMotionValue, useReducedMotion, useScroll, useTransform } from "motion/react";
 import styles from "./mobile-brand-transition.module.css";
 
 const BRAND_SCROLL_DISTANCE = 460;
@@ -16,18 +16,32 @@ export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
   const [isParked, setIsParked] = useState(false);
   const wordmarkRef = useRef<HTMLSpanElement>(null);
   const { scrollY } = useScroll();
+  const brandScrollY = useMotionValue(0);
   const reducedMotion = useReducedMotion();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // The brand component only animates on phones. Reset before paint so a
+    // restored browser scroll position can never render the parked logo first.
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      window.__lenis?.scrollTo(0, { immediate: true });
+      window.scrollTo(0, 0);
+    }
+
+    brandScrollY.set(0);
+    const unsubscribeScroll = scrollY.on("change", (value) => brandScrollY.set(value));
     const updateParkedState = (value: number) => {
       setIsParked(reducedMotion || value >= BRAND_SCROLL_DISTANCE);
     };
 
-    updateParkedState(scrollY.get());
-    return scrollY.on("change", updateParkedState);
-  }, [reducedMotion, scrollY]);
+    updateParkedState(0);
+    const unsubscribeParked = brandScrollY.on("change", updateParkedState);
+    return () => {
+      unsubscribeScroll();
+      unsubscribeParked();
+    };
+  }, [brandScrollY, reducedMotion, scrollY]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const updateViewport = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
     const updateWordmarkSize = () => {
       const bounds = wordmarkRef.current?.getBoundingClientRect();
@@ -54,9 +68,9 @@ export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
   const startScale = (viewport.width * 0.82) / Math.max(wordmarkSize.width, 1);
   const startX = viewport.width / 2 - BRAND_LEFT - (wordmarkSize.width * startScale) / 2;
   const startY = viewport.height * 0.45 - BRAND_TOP - (wordmarkSize.height * startScale) / 2;
-  const x = useTransform(scrollY, [0, BRAND_SCROLL_DISTANCE], [startX, 0]);
-  const y = useTransform(scrollY, [0, BRAND_SCROLL_DISTANCE], [startY, 0]);
-  const scale = useTransform(scrollY, [0, BRAND_SCROLL_DISTANCE], [startScale, 1]);
+  const x = useTransform(brandScrollY, [0, BRAND_SCROLL_DISTANCE], [startX, 0]);
+  const y = useTransform(brandScrollY, [0, BRAND_SCROLL_DISTANCE], [startY, 0]);
+  const scale = useTransform(brandScrollY, [0, BRAND_SCROLL_DISTANCE], [startScale, 1]);
 
   return (
     <motion.div
@@ -70,7 +84,11 @@ export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
         aria-label="NO SMALL THING — Home"
         onClick={(event) => {
           event.preventDefault();
-          window.dispatchEvent(new CustomEvent("nst-intro-replay"));
+          if (window.__lenis && !reducedMotion) {
+            window.__lenis.scrollTo(0, { duration: 0.9, force: true });
+          } else {
+            window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+          }
         }}
       >
         <span ref={wordmarkRef} className={styles.wordmark} aria-hidden="true">NO SMALL THING</span>

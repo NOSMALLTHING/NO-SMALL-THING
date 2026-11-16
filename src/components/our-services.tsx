@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, type RefObject } from "react";
+import { useState, useRef, useEffect, useCallback, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import {
   motion,
   useMotionValue,
@@ -51,6 +51,11 @@ const services = [
       "Technology consulting, system integration and technical support. Connected digital solutions for your everyday business challenges.",
   },
 ] as const;
+
+function wrapTickerOffset(offset: number, width: number) {
+  if (width <= 0) return 0;
+  return ((offset % width) + width) % width;
+}
 
 const desktopHeadlineRanges = [
   [0.10, 0.22, 0.32],
@@ -262,6 +267,50 @@ export function OurServices({
 
   const textHoverCounter = useRef(0);
   const bracketHoverCounter = useRef(0);
+  const tickerNavRef = useRef<HTMLElement | null>(null);
+  const tickerTrackRef = useRef<HTMLDivElement>(null);
+  const tickerGroupRef = useRef<HTMLDivElement>(null);
+  const tickerCycleWidthRef = useRef(0);
+  const tickerAutoPhaseRef = useRef(0);
+  const tickerDragOffsetRef = useRef(0);
+  const tickerPointerRef = useRef<{ id: number; lastX: number; startX: number; dragging: boolean } | null>(null);
+
+  const renderTickerPosition = useCallback(() => {
+    const track = tickerTrackRef.current;
+    const width = tickerCycleWidthRef.current;
+    if (!track || width <= 0) return;
+    const phase = ((tickerAutoPhaseRef.current + tickerDragOffsetRef.current) % width + width) % width;
+    track.style.transform = `translate3d(${-width - phase}px, 0, 0)`;
+  }, []);
+
+  const handleTickerPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    tickerPointerRef.current = {
+      id: event.pointerId,
+      lastX: event.clientX,
+      startX: event.clientX,
+      dragging: false,
+    };
+  }, []);
+
+  const handleTickerPointerMove = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    const pointer = tickerPointerRef.current;
+    if (!pointer || pointer.id !== event.pointerId) return;
+    if (!pointer.dragging && Math.abs(event.clientX - pointer.startX) > 6) {
+      pointer.dragging = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+    const deltaX = event.clientX - pointer.lastX;
+    pointer.lastX = event.clientX;
+    if (!pointer.dragging || deltaX === 0) return;
+    tickerDragOffsetRef.current -= deltaX;
+    renderTickerPosition();
+    if (event.cancelable) event.preventDefault();
+  }, [renderTickerPosition]);
+
+  const handleTickerPointerEnd = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    if (tickerPointerRef.current?.id === event.pointerId) tickerPointerRef.current = null;
+  }, []);
 
   const handleTextEnter = useCallback(() => {
     textHoverCounter.current += 1;
@@ -326,6 +375,105 @@ export function OurServices({
     window.addEventListener("resize", checkDesktop, { passive: true });
     return () => window.removeEventListener("resize", checkDesktop);
   }, []);
+
+  useEffect(() => {
+    const nav = tickerNavRef.current;
+    const firstGroup = tickerGroupRef.current;
+    if (!isPhone || prefersReduced || !nav || !firstGroup) return;
+
+    let readyToLoop = false;
+    let rafId = 0;
+    let previousFrame = 0;
+    let initialized = false;
+    let fullyVisible = false;
+    let observer: IntersectionObserver | null = null;
+    const updateCycleWidth = () => {
+      const nextWidth = firstGroup.scrollWidth;
+      if (nextWidth <= 0) return;
+      const oldWidth = tickerCycleWidthRef.current;
+      if (initialized && oldWidth > 0 && nextWidth !== oldWidth) {
+        tickerAutoPhaseRef.current = wrapTickerOffset(
+          tickerAutoPhaseRef.current + tickerDragOffsetRef.current,
+          oldWidth,
+        );
+        tickerDragOffsetRef.current = 0;
+      } else if (!initialized) {
+        initialized = true;
+      }
+      tickerCycleWidthRef.current = nextWidth;
+      renderTickerPosition();
+    };
+    updateCycleWidth();
+    const startWhenReady = () => {
+      if (readyToLoop || !fullyVisible || smoothProgress.get() < 0.14) return;
+      readyToLoop = true;
+      previousFrame = 0;
+      if (!rafId) rafId = requestAnimationFrame(tick);
+      observer?.disconnect();
+    };
+    const tick = (time: number) => {
+      rafId = 0;
+      if (!readyToLoop) return;
+
+      const elapsed = previousFrame ? Math.min(time - previousFrame, 32) : 16;
+      const cycleWidth = tickerCycleWidthRef.current;
+      if (cycleWidth > 0) {
+        tickerAutoPhaseRef.current = wrapTickerOffset(
+          tickerAutoPhaseRef.current + elapsed * 0.018,
+          cycleWidth,
+        );
+        renderTickerPosition();
+      }
+
+      previousFrame = time;
+      rafId = requestAnimationFrame(tick);
+    };
+    const updateVisibility = (rect: DOMRect, isIntersecting: boolean) => {
+      fullyVisible = isIntersecting
+        && rect.top >= 0
+        && rect.bottom <= window.innerHeight
+        && rect.left <= 0
+        && rect.right >= window.innerWidth;
+      startWhenReady();
+    };
+    observer = typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(([entry]) => {
+          const rect = entry.boundingClientRect;
+          updateVisibility(rect, entry.isIntersecting);
+        }, { threshold: [0, 0.5, 0.85, 1] })
+      : null;
+    const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(updateCycleWidth) : null;
+    observer?.observe(nav);
+    resizeObserver?.observe(firstGroup);
+    const unsubscribeProgress = smoothProgress.on("change", startWhenReady);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && readyToLoop && !rafId) {
+        previousFrame = 0;
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+    const handleViewportChange = () => {
+      if (!readyToLoop && !observer) {
+        updateVisibility(nav.getBoundingClientRect(), true);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    if (!observer) {
+      window.addEventListener("scroll", handleViewportChange, { passive: true });
+      window.addEventListener("resize", handleViewportChange, { passive: true });
+      handleViewportChange();
+    }
+
+    return () => {
+      observer?.disconnect();
+      resizeObserver?.disconnect();
+      unsubscribeProgress();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("scroll", handleViewportChange);
+      window.removeEventListener("resize", handleViewportChange);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [isPhone, prefersReduced, renderTickerPosition, smoothProgress]);
 
   // Cursor following video physics (smooth lerp with inertia)
   const posRef = useRef({
@@ -555,6 +703,7 @@ export function OurServices({
           {/* Middle: Full-bleed Horizontal Service Links Strip with left-to-right entrance */}
           <motion.div className={styles.stripDepart} style={animationsEnabled ? stripBarExit : undefined}>
           <motion.nav
+            ref={tickerNavRef}
             className={styles.linksStrip}
             aria-label="Core services list"
             style={{
@@ -564,18 +713,44 @@ export function OurServices({
             }}
             onMouseEnter={handleBracketEnter}
             onMouseLeave={handleBracketLeave}
+            onPointerDown={handleTickerPointerDown}
+            onPointerMove={handleTickerPointerMove}
+            onPointerUp={handleTickerPointerEnd}
+            onPointerCancel={handleTickerPointerEnd}
           >
-            {services.map((item, index) => (
-              <ServiceStripButton
-                key={item.number}
-                depart={depart}
-                index={index}
-                enabled={animationsEnabled}
-                selected={index === activeService}
-                label={item.shortName}
-                onSelect={() => setActiveService(index)}
-              />
-            ))}
+            <div ref={tickerTrackRef} className={styles.tickerTrack}>
+              <div ref={tickerGroupRef} className={styles.tickerGroup}>
+                {services.map((item, index) => (
+                  <ServiceStripButton
+                    key={item.number}
+                    depart={depart}
+                    index={index}
+                    enabled={animationsEnabled}
+                    selected={index === activeService}
+                    label={item.shortName}
+                    onSelect={() => setActiveService(index)}
+                  />
+                ))}
+              </div>
+              <div className={styles.tickerGroup} aria-hidden="true">
+                {services.map((item) => (
+                  <span key={`repeat-${item.number}`} className={`${styles.stripItem} ${styles.stripClone}`}>
+                    <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+                    <span>{item.shortName}</span>
+                    <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+                  </span>
+                ))}
+              </div>
+              <div className={styles.tickerGroup} aria-hidden="true">
+                {services.map((item) => (
+                  <span key={`repeat-again-${item.number}`} className={`${styles.stripItem} ${styles.stripClone}`}>
+                    <span className={`${styles.stripBracket} ${styles.bracketLeft}`} aria-hidden="true">[</span>
+                    <span>{item.shortName}</span>
+                    <span className={`${styles.stripBracket} ${styles.bracketRight}`} aria-hidden="true">]</span>
+                  </span>
+                ))}
+              </div>
+            </div>
           </motion.nav>
           </motion.div>
 
