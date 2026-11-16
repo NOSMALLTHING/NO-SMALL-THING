@@ -473,16 +473,7 @@
 
 .effect-halftone .cqjpGA{opacity:1;}
 
-.jKEoAW{background-color:#FAFAFA;color:black;mix-blend-mode:lighten;padding-bottom:0.1em;}
-
-.effect-halftone .jKEoAW {
-  background-color: transparent;
-  color: transparent;
-  background-image: radial-gradient(#0F0F0F 32%, transparent 34%);
-  background-size: 6px 6px;
-  -webkit-background-clip: text;
-  background-clip: text;
-}
+.jKEoAW{position:relative;z-index:1;background-color:#FAFAFA;color:black;mix-blend-mode:lighten;padding-bottom:0.1em;}
 
 .ddmokf{position:relative;display:inline-block;z-index:1;}
 

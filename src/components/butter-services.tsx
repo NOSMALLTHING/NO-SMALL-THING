@@ -166,14 +166,33 @@ export function ButterServices() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
 
+    // Hover pause integration
+    let isHovered = false;
+    const onMouseEnter = () => {
+      isHovered = true;
+    };
+    const onMouseLeave = () => {
+      isHovered = false;
+    };
+    const wrapper = tickerWrapperRef.current;
+    if (wrapper) {
+      wrapper.addEventListener("mouseenter", onMouseEnter);
+      wrapper.addEventListener("mouseleave", onMouseLeave);
+    }
+
     const tick = () => {
-      currentTimeScale += (targetTimeScale - currentTimeScale) * 0.08;
+      const baseTarget = isHovered ? 0 : targetTimeScale;
+      currentTimeScale += (baseTarget - currentTimeScale) * 0.08;
       targetTimeScale += (1 - targetTimeScale) * 0.04;
-      tween.timeScale(currentTimeScale);
+      tween.timeScale(Math.max(currentTimeScale, 0));
     };
     gsap.ticker.add(tick);
 
     return () => {
+      if (wrapper) {
+        wrapper.removeEventListener("mouseenter", onMouseEnter);
+        wrapper.removeEventListener("mouseleave", onMouseLeave);
+      }
       if (typeof window !== "undefined" && window.__lenis) {
         window.__lenis.off("scroll", onLenisScroll);
       }
