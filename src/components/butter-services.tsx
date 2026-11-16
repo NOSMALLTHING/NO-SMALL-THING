@@ -53,15 +53,6 @@ const STATEMENT_BLOCKS = [
   },
 ];
 
-const INFLATE_LETTERS = [
-  { char: "b", src: "/marketing-assets/images/text-effects/inflate/b.png", width: 139, height: 187, className: "dSFIkm", percent: 19.6 },
-  { char: "l", src: "/marketing-assets/images/text-effects/inflate/l.png", width: 61, height: 186, className: "hBBHrG", percent: 8.6 },
-  { char: "o", src: "/marketing-assets/images/text-effects/inflate/o.png", width: 133, height: 147, className: "bZXNyl", percent: 18.8 },
-  { char: "c", src: "/marketing-assets/images/text-effects/inflate/c.png", width: 123, height: 149, className: "ipkyZC", percent: 17.4 },
-  { char: "k", src: "/marketing-assets/images/text-effects/inflate/k.png", width: 130, height: 187, className: "PyBAF", percent: 18.4 },
-  { char: "s", src: "/marketing-assets/images/text-effects/inflate/s.png", width: 122, height: 149, className: "jtEPpI", percent: 17.2 },
-];
-
 const TEXT_EFFECT_ITEMS = [
   { id: "inflate", label: "Inflate", image: "/marketing-assets/images/text-effects/inflate.png" },
   { id: "glow", label: "Glow", image: "/marketing-assets/images/text-effects/glow.png" },
@@ -285,29 +276,29 @@ export function ButterServices() {
       lastScrollY = curScrollY;
 
       // Drop entrance bounce for block 0 (animate inner block without disturbing slot positioning)
-      if (!hasEnteredRef.current && sRect.top < windowH * 0.82 && !isInTimelineRef.current) {
+      if (!hasEnteredRef.current && sRect.top < windowH * 0.85 && !isInTimelineRef.current) {
         hasEnteredRef.current = true;
         const firstBlock = blockElementsRef.current[0];
         const firstInner = firstBlock?.firstElementChild;
         if (firstInner) {
           entranceBounceAnimRef.current?.kill();
           entranceBounceAnimRef.current = gsap.from(firstInner, {
-            y: "-300px",
+            y: "-260px",
             rotation: 15,
-            duration: 1.8,
+            duration: 1.1,
             ease: "power2.out",
           });
         }
       }
 
-      // Hysteresis threshold to prevent rapid jitter across scroll border
+      // Hysteresis threshold: trigger early at windowH * 0.88 so icons take flight early under fast scroll
       let shouldBeInTimeline = isInTimelineRef.current;
       if (isScrollingDown) {
-        if (tRect.top <= windowH * 0.72) {
+        if (tRect.top <= windowH * 0.88) {
           shouldBeInTimeline = true;
         }
       } else {
-        if (tRect.top > windowH * 0.78) {
+        if (tRect.top > windowH * 0.92) {
           shouldBeInTimeline = false;
         }
       }
@@ -319,23 +310,23 @@ export function ButterServices() {
         timelineAnimRef.current = tl;
         blockElementsRef.current.forEach((block, idx) => {
           if (!block) return;
-          const stagger = idx * 0.1;
+          const stagger = idx * 0.035;
           tl.to(
             block,
             {
               scale: 1,
               x: 0,
               y: 0,
-              duration: 1.4,
-              ease: "power2.inOut",
+              duration: 0.52,
+              ease: "power2.out",
             },
             stagger
           );
           tl.to(
             block,
             {
-              rotation: 15 * (idx % 2 === 0 ? 1 : -1),
-              duration: 0.7,
+              rotation: 12 * (idx % 2 === 0 ? 1 : -1),
+              duration: 0.26,
               ease: "power2.in",
             },
             stagger
@@ -344,10 +335,10 @@ export function ButterServices() {
             block,
             {
               rotation: 0,
-              duration: 0.7,
+              duration: 0.26,
               ease: "power2.out",
             },
-            stagger + 0.7
+            stagger + 0.26
           );
         });
       } else if (!shouldBeInTimeline && isInTimelineRef.current) {
@@ -361,7 +352,7 @@ export function ButterServices() {
           const tEl = timelineWrappersRef.current[idx];
           if (!sEl || !tEl) return;
           const { scale, x, y } = getBlockTransform(sEl, tEl, false);
-          const stagger = idx * 0.05;
+          const stagger = idx * 0.03;
 
           tl.to(
             block,
@@ -369,16 +360,16 @@ export function ButterServices() {
               scale,
               x,
               y,
-              duration: 1.3,
-              ease: "power2.inOut",
+              duration: 0.5,
+              ease: "power2.out",
             },
             stagger
           );
           tl.to(
             block,
             {
-              rotation: 15 * (idx % 2 === 0 ? -1 : 1),
-              duration: 0.65,
+              rotation: 12 * (idx % 2 === 0 ? -1 : 1),
+              duration: 0.25,
               ease: "power2.in",
             },
             stagger
@@ -387,10 +378,10 @@ export function ButterServices() {
             block,
             {
               rotation: 0,
-              duration: 0.65,
+              duration: 0.25,
               ease: "power2.out",
             },
-            stagger + 0.65
+            stagger + 0.25
           );
         });
       }
@@ -422,41 +413,42 @@ export function ButterServices() {
   const [hoveredEffect, setHoveredEffect] = useState<string | null>(null);
   const activeEffect = hoveredEffect || pinnedEffect;
 
-  const inflateLettersRef = useRef<(HTMLImageElement | null)[]>([]);
-  const curatedWordRef = useRef<HTMLSpanElement | null>(null);
-  const forWordRef = useRef<HTMLSpanElement | null>(null);
+  const futureLettersRef = useRef<(HTMLSpanElement | null)[]>([]);
+  const aiLettersRef = useRef<(HTMLSpanElement | null)[]>([]);
+  const buildingWordRef = useRef<HTMLSpanElement | null>(null);
+  const whereWordRef = useRef<HTMLSpanElement | null>(null);
+  const theWordRef = useRef<HTMLSpanElement | null>(null);
+  const isWordRef = useRef<HTMLSpanElement | null>(null);
   const charSpansRef = useRef<(HTMLSpanElement | null)[]>([]);
   const halftoneVideoRef = useRef<HTMLVideoElement | null>(null);
 
-  // Focus effect: segmented depth-of-field interpolation matching Butter
+  const hasEverAnimatedInflateRef = useRef(false);
+
+  // Focus effect: progressive optical camera blur ramp radiating out from keywords
   useEffect(() => {
     const isFocus = activeEffect === "focus";
     const chars = charSpansRef.current.filter((c): c is HTMLSpanElement => Boolean(c));
     if (!chars.length) return;
 
     if (isFocus) {
-      // Segmented ranges around "blocks" (indices 0..14 before, 15..83 after)
-      const segments = [
-        { slice: chars.slice(0, 15), from: 8, to: 0 },
-        { slice: chars.slice(15, 23), from: 0, to: 8 },
-        { slice: chars.slice(23, 48), from: 8, to: 0 },
-        { slice: chars.slice(48), from: 8, to: 2 },
-      ];
-
       const tl = gsap.timeline({ defaults: { duration: 0.8, ease: "power2.out" } });
-      segments.forEach((seg) => {
-        tl.to(
-          seg.slice,
-          {
-            filter: (idx, _target, targets) => {
-              const alpha = idx / Math.max(targets.length - 1, 1);
-              const blurVal = gsap.utils.interpolate(seg.from, seg.to, alpha);
-              return `blur(${blurVal.toFixed(1)}px)`;
-            },
-            stagger: 0.015,
-          },
-          "<+=0.05"
-        );
+      tl.to(chars, {
+        filter: (_i, target) => {
+          const charIdx = parseInt(target.getAttribute("data-char-idx") || "0", 10);
+          let dist = 0;
+          if (charIdx < 9) dist = 9 - charIdx;
+          else if (charIdx <= 14) dist = 0; // "future" (9..14)
+          else if (charIdx < 52) dist = Math.min(charIdx - 14, 52 - charIdx);
+          else if (charIdx <= 53) dist = 0; // "AI" (52..53)
+          else dist = charIdx - 53;
+
+          const blurVal = dist === 0 ? 0 : Math.min(Math.pow(dist, 0.85) * 0.45, 8);
+          return `blur(${blurVal.toFixed(1)}px)`;
+        },
+        stagger: {
+          each: 0.005,
+          from: "start",
+        },
       });
       return () => {
         tl.kill();
@@ -475,70 +467,134 @@ export function ButterServices() {
     }
   }, [activeEffect]);
 
-  // Inflate effect: 3D bounce letters & word push
+  // Inflate effect: 3D bounce letters & adjacent word push
   useEffect(() => {
     const isInflate = activeEffect === "inflate";
-    const letters = inflateLettersRef.current.filter((l): l is HTMLImageElement => Boolean(l));
-    const wordCurated = curatedWordRef.current;
-    const wordFor = forWordRef.current;
+    const futureLetters = futureLettersRef.current.filter((l): l is HTMLSpanElement => Boolean(l));
+    const aiLetters = aiLettersRef.current.filter((l): l is HTMLSpanElement => Boolean(l));
+    const wordBuilding = buildingWordRef.current;
+    const wordWhere = whereWordRef.current;
+    const wordThe = theWordRef.current;
+    const wordIs = isWordRef.current;
 
-    const duration = isInflate ? 0.8 : 0.4;
-    const ease = isInflate ? "back.out(1.2)" : "power2.out";
+    if (!isInflate && !hasEverAnimatedInflateRef.current) {
+      return;
+    }
+    hasEverAnimatedInflateRef.current = true;
+
+    const duration = isInflate ? 0.75 : 0.4;
+    const ease = isInflate ? "back.out(1.5)" : "power2.out";
     const tl = gsap.timeline();
 
-    gsap.killTweensOf(letters);
-    if (wordCurated) gsap.killTweensOf(wordCurated);
-    if (wordFor) gsap.killTweensOf(wordFor);
+    gsap.killTweensOf([...futureLetters, ...aiLetters]);
+    if (wordBuilding) gsap.killTweensOf(wordBuilding);
+    if (wordWhere) gsap.killTweensOf(wordWhere);
+    if (wordThe) gsap.killTweensOf(wordThe);
+    if (wordIs) gsap.killTweensOf(wordIs);
 
-    letters.forEach((el, idx) => {
-      const delay = 0.025 * idx;
-      const rot = 36 * Math.random() - 18;
-      tl.to(
-        el,
-        {
-          scale: isInflate ? 1 : 0,
-          duration,
-          ease,
-        },
-        delay
-      );
-      tl.fromTo(
-        el,
-        { rotate: isInflate ? rot : 0 },
-        { rotate: isInflate ? 0 : rot, duration, ease },
-        delay
-      );
-    });
+    if (isInflate) {
+      futureLetters.forEach((el, idx) => {
+        const delay = 0.025 * idx;
+        const rot = (idx % 2 === 0 ? -1 : 1) * (4 + ((idx * 2) % 4));
+        tl.to(
+          el,
+          {
+            scale: 1.25,
+            y: -5,
+            rotate: rot,
+            duration,
+            ease,
+          },
+          delay
+        );
+      });
 
-    if (wordCurated) {
-      tl.to(
-        wordCurated,
-        {
-          x: isInflate ? "-0.15em" : "0em",
-          duration: 0.5 * duration,
-          ease,
-        },
-        0.08
-      );
-    }
+      aiLetters.forEach((el, idx) => {
+        const delay = 0.12 + 0.03 * idx;
+        const rot = idx === 0 ? -5 : 5;
+        tl.to(
+          el,
+          {
+            scale: 1.28,
+            y: -6,
+            rotate: rot,
+            duration,
+            ease,
+          },
+          delay
+        );
+      });
 
-    if (wordFor) {
-      tl.to(
-        wordFor,
-        {
-          x: isInflate ? "0.15em" : "0em",
-          duration: 0.5 * duration,
-          ease,
-        },
-        0.02 * letters.length + 0.08
-      );
+      if (wordBuilding) {
+        tl.to(
+          wordBuilding,
+          {
+            x: "-0.08em",
+            duration: 0.5 * duration,
+            ease,
+          },
+          0.05
+        );
+      }
+
+      if (wordWhere) {
+        tl.to(
+          wordWhere,
+          {
+            x: "0.08em",
+            duration: 0.5 * duration,
+            ease,
+          },
+          0.12
+        );
+      }
+
+      if (wordThe) {
+        tl.to(
+          wordThe,
+          {
+            x: "-0.07em",
+            duration: 0.5 * duration,
+            ease,
+          },
+          0.14
+        );
+      }
+
+      if (wordIs) {
+        tl.to(
+          wordIs,
+          {
+            x: "0.07em",
+            duration: 0.5 * duration,
+            ease,
+          },
+          0.2
+        );
+      }
+    } else {
+      tl.to([...futureLetters, ...aiLetters], {
+        scale: 1,
+        y: 0,
+        rotate: 0,
+        duration: 0.4,
+        ease: "power2.out",
+        stagger: 0.015,
+      });
+
+      if (wordBuilding) tl.to(wordBuilding, { x: "0em", duration: 0.35, ease: "power2.out" }, 0);
+      if (wordWhere) tl.to(wordWhere, { x: "0em", duration: 0.35, ease: "power2.out" }, 0);
+      if (wordThe) tl.to(wordThe, { x: "0em", duration: 0.35, ease: "power2.out" }, 0);
+      if (wordIs) tl.to(wordIs, { x: "0em", duration: 0.35, ease: "power2.out" }, 0);
     }
 
     return () => {
       tl.kill();
-      gsap.killTweensOf(letters);
-      if (wordCurated) gsap.killTweensOf(wordCurated);
-      if (wordFor) gsap.killTweensOf(wordFor);
+      gsap.killTweensOf([...futureLetters, ...aiLetters]);
+      if (wordBuilding) gsap.killTweensOf(wordBuilding);
+      if (wordWhere) gsap.killTweensOf(wordWhere);
+      if (wordThe) gsap.killTweensOf(wordThe);
+      if (wordIs) gsap.killTweensOf(wordIs);
     };
   }, [activeEffect]);
 
@@ -568,23 +624,26 @@ export function ButterServices() {
     setHoveredEffect(null);
   };
 
-  // Helper to split text into animated characters with index tracking
-  const makeCharSpans = (text: string, startIndex: number) => {
-    return text.split("").map((c, i) => {
-      const idx = startIndex + i;
-      return (
-        <span
-          key={i}
-          ref={(el) => {
-            charSpansRef.current[idx] = el;
-          }}
-          className="story-char"
-        >
-          {c === " " ? "\u00A0" : c}
-        </span>
-      );
-    });
-  };
+  // Helper to render a word as animated characters with individual index tracking
+  const renderWord = (word: string, startIdx: number, ref?: React.RefObject<HTMLSpanElement | null>) => (
+    <span ref={ref} className="story-word">
+      {word.split("").map((c, i) => {
+        const idx = startIdx + i;
+        return (
+          <span
+            key={idx}
+            data-char-idx={idx}
+            ref={(el) => {
+              charSpansRef.current[idx] = el;
+            }}
+            className="story-char"
+          >
+            {c}
+          </span>
+        );
+      })}
+    </span>
+  );
 
   return (
     <section id="services" data-theme="light" className="butter-part2-root">
@@ -656,43 +715,42 @@ export function ButterServices() {
               <div className="index-style__StatementInner-sc-87b51a93-2 kVakhn">
                 <h2 className="TextStyles__Heading2Styled-sc-358d108c-1 gbMovY">
                   <span className="index-style__SplitTextSrOnly-sc-6461e2eb-0 jreyVw">
-                    Butter is the first video editor where creatives can build and remix custom design tools right on
-                    timeline.
+                    SKIP THE WHOLE THING. NO SMALL THING specializes in the design and development of AI n IT Services. Founded with the mission of driving the future through disruptive technology, from the initial sketch to the final.
                   </span>
                   <span aria-hidden="true" className="index-style__SplitTextWrapper-sc-6461e2eb-1 hwJVXf">
-                    Butter
+                    SKIP THE WHOLE THING.
                     <div
                       data-type="statement-block-wrapper"
                       ref={(el) => {
                         statementWrappersRef.current[0] = el;
                       }}
                       className="index-style__StatementBlockWrapper-sc-87b51a93-3 iTVauV"
-                    />
-                    is the first video
+                    />{" "}
+                    NO SMALL THING specializes in the design and development
                     <div
                       data-type="statement-block-wrapper"
                       ref={(el) => {
                         statementWrappersRef.current[1] = el;
                       }}
                       className="index-style__StatementBlockWrapper-sc-87b51a93-3 iTVauV"
-                    />
-                    editor where creatives can
+                    />{" "}
+                    of AI n IT Services.
                     <div
                       data-type="statement-block-wrapper"
                       ref={(el) => {
                         statementWrappersRef.current[2] = el;
                       }}
                       className="index-style__StatementBlockWrapper-sc-87b51a93-3 iTVauV"
-                    />
-                    build and remix
+                    />{" "}
+                    Founded with the mission of driving the future through disruptive technology,
                     <div
                       data-type="statement-block-wrapper"
                       ref={(el) => {
                         statementWrappersRef.current[3] = el;
                       }}
                       className="index-style__StatementBlockWrapper-sc-87b51a93-3 iTVauV"
-                    />
-                    custom design tools
+                    />{" "}
+                    from the initial sketch to the final.
                     <div
                       data-type="statement-block-wrapper"
                       ref={(el) => {
@@ -700,7 +758,6 @@ export function ButterServices() {
                       }}
                       className="index-style__StatementBlockWrapper-sc-87b51a93-3 iTVauV"
                     />
-                    right on timeline.
                   </span>
                 </h2>
               </div>
@@ -783,9 +840,11 @@ export function ButterServices() {
               {/* Left Column: Interactive Heading & Text Effects */}
               <div className="index-style__GridItemMain-sc-a1d4ce5-0 eGWFRL">
                 <p className="TextStyles__TextCapStyled-sc-358d108c-8 iFhYZQ">
-                  <span className="index-style__SplitTextSrOnly-sc-6461e2eb-0 jreyVw">There’s a block for that</span>
+                  <span className="index-style__SplitTextSrOnly-sc-6461e2eb-0 jreyVw">
+                    Websites, software, and AI. Shipped, and running.
+                  </span>
                   <span aria-hidden="true" className="index-style__SplitTextWrapper-sc-6461e2eb-1 hwJVXf">
-                    There’s a block for that
+                    Websites, software, and AI. Shipped, and running.
                   </span>
                 </p>
                 <span className="index-style__SpacerMain-sc-f2e865fb-0 jfbqDa" />
@@ -793,57 +852,92 @@ export function ButterServices() {
                 <div className={`index-style__StoryOneTextWrapper-sc-be78c17d-1 jKOOXd effect-${activeEffect || "null"}`}>
                   <h2 className="TextStyles__Heading2Styled-sc-358d108c-1 eUmFMS">
                     <span className="index-style__SplitTextSrOnly-sc-6461e2eb-0 jreyVw">
-                      Browse curated blocks for motion graphics, kinetic type, 3D, shader effects, and beyond..
+                      Building future where humanity is out exploring the AI is fundamentally more exciting than one where we are not.
                     </span>
                     <span aria-hidden="true" className="index-style__SplitTextWrapper-sc-6461e2eb-1 hwJVXf">
-                      {makeCharSpans("Browse ", 0)}
-                      <span ref={curatedWordRef} className="story-word">
-                        {makeCharSpans("curated", 7)}
-                      </span>
-                      {makeCharSpans(" ", 14)}
-                      <div className="index-style__StoryOneDecorativeTextWrapper-sc-be78c17d-4 ddmokf">
-                        {/* Glow effect aura image */}
-                        <div className="index-style__StoryOneGlow-sc-be78c17d-6 iFeYpC">
-                          <img
-                            alt=""
-                            loading="lazy"
-                            width={169}
-                            height={52}
-                            decoding="async"
-                            style={{ color: "transparent" }}
-                            src="/marketing-assets/images/text-effects/word_glow.png"
-                          />
-                        </div>
+                      {renderWord("Building", 0, buildingWordRef)}
+                      {" "}
+                      <div className="index-style__StoryOneDecorativeTextWrapper-sc-be78c17d-4 ddmokf story-keyword-wrapper">
+                        {/* Glow effect radiant aura */}
+                        <div className="story-glow-aura story-glow-future" aria-hidden="true" />
 
-                        {/* Inflate effect letters */}
-                        <div className="index-style__StoryOneInflate-sc-be78c17d-7 jICMZH">
-                          {INFLATE_LETTERS.map((letter, i) => (
-                            <img
-                              key={letter.char}
-                              ref={(el) => {
-                                inflateLettersRef.current[i] = el;
-                              }}
-                              alt=""
-                              data-effect-elem="inflate"
-                              loading="lazy"
-                              width={letter.width}
-                              height={letter.height}
-                              decoding="async"
-                              className={`index-style__StoryOneInflateLetter-sc-be78c17d-8 ${letter.className}`}
-                              style={{ color: "transparent" }}
-                              src={letter.src}
-                            />
-                          ))}
-                        </div>
-
-                        {/* Decorative base word */}
-                        <span className="index-style__StoryOneDecorativeText-sc-be78c17d-5 ktBmdf">blocks</span>
+                        {/* Interactive keyword letters */}
+                        <span className="story-keyword-text story-keyword-future">
+                          {"future".split("").map((c, i) => {
+                            const idx = 9 + i;
+                            return (
+                              <span
+                                key={idx}
+                                data-char-idx={idx}
+                                ref={(el) => {
+                                  futureLettersRef.current[i] = el;
+                                  charSpansRef.current[idx] = el;
+                                }}
+                                className="story-char story-inflate-letter"
+                              >
+                                {c}
+                              </span>
+                            );
+                          })}
+                        </span>
                       </div>
-                      {makeCharSpans(" ", 15)}
-                      <span ref={forWordRef} className="story-word">
-                        {makeCharSpans("for", 16)}
-                      </span>
-                      {makeCharSpans(" motion graphics, kinetic type, 3D, shader effects, and beyond.", 19)}
+                      {" "}
+                      {renderWord("where", 16, whereWordRef)}
+                      {" "}
+                      {renderWord("humanity", 22)}
+                      {" "}
+                      {renderWord("is", 31)}
+                      {" "}
+                      {renderWord("out", 34)}
+                      {" "}
+                      {renderWord("exploring", 38)}
+                      {" "}
+                      {renderWord("the", 48, theWordRef)}
+                      {" "}
+                      <div className="index-style__StoryOneDecorativeTextWrapper-sc-be78c17d-4 ddmokf story-keyword-wrapper">
+                        {/* Glow effect radiant aura */}
+                        <div className="story-glow-aura story-glow-ai" aria-hidden="true" />
+
+                        {/* Interactive keyword letters */}
+                        <span className="story-keyword-text story-keyword-ai">
+                          {"AI".split("").map((c, i) => {
+                            const idx = 52 + i;
+                            return (
+                              <span
+                                key={idx}
+                                data-char-idx={idx}
+                                ref={(el) => {
+                                  aiLettersRef.current[i] = el;
+                                  charSpansRef.current[idx] = el;
+                                }}
+                                className="story-char story-inflate-letter"
+                              >
+                                {c}
+                              </span>
+                            );
+                          })}
+                        </span>
+                      </div>
+                      {" "}
+                      {renderWord("is", 55, isWordRef)}
+                      {" "}
+                      {renderWord("fundamentally", 58)}
+                      {" "}
+                      {renderWord("more", 72)}
+                      {" "}
+                      {renderWord("exciting", 77)}
+                      {" "}
+                      {renderWord("than", 86)}
+                      {" "}
+                      {renderWord("one", 91)}
+                      {" "}
+                      {renderWord("where", 95)}
+                      {" "}
+                      {renderWord("we", 101)}
+                      {" "}
+                      {renderWord("are", 104)}
+                      {" "}
+                      {renderWord("not.", 108)}
                     </span>
                   </h2>
 
@@ -858,7 +952,7 @@ export function ButterServices() {
                       aria-hidden="true"
                     />
                     <div className="index-style__StoryOneTextHalftoneInner-sc-be78c17d-3 jKEoAW">
-                      Browse curated blocks for motion graphics, kinetic type, 3D, shader effects, and beyond.
+                      Building future where humanity is out exploring the AI is fundamentally more exciting than one where we are not.
                     </div>
                   </div>
                 </div>
