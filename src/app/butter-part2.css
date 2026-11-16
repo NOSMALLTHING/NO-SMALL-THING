@@ -490,9 +490,9 @@
 
 .story-glow-aura{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(1);pointer-events:none;opacity:0;z-index:-1;transition:opacity 0.8s cubic-bezier(0.200, 0.715, 0.205, 0.990),transform 0.8s cubic-bezier(0.200, 0.715, 0.205, 0.990);}
 
-.story-glow-future{width:160% !important;height:auto !important;min-width:180px;pointer-events:none;}
+.story-glow-future{width:100% !important;height:auto !important;pointer-events:none;}
 
-.story-glow-ai{width:220% !important;height:auto !important;min-width:140px;pointer-events:none;}
+.story-glow-ai{width:100% !important;height:auto !important;pointer-events:none;}
 
 .ktBmdf{position:relative;opacity:1;transition:opacity 0.8s cubic-bezier(0.200, 0.715, 0.205, 0.990);}
 

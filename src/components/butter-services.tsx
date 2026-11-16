@@ -510,7 +510,7 @@ export function ButterServices() {
     hasEverAnimatedInflateRef.current = true;
 
     const duration = isInflate ? 0.8 : 0.4;
-    const ease = isInflate ? "back.out(1.2)" : "power2.out";
+    const ease = isInflate ? "back.out(1)" : "power2.out";
     const tl = gsap.timeline();
 
     gsap.killTweensOf(allInflateLetters);
@@ -519,121 +519,95 @@ export function ButterServices() {
     if (wordThe) gsap.killTweensOf(wordThe);
     if (wordIs) gsap.killTweensOf(wordIs);
 
-    if (isInflate) {
-      futureInflateLetters.forEach((el, idx) => {
-        const delay = 0.025 * idx;
-        const rot = 36 * Math.random() - 18;
-        tl.to(
-          el,
-          {
-            scale: 1,
-            duration,
-            ease,
-          },
-          delay
-        );
-        tl.fromTo(
-          el,
-          { rotate: rot },
-          { rotate: 0, duration, ease },
-          delay
-        );
-      });
+    // Staggered letter inflate bounce and random rotation matching Butter 1:1
+    futureInflateLetters.forEach((el, idx) => {
+      const delay = 0.02 * idx;
+      const rot = 40 * Math.random() - 20;
+      tl.to(
+        el,
+        {
+          scale: isInflate ? 1 : 0,
+          duration,
+          ease,
+        },
+        delay
+      );
+      tl.fromTo(
+        el,
+        { rotate: isInflate ? rot : 0 },
+        { rotate: isInflate ? 0 : rot, duration, ease },
+        delay
+      );
+    });
 
-      aiInflateLetters.forEach((el, idx) => {
-        const delay = 0.06 + 0.03 * idx;
-        const rot = 36 * Math.random() - 18;
-        tl.to(
-          el,
-          {
-            scale: 1,
-            duration,
-            ease,
-          },
-          delay
-        );
-        tl.fromTo(
-          el,
-          { rotate: rot },
-          { rotate: 0, duration, ease },
-          delay
-        );
-      });
+    aiInflateLetters.forEach((el, idx) => {
+      const delay = 0.02 * idx;
+      const rot = 40 * Math.random() - 20;
+      tl.to(
+        el,
+        {
+          scale: isInflate ? 1 : 0,
+          duration,
+          ease,
+        },
+        delay
+      );
+      tl.fromTo(
+        el,
+        { rotate: isInflate ? rot : 0 },
+        { rotate: isInflate ? 0 : rot, duration, ease },
+        delay
+      );
+    });
 
-      if (wordBuilding) {
-        tl.to(
-          wordBuilding,
-          {
-            x: "-0.15em",
-            duration: 0.5 * duration,
-            ease,
-          },
-          0.06
-        );
-      }
+    // Adjacent words push spacing matching Butter 1:1 (-0.15em / +0.15em)
+    const halfDur = 0.5 * duration;
+    if (wordBuilding) {
+      tl.to(
+        wordBuilding,
+        {
+          x: isInflate ? "-0.15em" : 0,
+          duration: halfDur,
+          ease,
+        },
+        0.1
+      );
+    }
 
-      if (wordWhere) {
-        tl.to(
-          wordWhere,
-          {
-            x: "0.15em",
-            duration: 0.5 * duration,
-            ease,
-          },
-          0.12
-        );
-      }
+    if (wordWhere) {
+      tl.to(
+        wordWhere,
+        {
+          x: isInflate ? "0.15em" : 0,
+          duration: halfDur,
+          ease,
+        },
+        0.02 * futureInflateLetters.length + 0.1
+      );
+    }
 
-      if (wordThe) {
-        tl.to(
-          wordThe,
-          {
-            x: "-0.15em",
-            duration: 0.5 * duration,
-            ease,
-          },
-          0.14
-        );
-      }
+    if (wordThe) {
+      tl.to(
+        wordThe,
+        {
+          x: isInflate ? "-0.15em" : 0,
+          duration: halfDur,
+          ease,
+        },
+        0.1
+      );
+    }
 
-      if (wordIs) {
-        tl.to(
-          wordIs,
-          {
-            x: "0.15em",
-            duration: 0.5 * duration,
-            ease,
-          },
-          0.18
-        );
-      }
-    } else {
-      allInflateLetters.forEach((el) => {
-        const rot = 36 * Math.random() - 18;
-        tl.to(
-          el,
-          {
-            scale: 0,
-            duration,
-            ease,
-          },
-          0
-        );
-        tl.to(
-          el,
-          {
-            rotate: rot,
-            duration,
-            ease,
-          },
-          0
-        );
-      });
-
-      if (wordBuilding) tl.to(wordBuilding, { x: "0em", duration: 0.4, ease: "power2.out" }, 0);
-      if (wordWhere) tl.to(wordWhere, { x: "0em", duration: 0.4, ease: "power2.out" }, 0);
-      if (wordThe) tl.to(wordThe, { x: "0em", duration: 0.4, ease: "power2.out" }, 0);
-      if (wordIs) tl.to(wordIs, { x: "0em", duration: 0.4, ease: "power2.out" }, 0);
+    if (wordIs) {
+      tl.to(
+        wordIs,
+        {
+          x: isInflate ? "0.15em" : 0,
+          duration: halfDur,
+          ease,
+        },
+        0.02 * aiInflateLetters.length + 0.1
+      );
     }
 
     return () => {
@@ -911,8 +885,8 @@ export function ButterServices() {
                           <img
                             alt=""
                             loading="lazy"
-                            width={169}
-                            height={52}
+                            width={611}
+                            height={226}
                             decoding="async"
                             style={{ color: "transparent" }}
                             src="/marketing-assets/images/text-effects/word_glow_future.png"
@@ -979,8 +953,8 @@ export function ButterServices() {
                           <img
                             alt=""
                             loading="lazy"
-                            width={100}
-                            height={52}
+                            width={257}
+                            height={226}
                             decoding="async"
                             style={{ color: "transparent" }}
                             src="/marketing-assets/images/text-effects/word_glow_ai.png"
