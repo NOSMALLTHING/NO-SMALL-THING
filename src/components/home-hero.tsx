@@ -206,6 +206,20 @@ export function HomeHero() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const isTransitioningRef = useRef(false);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current !== null) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+      videoRefs.current.forEach((video) => {
+        if (video && !video.paused) {
+          video.pause();
+        }
+      });
+    };
+  }, []);
 
   const kickerRef = useRef<HTMLParagraphElement>(null);
   const targetRef = useRef<HTMLSpanElement>(null);
@@ -276,7 +290,11 @@ export function HomeHero() {
 
     setCurrentIndex(nextIndex);
 
-    window.setTimeout(() => {
+    if (transitionTimeoutRef.current !== null) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
+    transitionTimeoutRef.current = setTimeout(() => {
+      transitionTimeoutRef.current = null;
       isTransitioningRef.current = false;
       videoRefs.current.forEach((video, idx) => {
         if (idx !== nextIndex && video && !video.paused) {

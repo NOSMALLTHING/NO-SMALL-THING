@@ -216,6 +216,8 @@ export function ButterServices() {
   const blockElementsRef = useRef<(HTMLDivElement | null)[]>([]);
   const isInTimelineRef = useRef(false);
   const hasEnteredRef = useRef(false);
+  const timelineAnimRef = useRef<gsap.core.Timeline | null>(null);
+  const entranceBounceAnimRef = useRef<gsap.core.Tween | null>(null);
 
   const getBlockTransform = useCallback((sEl: HTMLElement, tEl: HTMLElement, inTimeline: boolean) => {
     if (inTimeline) {
@@ -250,14 +252,16 @@ export function ButterServices() {
   }, [getBlockTransform]);
 
   useEffect(() => {
+    let isMounted = true;
+
     // Initial placement after layout paints and after fonts finish loading
     const initialTimer = setTimeout(() => {
-      updateBlockPositions();
+      if (isMounted) updateBlockPositions();
     }, 40);
 
     if (typeof document !== "undefined" && "fonts" in document) {
       document.fonts.ready.then(() => {
-        updateBlockPositions();
+        if (isMounted) updateBlockPositions();
       });
     }
 
@@ -281,12 +285,13 @@ export function ButterServices() {
       lastScrollY = curScrollY;
 
       // Drop entrance bounce for block 0 (animate inner block without disturbing slot positioning)
-      if (!hasEnteredRef.current && sRect.top < windowH * 0.82) {
+      if (!hasEnteredRef.current && sRect.top < windowH * 0.82 && !isInTimelineRef.current) {
         hasEnteredRef.current = true;
         const firstBlock = blockElementsRef.current[0];
         const firstInner = firstBlock?.firstElementChild;
         if (firstInner) {
-          gsap.from(firstInner, {
+          entranceBounceAnimRef.current?.kill();
+          entranceBounceAnimRef.current = gsap.from(firstInner, {
             y: "-300px",
             rotation: 15,
             duration: 1.8,
@@ -309,7 +314,9 @@ export function ButterServices() {
 
       if (shouldBeInTimeline && !isInTimelineRef.current) {
         isInTimelineRef.current = true;
+        timelineAnimRef.current?.kill();
         const tl = gsap.timeline();
+        timelineAnimRef.current = tl;
         blockElementsRef.current.forEach((block, idx) => {
           if (!block) return;
           const stagger = idx * 0.1;
@@ -345,7 +352,9 @@ export function ButterServices() {
         });
       } else if (!shouldBeInTimeline && isInTimelineRef.current) {
         isInTimelineRef.current = false;
+        timelineAnimRef.current?.kill();
         const tl = gsap.timeline();
+        timelineAnimRef.current = tl;
         blockElementsRef.current.forEach((block, idx) => {
           if (!block) return;
           const sEl = statementWrappersRef.current[idx];
@@ -394,12 +403,15 @@ export function ButterServices() {
     onScroll();
 
     return () => {
+      isMounted = false;
       clearTimeout(initialTimer);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onScroll);
       if (typeof window !== "undefined" && window.__lenis) {
         window.__lenis.off("scroll", onScroll);
       }
+      timelineAnimRef.current?.kill();
+      entranceBounceAnimRef.current?.kill();
     };
   }, [getBlockTransform, updateBlockPositions]);
 
@@ -446,13 +458,20 @@ export function ButterServices() {
           "<+=0.05"
         );
       });
+      return () => {
+        tl.kill();
+        gsap.killTweensOf(chars);
+      };
     } else {
-      gsap.to(chars, {
+      const tween = gsap.to(chars, {
         filter: "blur(0px)",
         duration: 0.45,
         ease: "power2.out",
         overwrite: "auto",
       });
+      return () => {
+        tween.kill();
+      };
     }
   }, [activeEffect]);
 
@@ -468,6 +487,9 @@ export function ButterServices() {
     const tl = gsap.timeline();
 
     gsap.killTweensOf(letters);
+    if (wordCurated) gsap.killTweensOf(wordCurated);
+    if (wordFor) gsap.killTweensOf(wordFor);
+
     letters.forEach((el, idx) => {
       const delay = 0.025 * idx;
       const rot = 36 * Math.random() - 18;
@@ -511,6 +533,13 @@ export function ButterServices() {
         0.02 * letters.length + 0.08
       );
     }
+
+    return () => {
+      tl.kill();
+      gsap.killTweensOf(letters);
+      if (wordCurated) gsap.killTweensOf(wordCurated);
+      if (wordFor) gsap.killTweensOf(wordFor);
+    };
   }, [activeEffect]);
 
   // Halftone effect: video playback toggle
@@ -519,10 +548,15 @@ export function ButterServices() {
     if (!video) return;
 
     if (activeEffect === "halftone") {
+      video.currentTime = 0;
       video.play().catch(() => {});
     } else {
       video.pause();
     }
+
+    return () => {
+      video.pause();
+    };
   }, [activeEffect]);
 
   const handleCardClick = (id: string) => {
@@ -866,8 +900,18 @@ export function ButterServices() {
                     {TEXT_EFFECT_ITEMS.map((item) => (
                       <div
                         key={item.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={activeEffect === item.id}
+                        aria-label={`${item.label} text effect`}
                         data-effect={item.id}
                         onClick={() => handleCardClick(item.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleCardClick(item.id);
+                          }
+                        }}
                         onMouseEnter={() => setHoveredEffect(item.id)}
                         onMouseLeave={() => setHoveredEffect(null)}
                         className={`index-style__StoryOneUIItem-sc-be78c17d-14 cYA-Dcr ${

@@ -22,7 +22,10 @@ export function StudioExperience() {
     };
     update();
     preference.addEventListener("change", update);
-    return () => preference.removeEventListener("change", update);
+    return () => {
+      preference.removeEventListener("change", update);
+      video.pause();
+    };
   }, []);
 
   function togglePlayback() {

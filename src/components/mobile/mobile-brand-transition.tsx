@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useLayoutEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, useMotionValue, useReducedMotion, useScroll, useTransform } from "motion/react";
 import styles from "./mobile-brand-transition.module.css";
 
@@ -19,7 +19,7 @@ export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
   const brandScrollY = useMotionValue(0);
   const reducedMotion = useReducedMotion();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     // The brand component only animates on phones. Reset before paint so a
     // restored browser scroll position can never render the parked logo first.
     if (window.matchMedia("(max-width: 767px)").matches) {
@@ -41,9 +41,13 @@ export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
     };
   }, [brandScrollY, reducedMotion, scrollY]);
 
-  useLayoutEffect(() => {
-    const updateViewport = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+  useEffect(() => {
+    let mounted = true;
+    const updateViewport = () => {
+      if (mounted) setViewport({ width: window.innerWidth, height: window.innerHeight });
+    };
     const updateWordmarkSize = () => {
+      if (!mounted) return;
       const bounds = wordmarkRef.current?.getBoundingClientRect();
       if (bounds && bounds.width > 0 && bounds.height > 0) {
         setWordmarkSize({ width: bounds.width, height: bounds.height });
@@ -60,6 +64,7 @@ export function MobileBrandTransition({ isLight }: { isLight: boolean }) {
     document.fonts?.ready.then(updateWordmarkSize);
 
     return () => {
+      mounted = false;
       window.removeEventListener("resize", updateViewport);
       observer?.disconnect();
     };

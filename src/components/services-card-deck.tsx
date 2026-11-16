@@ -521,6 +521,9 @@ export function ServicesCardDeck() {
 
       return () => {
         observer.disconnect();
+        videoEls.forEach((video) => {
+          if (!video.paused) video.pause();
+        });
       };
     } else {
       videoEls.forEach(playVideoSafe);
