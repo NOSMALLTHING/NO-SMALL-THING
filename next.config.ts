@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   output: "export",
   images: { unoptimized: true },
+  experimental: {
+    agentUpgrade: "security",
+  },
 };
 
 export default nextConfig;

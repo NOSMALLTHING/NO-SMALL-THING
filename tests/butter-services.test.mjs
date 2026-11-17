@@ -7,7 +7,7 @@ const butterServicesFile = path.resolve("src/components/butter-services.tsx");
 const butterCssFile = path.resolve("src/app/butter-part2.css");
 
 test("Section 2 Statement Timeline text and 5 block slots", () => {
-  const content = fs.readFileSync(butterServicesFile, "utf-8");
+  const content = fs.readFileSync(butterServicesFile, "utf-8").replace(/\r\n/g, "\n");
 
   // Verify the exact replacement statement text
   const expectedStatementText =
@@ -31,7 +31,7 @@ test("Section 2 Statement Timeline text and 5 block slots", () => {
 });
 
 test("Section 3 StoryOne tag, headline and interactive keywords future & AI", () => {
-  const content = fs.readFileSync(butterServicesFile, "utf-8");
+  const content = fs.readFileSync(butterServicesFile, "utf-8").replace(/\r\n/g, "\n");
 
   // Kicker tag
   assert.ok(content.includes("Websites, software, and AI. Shipped, and running."));
@@ -76,7 +76,7 @@ test("Section 3 StoryOne tag, headline and interactive keywords future & AI", ()
 });
 
 test("Flight animation trigger threshold and speedup timing", () => {
-  const content = fs.readFileSync(butterServicesFile, "utf-8");
+  const content = fs.readFileSync(butterServicesFile, "utf-8").replace(/\r\n/g, "\n");
 
   // Advanced trigger threshold: 0.88
   assert.ok(content.includes("windowH * 0.88"), "Trigger threshold must be advanced to windowH * 0.88");
