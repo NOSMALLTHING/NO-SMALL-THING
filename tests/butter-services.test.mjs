@@ -100,3 +100,49 @@ test("CSS styles for inflate, glow and optical focus", () => {
   assert.ok(css.includes(".story-glow-aura"));
   assert.ok(css.includes("white-space: nowrap"));
 });
+
+test("StoryOneUI (.gIFObO) desktop full track sizing and mobile centered layout", () => {
+  const css = fs.readFileSync(butterCssFile, "utf-8");
+
+  // Mobile centered layout
+  assert.match(
+    css,
+    /\.gIFObO\{[^}]*width:\s*100%[^}]*max-width:\s*min\(340px,\s*90vw\)[^}]*margin:\s*32px auto 0/,
+    "Mobile .gIFObO should be centered with max-width min(340px, 90vw) and margin 32px auto 0"
+  );
+
+  // Desktop layout at min-width: 768px must have max-width: unset, margin: 0, width: 100%
+  assert.match(
+    css,
+    /@media\s*\(min-width:\s*768px\)\s*\{\s*\.gIFObO\s*\{\s*max-width:\s*unset;\s*margin:\s*0;\s*width:\s*100%;\s*\}\s*\}/,
+    "Desktop .gIFObO must restore max-width: unset to fill 5-column grid track naturally"
+  );
+
+  // Desktop must NOT clamp card with max-width: 459px
+  assert.doesNotMatch(
+    css,
+    /@media\s*\(min-width:\s*768px\)\s*\{\s*\.gIFObO\s*\{[^}]*max-width:\s*459px/,
+    "Desktop .gIFObO must not be constrained to max-width 459px"
+  );
+
+  // Parent grid track: .bdmaFz spans 5 columns (8/span 5) on desktop
+  assert.match(
+    css,
+    /@media\s*\(min-width:\s*768px\)\s*\{\s*\.bdmaFz\s*\{\s*grid-column:\s*8\/span 5;\s*\}\s*\}/,
+    ".bdmaFz must span 5 columns on desktop (grid-column: 8/span 5)"
+  );
+
+  // Parent grid: .ePEgYo is a 12-column grid
+  assert.match(
+    css,
+    /\.ePEgYo\{[^}]*grid-template-columns:\s*repeat\(12,\s*1fr\)/,
+    ".ePEgYo must define a 12-column grid (repeat(12, 1fr))"
+  );
+
+  // Inner cards: .cYA-Dcr half width with fluid padding clamps
+  assert.match(
+    css,
+    /\.cYA-Dcr\{[^}]*width:\s*calc\(50% - 2px\)/,
+    ".cYA-Dcr must be 2 columns within the card (width: calc(50% - 2px))"
+  );
+});
