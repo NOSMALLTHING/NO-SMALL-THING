@@ -31,7 +31,7 @@
 }
 
 .butter-part2-root {
-  --butter-white: #FAFAFA;
+  --butter-white: #ffffff;
   --butter-off-white: #F7F7F7;
   --butter-black: #1E1E1E;
   --butter-true-black: #0F0F0F;
@@ -123,7 +123,7 @@
   pointer-events: none;
 }
 
-:root{--butter-white:#FAFAFA;--butter-off-white:#F7F7F7;--butter-black:#1E1E1E;--butter-true-black:#0F0F0F;--butter-charcoal:#3C3C3C;--butter-light-grey:#EDEDED;--butter-dark-grey:#E2E2E2;--butter-light:#EBEBEB;--butter-red:#FF3333;--butter-blue:#4DC5E5;--butter-green:#63AD45;--butter-yellow:#E9D352;--butter-pink:#F9ABFF;--butter-font-primary:'DieGrotesk','DieGrotesk Fallback';--butter-font-secondary:'ABCDiatype','ABCDiatype Fallback';--butter-ease-out:cubic-bezier(0.200, 0.715, 0.205, 0.990);--butter-ease-in-out:cubic-bezier(0.835, 0.120, 0.225, 0.770);}
+:root{--butter-white:#ffffff;--butter-off-white:#F7F7F7;--butter-black:#1E1E1E;--butter-true-black:#0F0F0F;--butter-charcoal:#3C3C3C;--butter-light-grey:#EDEDED;--butter-dark-grey:#E2E2E2;--butter-light:#EBEBEB;--butter-red:#FF3333;--butter-blue:#4DC5E5;--butter-green:#63AD45;--butter-yellow:#E9D352;--butter-pink:#F9ABFF;--butter-font-primary:'DieGrotesk','DieGrotesk Fallback';--butter-font-secondary:'ABCDiatype','ABCDiatype Fallback';--butter-ease-out:cubic-bezier(0.200, 0.715, 0.205, 0.990);--butter-ease-in-out:cubic-bezier(0.835, 0.120, 0.225, 0.770);}
 
 @keyframes dafZtH{from{filter:hue-rotate(0deg);}to{filter:hue-rotate(360deg);}}
 
@@ -341,7 +341,7 @@
     )
   );line-height:24px;letter-spacing:0.036em;}
 
-.iPkdfn{position:relative;background-color:#FAFAFA;border-radius:0 0 60px 60px;margin-bottom:-60px;z-index:1;}
+.iPkdfn{position:relative;background-color:#ffffff;border-radius:0 0 60px 60px;margin-bottom:-60px;z-index:1;}
 
 .dONKYH{width:100%;margin:0 auto;padding-left:min(
     80px,
@@ -474,7 +474,7 @@
 
 .effect-halftone .cqjpGA{opacity:1;}
 
-.jKEoAW{position:relative;z-index:1;background-color:#FAFAFA;color:black;mix-blend-mode:lighten;padding-bottom:0.1em;}
+.jKEoAW{position:relative;z-index:1;background-color:#ffffff;color:black;mix-blend-mode:lighten;padding-bottom:0.1em;}
 
 .ddmokf{position:relative;display:inline-block;z-index:1;}
 
