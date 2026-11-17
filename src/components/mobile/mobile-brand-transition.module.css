@@ -6,17 +6,26 @@
   .brand {
     position: fixed;
     z-index: 1001;
-    top: 21px;
-    left: 14px;
+    top: 0;
+    left: 0;
     display: block;
     line-height: 1;
     transform-origin: 0 0;
     will-change: transform;
+    pointer-events: none;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
   }
 
   .brand a {
-    display: block;
+    display: inline-block;
     pointer-events: auto;
+  }
+
+  :global(body.menu-open) .brand {
+    opacity: 0;
+    pointer-events: none;
   }
 
   .wordmark {
@@ -35,11 +44,6 @@
   }
 
   .brand[data-light="true"] .wordmark {
-    color: #080809;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.48), 0 3px 10px rgba(8, 8, 9, 0.12);
-  }
-
-  :global(body.menu-open) .brand[data-parked="true"] .wordmark {
     color: #080809;
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.48), 0 3px 10px rgba(8, 8, 9, 0.12);
   }

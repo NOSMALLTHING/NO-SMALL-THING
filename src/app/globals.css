@@ -2235,7 +2235,13 @@ a:focus-visible .scene-reveal {
   }
 
   .site-header.is-home .header-bar .brand-name {
-    display: none;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  body.menu-open .site-header.is-home .header-bar .brand-name {
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 }
 

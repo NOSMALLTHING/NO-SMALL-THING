@@ -387,7 +387,7 @@ export function ButterServices() {
       // Hysteresis threshold: trigger early at windowH * 0.88 so icons take flight early under fast scroll
       let shouldBeInTimeline = isInTimelineRef.current;
       if (isScrollingDown) {
-        if (tRect.top <= windowH * 1) {
+        if (tRect.top <= windowH * 0.88) {
           shouldBeInTimeline = true;
         }
       } else {
@@ -403,14 +403,14 @@ export function ButterServices() {
         timelineAnimRef.current = tl;
         blockElementsRef.current.forEach((block, idx) => {
           if (!block) return;
-          const stagger = idx * 0.08  ;
+          const stagger = idx * 0.035;
           tl.to(
             block,
             {
               scale: 1,
               x: 0,
               y: 0,
-              duration: 1.5,
+              duration: 0.52,
               ease: "power2.out",
             },
             stagger
@@ -445,7 +445,7 @@ export function ButterServices() {
           const tEl = timelineWrappersRef.current[idx];
           if (!sEl || !tEl) return;
           const { scale, x, y } = getBlockTransform(sEl, tEl, false);
-          const stagger = idx * 0.01;
+          const stagger = idx * 0.03;
 
           tl.to(
             block,

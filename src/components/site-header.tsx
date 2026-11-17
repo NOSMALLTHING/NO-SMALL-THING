@@ -343,6 +343,9 @@ export function SiteHeader() {
             onClick={(event) => {
               if (isHome) {
                 event.preventDefault();
+                if (menuOpenRef.current) {
+                  closeMenu();
+                }
                 if (window.__lenis) {
                   window.__lenis.scrollTo(0, { duration: 0.8 });
                 } else {
@@ -400,7 +403,7 @@ export function SiteHeader() {
             </Link>
           </div>
         </div>
-        {isHome ? <MobileBrandTransition isLight={isLight} /> : null}
+        {isHome ? <MobileBrandTransition isLight={isLight} anchorRef={logoRef} /> : null}
         <noscript>
           <nav className="no-script-nav" aria-label="Navigation without JavaScript">
             {navigation.map((item) => (
