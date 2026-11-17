@@ -54,3 +54,13 @@ test("SiteHeader passes anchorRef to MobileBrandTransition", () => {
   const headerContent = fs.readFileSync(headerTsxFile, "utf-8");
   assert.ok(headerContent.includes("<MobileBrandTransition isLight={isLight} anchorRef={logoRef} />"));
 });
+
+test("MobileBrandTransition prevents hydration mismatches via mounted guard and suppressHydrationWarning", () => {
+  const content = fs.readFileSync(brandTsxFile, "utf-8").replace(/\r\n/g, "\n");
+  assert.ok(content.includes("const [mounted, setMounted] = useState(false)"), "Must track client mount state");
+  assert.ok(content.includes("if (!mounted)"), "Must guard against rendering during SSR and initial hydration");
+  assert.ok(content.includes("suppressHydrationWarning"), "Must add suppressHydrationWarning to motion.div");
+  assert.ok(content.includes("viewportWidth: 390"), "Must initialize with deterministic mobile fallback width");
+  assert.ok(content.includes("viewportHeight: 844"), "Must initialize with deterministic mobile fallback height");
+  assert.ok(content.includes("[anchorRef, mounted]"), "Metrics and observer effect must depend on mounted state to measure DOM");
+});

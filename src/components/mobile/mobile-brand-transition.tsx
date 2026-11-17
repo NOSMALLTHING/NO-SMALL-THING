@@ -23,9 +23,10 @@ export function MobileBrandTransition({
   isLight: boolean;
   anchorRef?: React.RefObject<HTMLAnchorElement | null>;
 }) {
+  const [mounted, setMounted] = useState(false);
   const [metrics, setMetrics] = useState<TargetMetrics>({
-    viewportWidth: typeof window !== "undefined" ? window.innerWidth : 390,
-    viewportHeight: typeof window !== "undefined" ? window.innerHeight : 844,
+    viewportWidth: 390,
+    viewportHeight: 844,
     targetLeft: 14,
     targetTop: 21,
     targetWidth: 140,
@@ -38,11 +39,17 @@ export function MobileBrandTransition({
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    let mounted = true;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    let isSubscribed = true;
     const timers: (NodeJS.Timeout | number)[] = [];
 
     const updateMetrics = () => {
-      if (!mounted) return;
+      if (!isSubscribed) return;
       const vw = typeof window !== "undefined" ? window.innerWidth : 390;
       const vh = typeof window !== "undefined" ? window.innerHeight : 844;
 
@@ -110,7 +117,7 @@ export function MobileBrandTransition({
     }
 
     return () => {
-      mounted = false;
+      isSubscribed = false;
       cancelAnimationFrame(rafId);
       timers.forEach((t) => clearTimeout(t));
       window.removeEventListener("resize", updateMetrics);
@@ -120,7 +127,7 @@ export function MobileBrandTransition({
       }
       ro?.disconnect();
     };
-  }, [anchorRef]);
+  }, [anchorRef, mounted]);
 
   // Synchronize parked state with live scroll and reduced motion preference
   useEffect(() => {
@@ -160,12 +167,17 @@ export function MobileBrandTransition({
   const y = useTransform(scrollY, [0, BRAND_SCROLL_DISTANCE], [startY, targetTop], { clamp: true });
   const scale = useTransform(scrollY, [0, BRAND_SCROLL_DISTANCE], [startScale, 1], { clamp: true });
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <motion.div
       className={`${styles.brand} mobile-brand-transition`}
       data-light={isLight ? "true" : "false"}
       data-parked={isParked ? "true" : "false"}
       style={reducedMotion ? { x: targetLeft, y: targetTop, scale: 1 } : { x, y, scale }}
+      suppressHydrationWarning
     >
       <Link
         href="/"
