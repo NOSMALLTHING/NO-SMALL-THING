@@ -27,6 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <link rel="preload" href="/fonts/cormorant-garamond-italic.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
     <link rel="preload" href="/fonts/Sometype-Mono.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
     <link rel="preload" href="/fonts/SuisseBPIntl-Bold.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+    <link rel="preload" href="/demo3/fonts/inter-tight-latin-wght-normal.DX-nOvPD.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
   </head><body id="top">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, "\\u003c") }} />
     <a href="#main-content" className="skip-link">Skip to content</a>
