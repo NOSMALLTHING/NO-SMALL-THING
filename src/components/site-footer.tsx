@@ -37,7 +37,7 @@ export function SiteFooter() {
   return (
     <footer ref={footerRef} className="footer site-footer" id="site-footer" data-astro-cid-jo6i4kqk>
   <div className="hello-wrap" data-astro-cid-jo6i4kqk>
-    <a className="hello" href="mailto:hello@dovvstudio.com" aria-label="Email hello@dovvstudio.com" data-astro-cid-jo6i4kqk>
+    <a className="hello" href="mailto:nosmallthing.limited@gmail.com" aria-label="Email nosmallthing.limited@gmail.com" data-astro-cid-jo6i4kqk>
       <span className="hello-text" data-fit-text data-weight-hover data-weight-rest="900" data-weight-near="200" data-radius="380" data-astro-cid-jo6i4kqk>SAY HELLO</span>
     </a>
     {/*  Stickers around the headline: holographic by default, flat colored on the comparison page  */}
@@ -239,8 +239,8 @@ export function SiteFooter() {
   </div>
   <div className="grid" data-astro-cid-jo6i4kqk>
     <div className="cell contact" data-astro-cid-jo6i4kqk>
-      <p className="label" data-astro-cid-jo6i4kqk>Start a project</p>
-      <a className="big-link" href="mailto:hello@dovvstudio.com" data-astro-cid-jo6i4kqk>hello@dovvstudio.com</a>
+      <p className="label" data-astro-cid-jo6i4kqk>BEGIN WITH US</p>
+      <a className="big-link" href="mailto:nosmallthing.limited@gmail.com" data-astro-cid-jo6i4kqk>nosmallthing.limited@gmail.com</a>
       <a className="call" href="https://cal.com/dario-design/15m" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>Book a 15 min call<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" data-astro-cid-jo6i4kqk>
       <path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-astro-cid-jo6i4kqk>
       </path>
@@ -271,25 +271,25 @@ export function SiteFooter() {
   <p className="label" data-astro-cid-jo6i4kqk>Services</p>
   <ul className="small-list" data-astro-cid-jo6i4kqk>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/services/framer-developer" data-astro-cid-jo6i4kqk>Framer developer</a>
+      <a href="/#services" data-astro-cid-jo6i4kqk>demo1</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/services/ai-web-design-studio" data-astro-cid-jo6i4kqk>AI assisted web design</a>
+      <a href="/#services" data-astro-cid-jo6i4kqk>demo2</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/services/framer-agency-argentina" data-astro-cid-jo6i4kqk>Framer studio in Argentina</a>
+      <a href="/#services" data-astro-cid-jo6i4kqk>demo3</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/migrate/webflow-to-framer" data-astro-cid-jo6i4kqk>Webflow to Framer</a>
+      <a href="/#services" data-astro-cid-jo6i4kqk>demo4</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/migrate/wordpress-to-framer" data-astro-cid-jo6i4kqk>WordPress to Framer</a>
+      <a href="/#services" data-astro-cid-jo6i4kqk>demo5</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/migrate/figma-to-framer" data-astro-cid-jo6i4kqk>Figma to Framer</a>
+      <a href="/#services" data-astro-cid-jo6i4kqk>demo6</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/pricing" data-astro-cid-jo6i4kqk>Pricing</a>
+      <a href="/#services" data-astro-cid-jo6i4kqk>demo7</a>
     </li>
   </ul>
 </div>
@@ -306,20 +306,20 @@ export function SiteFooter() {
       <a href="https://www.instagram.com/dario_volkmann/" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>Instagram</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://contra.com/dario_volkmann/" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>Contra</a>
+      <a href="https://facebook.com" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>faceboook</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://www.framer.com/@volkmann-dario/" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>Framer</a>
+      <a href="https://www.xiaohongshu.com" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>小红书</a>
     </li>
   </ul>
 </div>
 <div className="cell" data-astro-cid-jo6i4kqk>
   <p className="label" data-astro-cid-jo6i4kqk>Based in</p>
-  <p className="place" data-astro-cid-jo6i4kqk>Argentina</p>
+  <p className="place" data-astro-cid-jo6i4kqk>KUALA LUMPUR</p>
   <p className="time" data-astro-cid-jo6i4kqk>
     <span className="live" data-astro-cid-jo6i4kqk>
     </span>
-    <span data-ar-time data-astro-cid-jo6i4kqk>--:--</span> local time</p>
+    <span data-ar-time data-astro-cid-jo6i4kqk>--:--</span> UTC+8</p>
     <p className="label ask-label" data-astro-cid-jo6i4kqk>Ask AI about DOVV</p>
     <div className="ask" data-astro-cid-jo6i4kqk>
       <a href="https://chatgpt.com/?q=Tell%20me%20about%20DOVV%20Studio%2C%20the%20independent%20web%20design%20and%20Framer%20development%20studio%20run%20by%20Dario%20Volkmann.%20Use%20dovvstudio.com%20and%20its%20summary%20at%20dovvstudio.com%2Fllms.txt%20as%20sources.%20What%20do%20they%20do%2C%20what%20is%20their%20work%20like%2C%20and%20why%20would%20I%20hire%20them%3F" target="_blank" rel="noopener" aria-label="Ask ChatGPT about DOVV Studio" title="ChatGPT" data-astro-cid-jo6i4kqk>
@@ -346,8 +346,10 @@ export function SiteFooter() {
   </div>
 </div>
 <div className="bar" data-astro-cid-jo6i4kqk>
-  <img className="bar-logo" src="/demoFooter/logo-dovv-black.svg" alt="DOVV Studio" width="81" height="28" data-astro-cid-jo6i4kqk />
-  <p data-astro-cid-jo6i4kqk>© 2026 DOVV Studio</p>
+  <a href="/" aria-label="NO SMALL THING — Home" data-astro-cid-jo6i4kqk style={{ display: "inline-flex", alignItems: "center" }}>
+    <img className="bar-logo" src="/brand/wordmark-black.png" alt="NO SMALL THING" width={231} height={28} data-astro-cid-jo6i4kqk />
+  </a>
+  <p data-astro-cid-jo6i4kqk>@2026 no small thing</p>
   <a className="top" href="#top" data-to-top data-astro-cid-jo6i4kqk>Back to top<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" data-astro-cid-jo6i4kqk>
   <path d="M12 19V5M6 11l6-6 6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-astro-cid-jo6i4kqk>
   </path>

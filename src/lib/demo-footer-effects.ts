@@ -361,11 +361,11 @@ export function initTime(root: HTMLElement): () => void {
   const timeEls = root.querySelectorAll<HTMLElement>("[data-ar-time]");
   if (!timeEls.length) return () => {};
 
-  const fmt = new Intl.DateTimeFormat("es-AR", {
+  const fmt = new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-    timeZone: "America/Argentina/Buenos_Aires",
+    timeZone: "Asia/Kuala_Lumpur",
   });
 
   const update = () => {

@@ -118,7 +118,7 @@
 
 .cell[data-astro-cid-jo6i4kqk]:last-child{border-right:0}
 
-.label[data-astro-cid-jo6i4kqk]{font-family:var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:#00000080;font-size:13px;font-weight:500}
+.label[data-astro-cid-jo6i4kqk]{font-family:"Inter Tight",Arial,Helvetica,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#00000080;font-size:13px;font-weight:500}
 
 .ask-label[data-astro-cid-jo6i4kqk]{margin-top:18px}
 
@@ -160,7 +160,9 @@
 
 .bar[data-astro-cid-jo6i4kqk]{color:#0000008c;border-top:1px solid #0000001f;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:22px 32px;font-size:14px;display:grid}
 
-.bar-logo[data-astro-cid-jo6i4kqk]{width:auto;height:28px}
+.bar[data-astro-cid-jo6i4kqk] p[data-astro-cid-jo6i4kqk]{font-family:"Inter Tight",Arial,Helvetica,sans-serif;font-weight:500;margin:0}
+
+.bar-logo[data-astro-cid-jo6i4kqk]{width:auto;height:28px;display:block;object-fit:contain}
 
 .top[data-astro-cid-jo6i4kqk]{color:inherit;justify-self:end;align-items:center;gap:6px;text-decoration:none;display:inline-flex}
 

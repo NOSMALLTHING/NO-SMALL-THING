@@ -23,6 +23,19 @@ test("SiteFooter component renders Demo3 footer structure with interactive hooks
   assert.ok(code.includes("initHolo"), "must initialize Holo effect");
   assert.ok(code.includes("initFitText"), "must initialize FitText effect");
   assert.ok(code.includes("initWeightHover"), "must initialize WeightHover effect");
+
+  // Content customizations
+  assert.ok(code.includes("nosmallthing.limited@gmail.com"), "must include custom email");
+  assert.ok(code.includes("BEGIN WITH US"), "must include BEGIN WITH US heading");
+  for (let i = 1; i <= 7; i++) {
+    assert.ok(code.includes(`demo${i}`), `must include demo${i} service item`);
+  }
+  assert.ok(code.includes("faceboook"), "must include faceboook social link");
+  assert.ok(code.includes("小红书"), "must include 小红书 social link");
+  assert.ok(code.includes("KUALA LUMPUR"), "must include KUALA LUMPUR location");
+  assert.ok(code.includes("UTC+8"), "must include UTC+8 time label");
+  assert.ok(code.includes("wordmark-black.png"), "must include NO SMALL THING wordmark");
+  assert.ok(code.includes("@2026 no small thing"), "must include custom copyright text");
 });
 
 test("Demo3 footer font assets and images exist and are non-empty in public/demoFooter", () => {
@@ -62,4 +75,6 @@ test("demo-footer.css imports all required fonts and defines responsive rules", 
   assert.ok(css.includes(".hello[data-astro-cid-jo6i4kqk]"), "must style hello link");
   assert.ok(css.includes(".sticker[data-astro-cid-mqob2q4p]"), "must style stickers");
   assert.ok(css.includes(".holo[data-astro-cid-syr6i6or]"), "must style holo elements");
+  assert.ok(css.includes('.label[data-astro-cid-jo6i4kqk]{font-family:"Inter Tight"'), "must style labels with Inter Tight font");
+  assert.ok(css.includes('.bar[data-astro-cid-jo6i4kqk] p[data-astro-cid-jo6i4kqk]{font-family:"Inter Tight"'), "must style copyright with Inter Tight font");
 });
