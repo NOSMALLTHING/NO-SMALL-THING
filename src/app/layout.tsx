@@ -7,6 +7,7 @@ import { contactDetails } from "@/lib/contact";
 import { pageMetadata, publicSiteUrl } from "@/lib/seo";
 import "./globals.css";
 import "./butter-part2.css";
+import "./demo-footer.css";
 
 export const metadata: Metadata = {
   ...pageMetadata("Transcend Everything", site.description, "/"),
