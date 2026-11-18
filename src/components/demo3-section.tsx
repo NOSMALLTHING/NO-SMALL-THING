@@ -81,7 +81,7 @@ export function Demo3Section() {
               className={`${styles.sTitle} ${styles.reveal} s-title`}
               data-reveal="true"
             >
-              How I&nbsp;work
+              How we&nbsp;work
               <span className={`${styles.sigStop} sig-stop`}>.</span>
             </h2>
 
@@ -90,10 +90,9 @@ export function Demo3Section() {
               data-reveal="true"
               style={{ "--d": ".05s" } as React.CSSProperties}
             >
-              I start with the idea, then shape the design and the creative
-              direction. Tools come after, chosen to deliver the work properly. AI
-              speeds up how I build and ship; the design and direction stay with
-              me.
+              The requirement comes first. What does not need to exist gets
+              deleted, then the design is shaped. Tools are chosen after that,
+              including AI. AI shortens the build. The direction stays with us.
             </p>
 
             <div
@@ -102,13 +101,13 @@ export function Demo3Section() {
               style={{ "--d": ".06s" } as React.CSSProperties}
             >
               <p className={`${styles.pullout} ${styles.pulloutL} pullout pullout--l`}>
-                Creativity first. Then the tools designers actually&nbsp;need.
+                The requirement first. Automation last.
               </p>
             </div>
 
             <div
               className={`${styles.tools} ${styles.reveal} tools`}
-              aria-label="Tools I work with"
+              aria-label="Tools we work with"
               data-reveal="true"
               style={{ "--d": ".06s" } as React.CSSProperties}
             >

@@ -762,10 +762,10 @@ export function ButterServices() {
           <div className="index-style__ContainerMain-sc-3e6ebae-0 dONKYH">
             <p className="TextStyles__TextBodyStyled-sc-358d108c-5 fWzyEw">
               <span className="index-style__SplitTextSrOnly-sc-6461e2eb-0 jreyVw">
-                Teams from top brands and agencies build with Butter
+                Teams from top brands and agencies we learn from
               </span>
               <span aria-hidden="true" className="index-style__SplitTextWrapper-sc-6461e2eb-1 hwJVXf">
-                Teams from top brands and agencies build with Butter
+                Teams from top brands and agencies we learn from
               </span>
             </p>
             <span className="index-style__SpacerMain-sc-f2e865fb-0 iJTUgd" />

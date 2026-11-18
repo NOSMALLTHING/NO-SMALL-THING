@@ -34,9 +34,9 @@ test("Demo3Section component structure, semantic markup, and tool categories", (
   const compContent = fs.readFileSync(componentFile, "utf-8").replace(/\r\n/g, "\n");
 
   // Core texts
-  assert.ok(compContent.includes("How I&nbsp;work"), "Must include 'How I work' headline");
-  assert.ok(compContent.includes("I start with the idea, then shape the design"), "Must include lead paragraph");
-  assert.ok(compContent.includes("Creativity first. Then the tools designers actually"), "Must include pullout text");
+  assert.ok(compContent.includes("How we&nbsp;work"), "Must include 'How we work' headline");
+  assert.ok(compContent.includes("The requirement comes first. What does not need to exist gets"), "Must include lead paragraph");
+  assert.ok(compContent.includes("The requirement first. Automation last."), "Must include pullout text");
 
   // Theme attributes for SiteHeader contrast
   assert.ok(compContent.includes('data-theme="light"'), "Must include data-theme='light' for header contrast");

@@ -146,3 +146,45 @@ test("StoryOneUI (.gIFObO) desktop full track sizing and mobile centered layout"
     ".cYA-Dcr must be 2 columns within the card (width: calc(50% - 2px))"
   );
 });
+
+test("Section 2 Typography font-family updates to Inter Tight", () => {
+  const tsx = fs.readFileSync(butterServicesFile, "utf-8");
+  const css = fs.readFileSync(butterCssFile, "utf-8");
+
+  // Requirement 1: ticker text
+  assert.ok(
+    tsx.includes("Teams from top brands and agencies we learn from"),
+    "Ticker text must be updated to 'Teams from top brands and agencies we learn from'"
+  );
+
+  // Requirement 2: Statement headline font
+  assert.match(
+    css,
+    /\.gbMovY\{font-family:"Inter Tight"/,
+    ".gbMovY must use Inter Tight font"
+  );
+
+  // Requirement 3: Kicker and buttons font
+  assert.match(
+    css,
+    /\.iFhYZQ\{font-family:"Inter Tight"/,
+    ".iFhYZQ must use Inter Tight font"
+  );
+  assert.match(
+    css,
+    /\.epNqCJ\{font-family:"Inter Tight"/,
+    ".epNqCJ must use Inter Tight font"
+  );
+
+  // Requirement 4: StoryOne headline font
+  assert.match(
+    css,
+    /\.eUmFMS\{max-width:18ch;font-family:"Inter Tight"/,
+    ".eUmFMS must use Inter Tight font"
+  );
+  assert.match(
+    css,
+    /\.cqjpGA\{font-family:"Inter Tight"/,
+    ".cqjpGA must use Inter Tight font"
+  );
+});
