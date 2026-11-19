@@ -32,6 +32,9 @@ test("SiteFooter component renders Demo3 footer structure with interactive hooks
   }
   assert.ok(code.includes("faceboook"), "must include faceboook social link");
   assert.ok(code.includes("小红书"), "must include 小红书 social link");
+  assert.ok(code.includes("https://www.instagram.com/nosmallthing.limited/"), "must include Instagram link");
+  assert.ok(code.includes("https://www.linkedin.com/in/no-small-thing-987899445/"), "must include LinkedIn link");
+  assert.ok(!code.includes("volkmanndario"), "must not include old Dario X link");
   assert.ok(code.includes("KUALA LUMPUR"), "must include KUALA LUMPUR location");
   assert.ok(code.includes("UTC+8"), "must include UTC+8 time label");
   assert.ok(code.includes("wordmark-black.png"), "must include NO SMALL THING wordmark");

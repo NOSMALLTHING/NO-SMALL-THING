@@ -297,13 +297,13 @@ export function SiteFooter() {
   <p className="label" data-astro-cid-jo6i4kqk>Social</p>
   <ul className="list" data-astro-cid-jo6i4kqk>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://www.linkedin.com/in/dariovolk/" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>LinkedIn</a>
+      <a href="https://www.linkedin.com/in/no-small-thing-987899445/" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>LinkedIn</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://x.com/volkmanndario" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>X</a>
+      <a href="#" onClick={(e) => e.preventDefault()} data-astro-cid-jo6i4kqk>X</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://www.instagram.com/dario_volkmann/" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>Instagram</a>
+      <a href="https://www.instagram.com/nosmallthing.limited/" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>Instagram</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
       <a href="https://facebook.com" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>faceboook</a>
