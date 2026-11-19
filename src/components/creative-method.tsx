@@ -435,6 +435,11 @@ export function CreativeMethod() {
         data-theme="dark"
       >
         <span
+          id="creative"
+          style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
+          aria-hidden="true"
+        />
+        <span
           id="approach"
           style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
           aria-hidden="true"

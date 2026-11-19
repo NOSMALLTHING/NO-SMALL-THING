@@ -146,6 +146,8 @@
 
 .small-list[data-astro-cid-jo6i4kqk]{flex-direction:column;gap:6px;margin:0;padding:0;list-style:none;display:flex}
 
+.small-list[data-astro-cid-jo6i4kqk] li[data-astro-cid-jo6i4kqk]{color:inherit;font-size:15px;cursor:default}
+
 .small-list[data-astro-cid-jo6i4kqk] a[data-astro-cid-jo6i4kqk]{color:inherit;font-size:15px;text-decoration:none;transition:color .2s}
 
 .small-list[data-astro-cid-jo6i4kqk] a[data-astro-cid-jo6i4kqk]:hover{color:#00000080}

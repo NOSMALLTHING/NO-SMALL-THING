@@ -254,13 +254,13 @@ export function SiteFooter() {
       <a href="/" data-astro-cid-jo6i4kqk>Home</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/work" data-astro-cid-jo6i4kqk>Work</a>
+      <a href="/#work" data-astro-cid-jo6i4kqk>Work</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/about" data-astro-cid-jo6i4kqk>About</a>
+      <a href="/studio" data-astro-cid-jo6i4kqk>About</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="https://dovvstudio.com/blog" data-astro-cid-jo6i4kqk>Blog</a>
+      <a href="/#creative" data-astro-cid-jo6i4kqk>Creative</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
       <a href="/#contact" data-astro-cid-jo6i4kqk>Contact</a>
@@ -270,27 +270,13 @@ export function SiteFooter() {
 <div className="cell" data-astro-cid-jo6i4kqk>
   <p className="label" data-astro-cid-jo6i4kqk>Services</p>
   <ul className="small-list" data-astro-cid-jo6i4kqk>
-    <li data-astro-cid-jo6i4kqk>
-      <a href="/#services" data-astro-cid-jo6i4kqk>demo1</a>
-    </li>
-    <li data-astro-cid-jo6i4kqk>
-      <a href="/#services" data-astro-cid-jo6i4kqk>demo2</a>
-    </li>
-    <li data-astro-cid-jo6i4kqk>
-      <a href="/#services" data-astro-cid-jo6i4kqk>demo3</a>
-    </li>
-    <li data-astro-cid-jo6i4kqk>
-      <a href="/#services" data-astro-cid-jo6i4kqk>demo4</a>
-    </li>
-    <li data-astro-cid-jo6i4kqk>
-      <a href="/#services" data-astro-cid-jo6i4kqk>demo5</a>
-    </li>
-    <li data-astro-cid-jo6i4kqk>
-      <a href="/#services" data-astro-cid-jo6i4kqk>demo6</a>
-    </li>
-    <li data-astro-cid-jo6i4kqk>
-      <a href="/#services" data-astro-cid-jo6i4kqk>demo7</a>
-    </li>
+    <li data-astro-cid-jo6i4kqk>demo1</li>
+    <li data-astro-cid-jo6i4kqk>demo2</li>
+    <li data-astro-cid-jo6i4kqk>demo3</li>
+    <li data-astro-cid-jo6i4kqk>demo4</li>
+    <li data-astro-cid-jo6i4kqk>demo5</li>
+    <li data-astro-cid-jo6i4kqk>demo6</li>
+    <li data-astro-cid-jo6i4kqk>demo7</li>
   </ul>
 </div>
 <div className="cell" data-astro-cid-jo6i4kqk>

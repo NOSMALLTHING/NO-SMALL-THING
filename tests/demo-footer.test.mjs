@@ -31,6 +31,18 @@ test("SiteFooter component renders Demo3 footer structure with interactive hooks
   for (let i = 1; i <= 7; i++) {
     assert.ok(code.includes(`demo${i}`), `must include demo${i} service item`);
   }
+  // Services should have no anchor/jump links
+  assert.ok(!code.includes("<a href=\"/#services\">demo1</a>"), "services must not have jump links");
+  assert.ok(code.includes("<li data-astro-cid-jo6i4kqk>demo1</li>"), "services must be plain list items");
+
+  // Pages links
+  assert.ok(code.includes('href="/#work"'), "must include internal #work link");
+  assert.ok(code.includes('href="/studio"'), "must include internal /studio link");
+  assert.ok(code.includes('href="/#creative"'), "must include internal #creative link");
+  assert.ok(code.includes("Creative"), "must include Creative page item");
+  assert.ok(!code.includes("dovvstudio.com/work"), "must not include external dovvstudio work link");
+  assert.ok(!code.includes("dovvstudio.com/about"), "must not include external dovvstudio about link");
+  assert.ok(!code.includes("dovvstudio.com/blog"), "must not include external dovvstudio blog link");
   assert.ok(code.includes("faceboook"), "must include faceboook social link");
   assert.ok(code.includes("小红书"), "must include 小红书 social link");
   assert.ok(code.includes("https://www.instagram.com/nosmallthing.limited/"), "must include Instagram link");
