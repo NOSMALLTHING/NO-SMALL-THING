@@ -241,7 +241,7 @@ export function SiteFooter() {
     <div className="cell contact" data-astro-cid-jo6i4kqk>
       <p className="label" data-astro-cid-jo6i4kqk>BEGIN WITH US</p>
       <a className="big-link" href="mailto:nosmallthing.limited@gmail.com" data-astro-cid-jo6i4kqk>nosmallthing.limited@gmail.com</a>
-      <a className="call" href="https://cal.com/dario-design/15m" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>Book a 15 min call<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" data-astro-cid-jo6i4kqk>
+      <a className="call" href="https://cal.com/no-small-thing-ejfl44/quick-chat" target="_blank" rel="noopener" data-astro-cid-jo6i4kqk>Book a 15 min call<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" data-astro-cid-jo6i4kqk>
       <path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-astro-cid-jo6i4kqk>
       </path>
     </svg>

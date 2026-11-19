@@ -26,6 +26,7 @@ test("SiteFooter component renders Demo3 footer structure with interactive hooks
 
   // Content customizations
   assert.ok(code.includes("nosmallthing.limited@gmail.com"), "must include custom email");
+  assert.ok(code.includes("https://cal.com/no-small-thing-ejfl44/quick-chat"), "must include updated cal.com booking link");
   assert.ok(code.includes("BEGIN WITH US"), "must include BEGIN WITH US heading");
   for (let i = 1; i <= 7; i++) {
     assert.ok(code.includes(`demo${i}`), `must include demo${i} service item`);
