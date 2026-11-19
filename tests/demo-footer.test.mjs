@@ -50,6 +50,8 @@ test("SiteFooter component renders Demo3 footer structure with interactive hooks
   assert.ok(!code.includes("volkmanndario"), "must not include old Dario X link");
   assert.ok(code.includes("KUALA LUMPUR"), "must include KUALA LUMPUR location");
   assert.ok(code.includes("UTC+8"), "must include UTC+8 time label");
+  assert.ok(code.includes("Ask AI about US"), "must include Ask AI about US label");
+  assert.ok(!code.includes("Ask AI about DOVV"), "must not include DOVV in Ask AI label");
   assert.ok(code.includes("wordmark-black.png"), "must include NO SMALL THING wordmark");
   assert.ok(code.includes("@2026 no small thing"), "must include custom copyright text");
 });
