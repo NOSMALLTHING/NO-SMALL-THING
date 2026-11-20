@@ -195,12 +195,12 @@
 .tools {
   margin-top: var(--space-block, clamp(40px, 5vw, 72px));
   display: grid;
-  grid-template-columns: repeat(3, auto);
-  justify-content: start;
-  gap: clamp(24px, 3vw, 40px) clamp(32px, 4vw, 72px);
+  grid-template-columns: repeat(3, max-content);
+  justify-content: space-between;
+  gap: clamp(24px, 3vw, 40px) clamp(16px, 2vw, 32px);
 }
 
-@media (max-width: 899.98px) {
+@media (max-width: 1199.98px) {
   .tools {
     grid-template-columns: 1fr;
     row-gap: clamp(26px, 7vw, 36px);
@@ -246,11 +246,14 @@
 .logos {
   --lg: clamp(18px, 2.6vw, 44px);
   --lr: clamp(16px, 2.4vw, 36px);
-  margin: 0 calc(-1 * var(--lg)) calc(-1 * var(--lr)) 0;
   text-wrap: balance;
   padding: 0;
   line-height: 0;
   list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: var(--lr) var(--lg);
+  margin: 0;
 }
 
 .tgQuiet .logos {
@@ -258,9 +261,15 @@
   --lr: 10px;
 }
 
+@media (max-width: 479.98px) {
+  .tgQuiet .logos {
+    grid-template-columns: 1fr;
+  }
+}
+
 .logo {
   vertical-align: middle;
-  margin: 0 var(--lg) var(--lr) 0;
+  margin: 0;
   white-space: nowrap;
   letter-spacing: -0.0325em;
   color: #868682;
@@ -288,6 +297,15 @@
 
 .logo:hover svg {
   fill: var(--hue, currentColor);
+}
+
+.logo svg path {
+  fill: currentColor;
+  transition: fill 0.35s var(--ease-out);
+}
+
+.logo:hover svg path {
+  fill: var(--brand-color, var(--hue, currentColor));
 }
 
 .tgQuiet .logo {
