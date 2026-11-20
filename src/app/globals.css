@@ -876,7 +876,8 @@ main#main-content {
 /* ==========================================================================
    Emblematica "WHAT WE DO BEST" 3D Sticky Card Deck (.services)
    ========================================================================== */
-body.services-side-entry .services-shell {
+body.services-side-entry .services-shell,
+.services-shell {
   perspective: none;
 }
 
@@ -884,7 +885,7 @@ body.services-side-entry .services-shell {
   --services-kicker-top: calc(132 * var(--emb-u));
   --services-kicker-height: calc(16 * var(--emb-u));
   --services-kicker-gap: calc(80 * var(--emb-u));
-  --services-stack-intro: calc(120 * var(--emb-u));
+  --services-stack-intro: 0px;
   --services-flow-gap: calc(112 * var(--emb-u));
   --services-card-top: calc(
     var(--services-kicker-top) + var(--services-kicker-height) + var(--services-kicker-gap)
@@ -903,7 +904,7 @@ body.services-side-entry .services-shell {
   max-width: 100vw;
   margin: 0 auto;
   padding-top: var(--services-kicker-top);
-  perspective: calc(1800 * var(--emb-u));
+  perspective: none;
   perspective-origin: 50% 0;
 }
 
@@ -927,12 +928,13 @@ body.services-side-entry .services-shell {
 .services-stack {
   position: relative;
   max-width: 100vw;
-  padding-top: calc(var(--services-kicker-gap) + var(--services-stack-intro));
+  padding-top: var(--services-kicker-gap);
   padding-bottom: calc(24 * var(--emb-u));
 }
 
 @media (min-width: 901px) {
-  body.services-side-entry .services-stack::after {
+  body.services-side-entry .services-stack::after,
+  .services-stack::after {
     content: "";
     display: block;
     height: 70vh;
@@ -949,7 +951,8 @@ body.services-side-entry .services-shell {
 }
 
 @media (min-width: 901px) {
-  body.services-side-entry .service-card-slot {
+  body.services-side-entry .service-card-slot,
+  .service-card-slot {
     will-change: transform;
   }
 }
@@ -1330,7 +1333,7 @@ body.services-side-entry .services-shell {
   .services {
     --services-kicker-top: calc(92 * var(--emb-u));
     --services-kicker-gap: calc(44 * var(--emb-u));
-    --services-stack-intro: calc(72 * var(--emb-u));
+    --services-stack-intro: 0px;
     --services-flow-gap: calc(64 * var(--emb-u));
   }
 

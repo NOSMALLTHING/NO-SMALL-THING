@@ -160,16 +160,9 @@ export function ServicesCardDeck() {
       ) || 1;
     unitPxRef.current = u;
 
-    const slots = slotRefs.current.filter(Boolean) as HTMLDivElement[];
-    const cards = cardRefs.current.filter(Boolean) as HTMLElement[];
-
-    // Baseline layout parameters from globals.css
-    // Desktop: kicker 132u, kicker-height 16u, kicker-gap 80u, stack-intro 120u, flow-gap 112u
-    // Mobile:  kicker 92u,  kicker-height 16u, kicker-gap 44u, stack-intro 72u,  flow-gap 64u
     const kickerTop = (isMobile ? 92 : 132) * u;
     const kickerHeight = 16 * u;
     const kickerGap = (isMobile ? 44 : 80) * u;
-    const stackIntro = (isMobile ? 72 : 120) * u;
     const flowGap = (isMobile ? 64 : 112) * u;
 
     const defaultCardTop = kickerTop + kickerHeight + kickerGap;
@@ -177,30 +170,23 @@ export function ServicesCardDeck() {
       ? Math.max(300, viewportWidth - 28)
       : Math.min(1160 * u, viewportWidth - 40 * u);
     const defaultCardHeight = isMobile ? 360 * u : 370 * u;
-    const slot0NormalTop = kickerTop + kickerGap + stackIntro;
+
+    const slots = slotRefs.current.filter(Boolean) as HTMLDivElement[];
+    const cards = cardRefs.current.filter(Boolean) as HTMLElement[];
+
+    // Measure the actual rendered card height (or fall back to proportional default)
+    const measuredHeight = cards[0]?.offsetHeight || slots[0]?.offsetHeight || defaultCardHeight;
+    const step = measuredHeight + flowGap;
 
     const cardCount = PROJECT_CARDS.length;
     metricsRef.current = Array.from({ length: cardCount }, (_, index) => {
       const card = cards[index] || slots[index];
       const cardWidth = card && card.offsetWidth > 0 ? card.offsetWidth : defaultCardWidth;
-      const cardHeight = card && card.offsetHeight > 0 ? card.offsetHeight : defaultCardHeight;
-
-      let measuredCardTop = defaultCardTop;
-      if (slots[index]) {
-        const computed = parseFloat(window.getComputedStyle(slots[index]).top);
-        if (Number.isFinite(computed) && computed > 0) {
-          measuredCardTop = computed;
-        }
-      }
-
-      // Normal flow top of each slot is mathematically defined by CSS rules:
-      // slot(0) starts at slot0NormalTop. Each subsequent slot is spaced by cardHeight + flowGap.
-      // This is 100% immune to WebKit sticky offsetTop bugs or scroll-position shifts.
-      const normalTop = slot0NormalTop + index * (cardHeight + flowGap);
+      const cardHeight = card && card.offsetHeight > 0 ? card.offsetHeight : measuredHeight;
 
       return {
-        cardTop: measuredCardTop,
-        normalTop,
+        cardTop: defaultCardTop,
+        normalTop: defaultCardTop + index * step,
         cardWidth,
         cardHeight,
       };
@@ -211,7 +197,6 @@ export function ServicesCardDeck() {
   const updateServiceCards = useCallback(() => {
     const section = sectionRef.current;
     const cards = cardRefs.current.filter(Boolean) as HTMLElement[];
-    const slots = slotRefs.current.filter(Boolean) as HTMLDivElement[];
     if (!section || !cards.length) return;
 
     const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -237,13 +222,26 @@ export function ServicesCardDeck() {
       const cardWidthFallback = Math.min(1160 * unitPx, viewportWidth * 0.85);
 
       cards.forEach((card, index) => {
+        if (index === 0) {
+          // Card 0 is the stationary base of the deck, resting at origin
+          card.classList.remove("is-next", "is-stacked");
+          card.classList.add("is-active");
+          if (isMobile || isReduced) {
+            card.style.transform = "";
+          } else {
+            card.style.transform =
+              cardPerspective +
+              "translate3d(0.00px, 0.00px, 0.00px) rotateX(0.00deg) rotateY(0.00deg) rotateZ(0.00deg) scale(1.0000)";
+          }
+          return;
+        }
+
         const sideDirection = index % 2 === 0 ? -1 : 1;
         const cardWidth = metricsRef.current[index]?.cardWidth || cardWidthFallback;
         const sideEntryOffset = viewportWidth * 0.52 + cardWidth * 0.58;
 
         card.classList.remove("is-active", "is-stacked");
         card.classList.add("is-next");
-        card.style.zIndex = String(10 + index);
 
         if (isMobile || isReduced) {
           card.style.transform = "";
@@ -257,7 +255,6 @@ export function ServicesCardDeck() {
         }
       });
       section.style.setProperty("--services-kicker-exit", "0");
-      section.style.setProperty("--services-release-y", "0px");
       return;
     }
 
@@ -269,7 +266,6 @@ export function ServicesCardDeck() {
       cards.forEach((card, index) => {
         card.classList.remove("is-next");
         card.classList.add("is-active", "is-stacked");
-        card.style.zIndex = String(10 + index);
 
         if (isMobile || isReduced) {
           card.style.transform = "";
@@ -285,7 +281,6 @@ export function ServicesCardDeck() {
         }
       });
       section.style.setProperty("--services-kicker-exit", "1");
-      section.style.setProperty("--services-release-y", "-28px");
       return;
     }
 
@@ -299,7 +294,6 @@ export function ServicesCardDeck() {
     const sectionProgress = clamp(sectionScroll / maxScroll, 0, 1);
     const releaseProgress = clamp((sectionProgress - 0.82) / 0.16, 0, 1);
     const groupShiftY = lerp(0, -28, easeInOutQuint(releaseProgress));
-    section.style.setProperty("--services-release-y", `${groupShiftY.toFixed(2)}px`);
 
     // Kicker exit follows release near section end
     const kickerExit = clamp((sectionProgress - 0.85) / 0.12, 0, 1);
@@ -309,13 +303,22 @@ export function ServicesCardDeck() {
     const cardData = cards.map((card, index) => {
       const metrics = metricsRef.current[index] || {
         cardTop: 228 * unitPx,
-        normalTop: (132 + 200) * unitPx + index * (370 + 112) * unitPx,
+        normalTop: 228 * unitPx + index * (370 + (isMobile ? 64 : 112)) * unitPx,
         cardWidth: Math.min(1160 * unitPx, viewportWidth - 40 * unitPx),
-        cardHeight: 370 * unitPx,
+        cardHeight: (isMobile ? 360 : 370) * unitPx,
       };
 
-      const enterRange = (metrics.cardHeight + 112 * unitPx) * 1.12;
-      const slotTriggerScroll = metrics.normalTop - metrics.cardTop;
+      if (index === 0) {
+        // Card 0 is the stationary foundation card of the deck: always 100% resting in place
+        return { rawProgress: 1, metrics };
+      }
+
+      const flowGap = (isMobile ? 64 : 112) * unitPx;
+      const step = metrics.cardHeight + flowGap;
+      const enterRange = step;
+      // Subsequent cards (1..4) enter sequentially across [(index - 1) * step, index * step]
+      // and land flat in the sticky stack at exactly index * step.
+      const slotTriggerScroll = index * step;
       const enterStart = slotTriggerScroll - enterRange;
       const rawProgress = clamp((sectionScroll - enterStart) / enterRange, 0, 1);
 
@@ -325,13 +328,30 @@ export function ServicesCardDeck() {
     // Apply transforms deterministically (pure function of scroll position)
     cards.forEach((card, index) => {
       const { rawProgress, metrics } = cardData[index];
-      const cardSlot = slots[index];
 
-      if (cardSlot) {
-        cardSlot.style.transform = "";
-        cardSlot.style.zIndex = String(10 + index);
+      if (index === 0) {
+        // Card 0 never flies in from the side; it only recedes as subsequent cards stack on top
+        const depth = computeCardDepth(0, cards.length, (i) => cardData[i].rawProgress);
+        card.classList.add("is-active");
+        card.classList.remove("is-next");
+        card.classList.toggle("is-stacked", depth > 0.01);
+
+        if (isMobile || isReduced) {
+          card.style.transform = "";
+          return;
+        }
+
+        const targetY = -depth * 16 + groupShiftY;
+        const targetZ = -depth * 28;
+        const scale = 1 - depth * 0.018;
+
+        card.style.transform =
+          cardPerspective +
+          `translate3d(0.00px, ${targetY.toFixed(2)}px, ${targetZ.toFixed(2)}px) ` +
+          `rotateX(0.00deg) rotateY(0.00deg) rotateZ(0.00deg) ` +
+          `scale(${scale.toFixed(4)})`;
+        return;
       }
-      card.style.zIndex = String(10 + index);
 
       const active = rawProgress > 0.04;
       card.classList.toggle("is-active", active);
@@ -396,10 +416,16 @@ export function ServicesCardDeck() {
       });
     };
 
+    // Synchronous execution on Lenis scroll tick eliminates 1-frame visual latency
+    const onLenisScroll = () => {
+      if (!isMounted) return;
+      updateServiceCards();
+    };
+
     // 1. Lenis smooth scroll listener
     const attachLenis = () => {
       if (typeof window !== "undefined" && window.__lenis) {
-        window.__lenis.on("scroll", scheduleUpdate);
+        window.__lenis.on("scroll", onLenisScroll);
         return true;
       }
       return false;
@@ -412,20 +438,19 @@ export function ServicesCardDeck() {
           clearInterval(checkLenisTimer);
           checkLenisTimer = null;
         }
-      }, 100);
+      }, 50);
       setTimeout(() => {
         if (checkLenisTimer) {
           clearInterval(checkLenisTimer);
           checkLenisTimer = null;
         }
-      }, 3000);
+      }, 2000);
     }
 
     // 2. Native window scroll listener (passive)
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
 
-    // 3. Debounced window resize handler
-    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+    // 3. Window resize handler
     const handleResize = () => {
       const isTouch = window.matchMedia("(max-width: 900px)").matches;
       setIsTouchLayout((prev) => (prev !== isTouch ? isTouch : prev));
@@ -435,66 +460,18 @@ export function ServicesCardDeck() {
       runwayStateRef.current = "init";
       syncMetrics();
       scheduleUpdate();
-      if (resizeTimer) clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        if (!isMounted) return;
-        runwayStateRef.current = "init";
-        syncMetrics();
-        scheduleUpdate();
-      }, 120);
     };
     window.addEventListener("resize", handleResize, { passive: true });
-
-    // 4. ResizeObserver on section container to re-sync metrics if layout shifts
-    let ro: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== "undefined") {
-      ro = new ResizeObserver(() => {
-        const isTouch = window.matchMedia("(max-width: 900px)").matches;
-        setIsTouchLayout((prev) => (prev !== isTouch ? isTouch : prev));
-        runwayStateRef.current = "init";
-        syncMetrics();
-        scheduleUpdate();
-      });
-      if (sectionRef.current) ro.observe(sectionRef.current);
-    }
-
-    // 5. Font loading listener for accurate font metrics
-    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        if (!isMounted) return;
-        runwayStateRef.current = "init";
-        syncMetrics();
-        scheduleUpdate();
-      });
-    }
-
-    // Initial stabilization ticks
-    const t1 = setTimeout(() => {
-      if (!isMounted) return;
-      runwayStateRef.current = "init";
-      syncMetrics();
-      scheduleUpdate();
-    }, 100);
-    const t2 = setTimeout(() => {
-      if (!isMounted) return;
-      runwayStateRef.current = "init";
-      syncMetrics();
-      scheduleUpdate();
-    }, 500);
 
     return () => {
       isMounted = false;
       if (rafId) cancelAnimationFrame(rafId);
       if (checkLenisTimer) clearInterval(checkLenisTimer);
       if (typeof window !== "undefined" && window.__lenis) {
-        window.__lenis.off("scroll", scheduleUpdate);
+        window.__lenis.off("scroll", onLenisScroll);
       }
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", handleResize);
-      if (resizeTimer) clearTimeout(resizeTimer);
-      if (ro) ro.disconnect();
-      clearTimeout(t1);
-      clearTimeout(t2);
     };
   }, [syncMetrics, updateServiceCards]);
 
@@ -564,12 +541,14 @@ export function ServicesCardDeck() {
             <div
               key={project.id}
               className="service-card-slot"
+              style={{ zIndex: 10 + index }}
               ref={(el) => {
                 slotRefs.current[index] = el;
               }}
             >
               <article
                 className={`service-card ${project.themeClass}`}
+                style={{ zIndex: 10 + index }}
                 ref={(el) => {
                   cardRefs.current[index] = el;
                 }}
