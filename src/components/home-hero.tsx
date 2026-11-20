@@ -416,7 +416,6 @@ export function HomeHero() {
 
       <div className={`${styles.meta} ${mono.className}`}>
         <span>3+ DIGITAL FREAKS</span>
-        <span>KUALA LUMPUR BASED</span>
         <HeroClock />
       </div>
 
