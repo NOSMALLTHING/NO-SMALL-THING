@@ -1485,10 +1485,10 @@ body.menu-open .menu-backdrop {
 
 /* 3D Quirky Character peeking behind drawer */
 .menu-parrot {
-  position: absolute;
+  position: fixed;
   z-index: 2;
   left: calc(var(--menu-anchor-left) - var(--menu-drawer-padding-left) - calc(205 * var(--emb-u)));
-  top: calc(var(--menu-anchor-top) + calc(76 * var(--emb-u)));
+  top: calc(var(--menu-edge-gap) + calc(76 * var(--emb-u)));
   width: calc(422 * var(--emb-u));
   height: calc(422 * var(--emb-u));
   object-fit: contain;
@@ -1516,10 +1516,10 @@ body.menu-open .menu-parrot {
 
 /* Main white drawer panel */
 .menu-drawer {
-  position: absolute;
+  position: fixed;
   z-index: 3;
   pointer-events: none;
-  top: var(--menu-anchor-top);
+  top: var(--menu-edge-gap);
   left: calc(var(--menu-anchor-left) - var(--menu-drawer-padding-left));
   width: min(
     calc(930 * var(--emb-u)),

@@ -44,8 +44,12 @@ export function SiteHeader() {
     const drawerPaddingLeft = Number.parseFloat(drawerStyles.paddingLeft) || 0;
     const drawerWidth = drawer.offsetWidth;
     const drawerHeight = drawer.offsetHeight;
-    const drawerTop = Number.parseFloat(drawerStyles.top) || 0;
     const centeredMobileReveal = window.matchMedia("(max-width: 900px)").matches;
+    const drawerTop = centeredMobileReveal
+      ? Number.parseFloat(drawerStyles.top) || 0
+      : Number.parseFloat(window.getComputedStyle(overlay).getPropertyValue("--menu-edge-gap")) ||
+        Number.parseFloat(drawerStyles.top) ||
+        0;
     const drawerLeft = buttonRect.left - drawerPaddingLeft;
 
     const offsetX = centeredMobileReveal ? 0 : buttonRect.left - drawerLeft;
@@ -56,7 +60,6 @@ export function SiteHeader() {
     const scaleY = clamp(buttonRect.height / Math.max(drawerHeight, 1), 0.04, 1);
 
     overlay.style.setProperty("--menu-anchor-left", `${buttonRect.left}px`);
-    overlay.style.setProperty("--menu-anchor-top", `${drawerTop}px`);
     overlay.style.setProperty("--menu-anchor-center-x", `${buttonRect.left + buttonRect.width / 2}px`);
     overlay.style.setProperty("--menu-anchor-center-y", `${buttonRect.top + buttonRect.height / 2}px`);
     overlay.style.setProperty("--menu-origin-x", `${offsetX}px`);
@@ -103,7 +106,10 @@ export function SiteHeader() {
       if (!menuOpenRef.current) {
         setMenuVisible(false);
         const overlay = overlayRef.current;
-        if (overlay) overlay.hidden = true;
+        if (overlay) {
+          overlay.hidden = true;
+          overlay.style.removeProperty("--menu-anchor-top");
+        }
         document.body.classList.remove("menu-scroll-locked");
         document.documentElement.classList.remove("menu-scroll-locked");
         window.__lenis?.start();
@@ -169,9 +175,27 @@ export function SiteHeader() {
 
   // Cleanup on unmount or route change
   useEffect(() => {
-    if (menuOpenRef.current) {
-      closeMenu();
+    menuOpenRef.current = false;
+    document.body.classList.remove("menu-open");
+    document.body.classList.remove("menu-scroll-locked");
+    document.documentElement.classList.remove("menu-scroll-locked");
+    setMenuOpen(false);
+    setMenuVisible(false);
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
     }
+    const overlay = overlayRef.current;
+    if (overlay) {
+      overlay.hidden = true;
+      overlay.style.removeProperty("--menu-anchor-top");
+      overlay.style.removeProperty("--menu-origin-x");
+      overlay.style.removeProperty("--menu-origin-y");
+      overlay.style.removeProperty("--menu-origin-scale-x");
+      overlay.style.removeProperty("--menu-origin-scale-y");
+    }
+    window.__lenis?.start();
+
     return () => {
       menuOpenRef.current = false;
       document.body.classList.remove("menu-open");
@@ -180,7 +204,7 @@ export function SiteHeader() {
       window.__lenis?.start();
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
-  }, [pathname, closeMenu]);
+  }, [pathname]);
 
   // ── Smart Background Detection at Logo ──
   useEffect(() => {

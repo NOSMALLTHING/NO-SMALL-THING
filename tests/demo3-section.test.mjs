@@ -50,10 +50,10 @@ test("Demo3Section component structure, semantic markup, and tool categories", (
 
   // Logos
   const expectedLogos = [
-    "Adobe", "Photoshop", "Illustrator", "InDesign", "After Effects", "Acrobat",
-    "WordPress", "Cloudflare", "Astro", "Cargo",
-    "Claude", "Grok", "Gemini", "Higgsfield",
-    "Google Analytics", "Google Search Console"
+    "Adobe", "Figma", "Illustrator", "InDesign", "Blender", "Canva",
+    "WordPress", "Cloudflare", "Astro", "Google Cloud",
+    "Claude", "Grok", "Gemini", "ChatGPT",
+    "Google Analytics", "Google Search Console", "Google Search SEO"
   ];
 
   for (const logo of expectedLogos) {
