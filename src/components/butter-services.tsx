@@ -32,24 +32,24 @@ const LOGOS = [
 
 const STATEMENT_BLOCKS = [
   {
-    src: "/marketing-assets/images/statement/statement-1.png",
-    alt: "Orange Nike swoosh on a glossy blue app icon",
+    src: "/marketing-assets/images/statement/home-icons/py.png",
+    alt: "Py icon",
   },
   {
-    src: "/marketing-assets/images/statement/statement-2.jpg",
-    alt: "Cropped black-and-white typographic composition",
+    src: "/marketing-assets/images/statement/home-icons/ai.png",
+    alt: "AI icon",
   },
   {
-    src: "/marketing-assets/images/statement/statement-3.jpg",
-    alt: "Blue halftone silhouettes of people riding horses",
+    src: "/marketing-assets/images/statement/home-icons/flower.png",
+    alt: "Daisy flower",
   },
   {
-    src: "/marketing-assets/images/statement/statement-4.jpg",
-    alt: "Red and white Justified Studio typographic poster",
+    src: "/marketing-assets/images/statement/home-icons/n-coin.png",
+    alt: "N coin icon",
   },
   {
-    src: "/marketing-assets/images/statement/statement-5.jpg",
-    alt: "Repeating red Art Direction typography",
+    src: "/marketing-assets/images/statement/home-icons/keyboard.png",
+    alt: "Keyboard keys",
   },
 ];
 
