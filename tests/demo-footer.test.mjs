@@ -76,8 +76,8 @@ test("Demo3 footer font assets and images exist and are non-empty in public/demo
     assert.ok(fs.statSync(fontPath).size > 1000, `Font ${font} must be non-empty`);
   }
 
-  const logoPath = path.join(root, "public/demoFooter/logo-dovv-black.svg");
-  assert.ok(fs.existsSync(logoPath), "logo-dovv-black.svg must exist");
+  const logoPath = path.join(root, "public/brand/wordmark-black.png");
+  assert.ok(fs.existsSync(logoPath), "wordmark-black.png must exist");
   assert.ok(fs.statSync(logoPath).size > 100, "logo must be non-empty");
 });
 

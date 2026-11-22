@@ -35,7 +35,14 @@ export function SiteFooter() {
   }, []);
 
   return (
-    <footer ref={footerRef} className="footer site-footer" id="site-footer" data-astro-cid-jo6i4kqk>
+    <footer
+      ref={footerRef}
+      className="footer site-footer"
+      id="site-footer"
+      data-theme="light"
+      data-topbar-theme="light"
+      data-astro-cid-jo6i4kqk
+    >
   <div className="hello-wrap" data-astro-cid-jo6i4kqk>
     <a className="hello" href="mailto:nosmallthing.limited@gmail.com" aria-label="Email nosmallthing.limited@gmail.com" data-astro-cid-jo6i4kqk>
       <span className="hello-text" data-fit-text data-weight-hover data-weight-rest="900" data-weight-near="200" data-radius="380" data-astro-cid-jo6i4kqk>SAY HELLO</span>
@@ -263,7 +270,7 @@ export function SiteFooter() {
       <a href="/#creative" data-astro-cid-jo6i4kqk>Creative</a>
     </li>
     <li data-astro-cid-jo6i4kqk>
-      <a href="/#contact" data-astro-cid-jo6i4kqk>Contact</a>
+      <a href="/#results" data-astro-cid-jo6i4kqk>Results</a>
     </li>
   </ul>
 </div>

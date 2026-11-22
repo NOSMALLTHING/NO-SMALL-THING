@@ -158,7 +158,11 @@ export function CreativeMethod() {
     const boxHeight = rect.height;
 
     // Skip if outside viewport range
-    if (transitionTop > vh * 1.5 || transitionTop + boxHeight < -vh * 0.5) return;
+    if (transitionTop > vh * 1.5) return;
+    if (transitionTop + boxHeight < -vh * 0.1) {
+      transitionEl.style.setProperty("--method-transition-curtain-y", `${(-vh * 2.5).toFixed(2)}px`);
+      return;
+    }
 
     const transitionProgress = clamp(
       (vh * 0.98 - transitionTop) / Math.max(1, boxHeight + vh * 0.8),
@@ -170,7 +174,7 @@ export function CreativeMethod() {
     const rubberHold = easeOutCubic(clamp((transitionProgress - 0.34) / 0.5, 0, 1));
     const rubberProgress = Math.max(rubberPeak, rubberHold * 0.7);
 
-    const curtainY = lerp(0, -vh * 1.65, travelProgress);
+    const curtainY = lerp(0, -vh * 2.4, travelProgress);
     const arcY = lerp(0, vh * 0.11, rubberProgress);
     const arcScaleX = lerp(1.04, 1.78, rubberProgress);
     const arcScaleY = lerp(0.58, 1.38, rubberProgress);

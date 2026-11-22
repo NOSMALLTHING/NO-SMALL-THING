@@ -6,5 +6,5 @@ export const dynamic = "force-static";
 export default function sitemap(): MetadataRoute.Sitemap {
   // No invented production hostname. Configure the real domain before publishing.
   if (!publicSiteUrl) return [];
-  return ["/", "/expertise", "/studio", "/contact", ...projects.map(project => `/work/${project.slug}`)].map(path => ({ url: new URL(path, publicSiteUrl).toString() }));
+  return ["/", "/expertise", "/studio", ...projects.map(project => `/work/${project.slug}`)].map(path => ({ url: new URL(path, publicSiteUrl).toString() }));
 }

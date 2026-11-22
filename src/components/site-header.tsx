@@ -422,9 +422,14 @@ export function SiteHeader() {
             >
               {lang}
             </button>
-            <Link href="/contact" className="brief-pill" aria-label="Find us">
+            <a
+              href="/#site-footer"
+              className="brief-pill"
+              aria-label="Find us"
+              onClick={(e) => handleNavClick(e, "/#site-footer")}
+            >
               FIND US
-            </Link>
+            </a>
           </div>
         </div>
         {isHome ? <MobileBrandTransition isLight={isLight} anchorRef={logoRef} /> : null}
@@ -513,9 +518,18 @@ export function SiteHeader() {
                 <span className="menu-primary-line">Projects</span>
               </Link>
               <Link
-                href="/#contact"
+                href="/#results"
+                onClick={(e) => handleNavClick(e, "/#results")}
+              >
+                <span className="menu-primary-line">
+                  <span className="menu-label-desktop">Results</span>
+                  <span className="menu-label-mobile">Results</span>
+                </span>
+              </Link>
+              <Link
+                href="/#site-footer"
                 className="menu-primary-accent"
-                onClick={(e) => handleNavClick(e, "/#contact")}
+                onClick={(e) => handleNavClick(e, "/#site-footer")}
               >
                 <span className="menu-primary-line">
                   <span className="menu-label-desktop">Book A Call</span>

@@ -454,7 +454,7 @@ export function ButterServices() {
               x,
               y,
               duration: 0.5,
-              ease: "power2.out",
+              ease: "power2.out ",
             },
             stagger
           );

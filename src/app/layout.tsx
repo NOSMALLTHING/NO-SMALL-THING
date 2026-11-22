@@ -8,6 +8,7 @@ import { pageMetadata, publicSiteUrl } from "@/lib/seo";
 import "./globals.css";
 import "./butter-part2.css";
 import "./demo-footer.css";
+import "./demo8.css";
 
 export const metadata: Metadata = {
   ...pageMetadata("Transcend Everything", site.description, "/"),
@@ -24,11 +25,17 @@ export const viewport: Viewport = { themeColor: "#080809", colorScheme: "dark li
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const organization = { "@context": "https://schema.org", "@type": "Organization", name: site.name, slogan: site.tagline, email: contactDetails.email, sameAs: contactDetails.socials.map(social => social.href), ...(publicSiteUrl ? { url: publicSiteUrl, logo: `${publicSiteUrl}/brand/monogram-768.webp` } : {}) };
   return <html lang="en" data-scroll-behavior="smooth"><head>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&display=swap" />
     <link rel="preload" href="/fonts/manrope-regular.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
     <link rel="preload" href="/fonts/cormorant-garamond-italic.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
     <link rel="preload" href="/fonts/Sometype-Mono.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
     <link rel="preload" href="/fonts/SuisseBPIntl-Bold.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
     <link rel="preload" href="/demo3/fonts/inter-tight-latin-wght-normal.DX-nOvPD.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+    <link rel="preload" href="/demo8/fonts/NeueHaasDisplayLight.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+    <link rel="preload" href="/demo8/fonts/NeueHaasDisplayRoman6d6d.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+    <link rel="preload" href="/demo8/fonts/NeueHaasDisplayMediu21aa.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
   </head><body id="top">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, "\\u003c") }} />
     <a href="#main-content" className="skip-link">Skip to content</a>

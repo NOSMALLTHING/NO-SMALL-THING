@@ -24,12 +24,12 @@ pnpm preview
 | /work/[slug] | Problem / Solution / Technology / Outcome 案例详情 |
 | /expertise | 五大核心业务 |
 | /studio | 三位创始人的品牌故事 |
-| /contact | 联系方式与邮件草稿表单 |
+| /#site-footer | 页脚联系方式与预约（SAY HELLO / Book a Call） |
 | /design-system | 内部设计参考页，noindex |
 
 ## 联系流程
 
-官方 Email、Instagram、LinkedIn、GitHub 集中维护于 src/lib/contact.ts。表单验证 Name、Email、Service、Message 后，准备邮件草稿，由访客在邮件应用中确认并发送；也可下载文本副本。网站没有邮件接收后端，不声称提交成功，不存储表单内容。禁用 JavaScript 时提供直接邮件链接。
+官方 Email、Instagram、LinkedIn、GitHub 集中维护于 src/lib/contact.ts，并在页脚 SAY HELLO 及预约中直接提供。网站没有复杂邮件接收后端，不存储表单内容。各导航渠道（FIND US、Book A Call）平滑导航至页脚。
 
 ## 内容维护
 

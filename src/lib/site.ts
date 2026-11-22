@@ -10,7 +10,7 @@ export const navigation = [
   { href: "/#work", label: "Work", index: "01" },
   { href: "/expertise", label: "Services", index: "02" },
   { href: "/studio", label: "About", index: "03" },
-  { href: "/contact", label: "Contact", index: "04" },
+  { href: "/#results", label: "Results", index: "04" },
 ] as const;
 
 export const disciplines = [
