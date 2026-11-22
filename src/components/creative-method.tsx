@@ -88,7 +88,6 @@ export function CreativeMethod() {
   const [isPhone, setIsPhone] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLParagraphElement>(null);
-  const transitionRef = useRef<HTMLElement>(null);
   const lastActiveIndexRef = useRef<number>(-999);
   const reducedMotion = useReducedMotion();
 
@@ -147,55 +146,6 @@ export function CreativeMethod() {
     });
   }, [reducedMotion]);
 
-  // Bottom rubbery arc transition curve
-  const updateMethodTransition = useCallback(() => {
-    const transitionEl = transitionRef.current;
-    if (!transitionEl) return;
-
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-    const rect = transitionEl.getBoundingClientRect();
-    const transitionTop = rect.top;
-    const boxHeight = rect.height;
-
-    // Skip if outside viewport range
-    if (transitionTop > vh * 1.5) return;
-    if (transitionTop + boxHeight < -vh * 0.1) {
-      transitionEl.style.setProperty("--method-transition-curtain-y", `${(-vh * 2.5).toFixed(2)}px`);
-      return;
-    }
-
-    const transitionProgress = clamp(
-      (vh * 0.98 - transitionTop) / Math.max(1, boxHeight + vh * 0.8),
-      0,
-      1
-    );
-    const travelProgress = easeInOut(clamp((transitionProgress - 0.02) / 0.98, 0, 1));
-    const rubberPeak = Math.sin(Math.PI * clamp(transitionProgress / 0.82, 0, 1));
-    const rubberHold = easeOutCubic(clamp((transitionProgress - 0.34) / 0.5, 0, 1));
-    const rubberProgress = Math.max(rubberPeak, rubberHold * 0.7);
-
-    const curtainY = lerp(0, -vh * 2.4, travelProgress);
-    const arcY = lerp(0, vh * 0.11, rubberProgress);
-    const arcScaleX = lerp(1.04, 1.78, rubberProgress);
-    const arcScaleY = lerp(0.58, 1.38, rubberProgress);
-    const arcRadius = lerp(38, 152, rubberProgress);
-
-    transitionEl.style.setProperty("--method-transition-curtain-y", `${curtainY.toFixed(2)}px`);
-    transitionEl.style.setProperty("--method-transition-arc-y", `${arcY.toFixed(2)}px`);
-    transitionEl.style.setProperty(
-      "--method-transition-arc-scale-x",
-      Math.max(0.7, arcScaleX).toFixed(3)
-    );
-    transitionEl.style.setProperty(
-      "--method-transition-arc-scale-y",
-      Math.max(0.34, arcScaleY).toFixed(3)
-    );
-    transitionEl.style.setProperty(
-      "--method-transition-arc-radius",
-      `${Math.max(48, arcRadius).toFixed(1)}%`
-    );
-  }, []);
-
   // Mobile scroll is native and event-driven; avoid running an idle RAF loop.
   useEffect(() => {
     let rafId = 0;
@@ -207,7 +157,6 @@ export function CreativeMethod() {
         rafId = requestAnimationFrame(() => {
           rafId = 0;
           updateScrollCopy();
-          updateMethodTransition();
         });
       };
 
@@ -225,14 +174,12 @@ export function CreativeMethod() {
     const loop = () => {
       if (!isMounted) return;
       updateScrollCopy();
-      updateMethodTransition();
       rafId = requestAnimationFrame(loop);
     };
     rafId = requestAnimationFrame(loop);
 
     const scheduleUpdate = () => {
       updateScrollCopy();
-      updateMethodTransition();
     };
 
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
@@ -251,7 +198,7 @@ export function CreativeMethod() {
         window.__lenis.off("scroll", scheduleUpdate);
       }
     };
-  }, [isPhone, updateScrollCopy, updateMethodTransition]);
+  }, [isPhone, updateScrollCopy]);
 
   // Method Cursor Preview (Polaroid/Moodboard Card Spawner)
   const stopMethodPreview = useCallback(() => {
@@ -505,15 +452,6 @@ export function CreativeMethod() {
             })}
           </p>
         </div>
-      </section>
-
-      {/* Emblematica Rubbery Curvature Bottom Transition Curtain */}
-      <section
-        ref={transitionRef}
-        className="method-transition"
-        aria-hidden="true"
-      >
-        <div className="method-transition-curtain" />
       </section>
     </>
   );

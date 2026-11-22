@@ -1277,56 +1277,6 @@ body.services-side-entry .services-shell,
 }
 
 /* ==========================================================================
-   Method Bottom Transition & Rubbery Curved Arc Curtain
-   ========================================================================== */
-.method-transition {
-  --method-transition-curtain-y: 0px;
-  --method-transition-arc-y: 0px;
-  --method-transition-arc-scale-x: 1.04;
-  --method-transition-arc-scale-y: 0.62;
-  --method-transition-arc-radius: 36%;
-  position: relative;
-  z-index: 26;
-  height: min(78vh, 78dvh);
-  margin-top: -1px;
-  margin-bottom: min(-52vh, -52dvh);
-  overflow-x: clip;
-  background: var(--paper, #f0ece7);
-  isolation: isolate;
-  pointer-events: none;
-}
-
-.method-transition-curtain {
-  position: absolute;
-  left: 0;
-  top: -2px;
-  width: 100%;
-  height: min(118vh, 118dvh);
-  background: #08080a;
-  transform: translate3d(0, var(--method-transition-curtain-y), 0);
-  will-change: transform;
-}
-
-.method-transition-curtain::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: min(-30vh, -30dvh);
-  width: 212vw;
-  height: min(72vh, 72dvh);
-  border-radius: 0 0 50% 50% / 0 0 var(--method-transition-arc-radius)
-    var(--method-transition-arc-radius);
-  background: #08080a;
-  transform:
-    translateX(-50%)
-    translateY(var(--method-transition-arc-y))
-    scaleX(var(--method-transition-arc-scale-x))
-    scaleY(var(--method-transition-arc-scale-y));
-  transform-origin: 50% 0;
-  will-change: transform, border-radius;
-}
-
-/* ==========================================================================
    Mobile Responsive Overrides for Services & Method (<= 900px)
    ========================================================================== */
 @media (max-width: 900px) {
