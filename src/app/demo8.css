@@ -488,27 +488,53 @@
 
   .demo8-root .nums {
     grid-template-columns: 1fr;
-    margin-top: -9vh;
+    margin-top: 8px;
   }
 
   .demo8-root .nums__stick {
-    display: none;
+    display: flex;
+    position: sticky;
+    top: 68px;
+    grid-column: 1;
+    height: 32vh;
+    height: 32svh;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+    pointer-events: none;
+    background: #fff;
+  }
+
+  .demo8-root .slot--num {
+    width: min(100%, 560px);
+    height: 26vh;
+    height: 26svh;
   }
 
   .demo8-root .nums__list {
     grid-column: 1;
+    position: relative;
+    z-index: 3;
   }
 
   .demo8-root .slot--mini {
-    display: block;
-    height: 34vh;
-    margin: 4px 0 -4px;
-    pointer-events: none;
+    display: none;
   }
 
   .demo8-root .rs {
-    min-height: auto;
-    padding-block: 8vh;
+    min-height: 68vh;
+    min-height: 68svh;
+    padding-block: 4vh;
+  }
+
+  .demo8-root .gl,
+  .demo8-root .paint {
+    transition: none;
+  }
+
+  .demo8-root .gl {
+    z-index: 6;
+    clip-path: inset(100%);
   }
 
   .demo8-root .g9 {
