@@ -9,6 +9,31 @@
   background: #111;
 }
 
+:global(body):has(.hero) :global(#site-footer) {
+  background: #000;
+  color: #fff;
+}
+
+:global(body):has(.hero) :global(#site-footer :is(a, p, li, span)) {
+  color: #fff;
+}
+
+:global(body):has(.hero) :global(#site-footer .ink-t) {
+  fill: #fff;
+}
+
+:global(body):has(.hero) :global(#site-footer .bar-logo) {
+  filter: brightness(0) invert(1);
+}
+
+:global(body):has(.hero) :global(#site-footer .ask a) {
+  background: #111;
+}
+
+:global(body):has(.hero) :global(#site-footer .ask a:hover) {
+  background: #333;
+}
+
 :global(body):has(.hero) :global(.site-header:not(.is-light) .bracket-label),
 :global(body):has(.hero) :global(.site-header:not(.is-light) .bracket-mark) {
   color: #fff;
