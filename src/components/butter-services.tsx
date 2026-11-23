@@ -226,7 +226,30 @@ export function ButterServices() {
       targetTimeScale += (1 - targetTimeScale) * 0.04;
       tween.timeScale(Math.max(currentTimeScale, 0));
     };
-    gsap.ticker.add(tick);
+
+    let tickerRunning = false;
+    const startTicker = () => {
+      if (tickerRunning) return;
+      tickerRunning = true;
+      tween.play();
+      gsap.ticker.add(tick);
+    };
+    const stopTicker = () => {
+      if (!tickerRunning) return;
+      tickerRunning = false;
+      gsap.ticker.remove(tick);
+      tween.pause();
+    };
+
+    const tickerTarget = tickerSectionRef.current ?? el;
+    const tickerObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) startTicker();
+        else stopTicker();
+      },
+      { rootMargin: "180px 0px" }
+    );
+    tickerObserver.observe(tickerTarget);
 
     return () => {
       if (wrapper) {
@@ -237,6 +260,7 @@ export function ButterServices() {
         window.__lenis.off("scroll", onLenisScroll);
       }
       window.removeEventListener("scroll", onScroll);
+      tickerObserver.disconnect();
       gsap.ticker.remove(tick);
       tween.kill();
     };
@@ -364,6 +388,10 @@ export function ButterServices() {
       const sRect = sCont.getBoundingClientRect();
       const tRect = tCont.getBoundingClientRect();
       const windowH = window.innerHeight;
+      const farAbove = sRect.bottom < -windowH * 0.25 && tRect.bottom < -windowH * 0.25;
+      const farBelow = sRect.top > windowH * 1.25 && tRect.top > windowH * 1.25;
+      if (farAbove || farBelow) return;
+
       const curScrollY = window.scrollY;
       const isScrollingDown = curScrollY >= lastScrollY;
       lastScrollY = curScrollY;

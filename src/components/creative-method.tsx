@@ -138,12 +138,28 @@ export function CreativeMethod() {
 
     const activeIndex = Math.floor(progress * chars.length) - 1;
 
-    if (lastActiveIndexRef.current === activeIndex) return;
-    lastActiveIndexRef.current = activeIndex;
+    const previous = lastActiveIndexRef.current;
+    if (previous === activeIndex) return;
 
-    chars.forEach((char, index) => {
-      char.style.color = index <= activeIndex ? "#dadada" : "#323232";
-    });
+    const on = "#dadada";
+    const off = "#323232";
+    if (previous < -1 || Math.abs(activeIndex - previous) > 48) {
+      chars.forEach((char, index) => {
+        char.style.color = index <= activeIndex ? on : off;
+      });
+    } else if (activeIndex > previous) {
+      for (let index = previous + 1; index <= activeIndex; index += 1) {
+        const char = chars[index];
+        if (char) char.style.color = on;
+      }
+    } else {
+      for (let index = activeIndex + 1; index <= previous; index += 1) {
+        const char = chars[index];
+        if (char) char.style.color = off;
+      }
+    }
+
+    lastActiveIndexRef.current = activeIndex;
   }, [reducedMotion]);
 
   // Mobile scroll is native and event-driven; avoid running an idle RAF loop.

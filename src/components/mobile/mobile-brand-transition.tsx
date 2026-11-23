@@ -34,6 +34,7 @@ export function MobileBrandTransition({
   });
 
   const [isParked, setIsParked] = useState(false);
+  const isParkedRef = useRef(false);
   const wordmarkRef = useRef<HTMLSpanElement>(null);
   const { scrollY } = useScroll();
   const reducedMotion = useReducedMotion();
@@ -138,12 +139,17 @@ export function MobileBrandTransition({
   // Synchronize parked state with live scroll and reduced motion preference
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setIsParked(Boolean(reducedMotion) || window.scrollY >= BRAND_SCROLL_DISTANCE);
+      const next = Boolean(reducedMotion) || window.scrollY >= BRAND_SCROLL_DISTANCE;
+      isParkedRef.current = next;
+      setIsParked(next);
     }
   }, [reducedMotion]);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsParked(Boolean(reducedMotion) || latest >= BRAND_SCROLL_DISTANCE);
+    const next = Boolean(reducedMotion) || latest >= BRAND_SCROLL_DISTANCE;
+    if (isParkedRef.current === next) return;
+    isParkedRef.current = next;
+    setIsParked(next);
   });
 
   const targetWidth = Math.max(metrics.targetWidth, 1);

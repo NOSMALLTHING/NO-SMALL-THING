@@ -208,8 +208,21 @@ export function SiteHeader() {
 
   // ── Smart Background Detection at Logo ──
   useEffect(() => {
-    const detectLightAtLogo = () => {
-      setScrolled(window.scrollY > 15);
+    let stableLight = false;
+    let pendingLight: boolean | null = null;
+    let pendingCount = 0;
+    let lastSampleAt = 0;
+    let lastSampleY = -1;
+
+    const detectLightAtLogo = (force: boolean) => {
+      const y = window.scrollY;
+      const scrolledNow = y > 15;
+      setScrolled((prev) => (prev === scrolledNow ? prev : scrolledNow));
+
+      const now = performance.now();
+      if (!force && now - lastSampleAt < 140 && Math.abs(y - lastSampleY) < 72) return;
+      lastSampleAt = now;
+      lastSampleY = y;
 
       // On the mobile home page, the animated wordmark replaces the hidden
       // masthead wordmark, so sample the visible mark as it moves during scroll.
@@ -244,7 +257,7 @@ export function SiteHeader() {
             foundLight = true;
             break;
           }
-          if (theme === "dark") {
+          if (theme === "dark" || theme === "green") {
             foundLight = false;
             break;
           }
@@ -269,16 +282,34 @@ export function SiteHeader() {
         }
       }
 
-      setIsLight(foundLight);
+      if (foundLight === stableLight) {
+        pendingLight = null;
+        pendingCount = 0;
+        return;
+      }
+
+      if (pendingLight === foundLight) pendingCount += 1;
+      else {
+        pendingLight = foundLight;
+        pendingCount = 1;
+      }
+
+      if (pendingCount >= 2) {
+        stableLight = foundLight;
+        setIsLight(foundLight);
+      }
     };
 
     let rafId = 0;
+    let trailTimer = 0;
     const scheduleUpdate = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
         rafId = 0;
-        detectLightAtLogo();
+        detectLightAtLogo(false);
       });
+      window.clearTimeout(trailTimer);
+      trailTimer = window.setTimeout(() => detectLightAtLogo(true), 180);
     };
 
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
@@ -302,10 +333,10 @@ export function SiteHeader() {
       }, 3000);
     }
 
-    detectLightAtLogo();
-    const t1 = setTimeout(detectLightAtLogo, 60);
-    const t2 = setTimeout(detectLightAtLogo, 200);
-    const t3 = setTimeout(detectLightAtLogo, 600);
+    detectLightAtLogo(true);
+    const t1 = setTimeout(() => detectLightAtLogo(true), 60);
+    const t2 = setTimeout(() => detectLightAtLogo(true), 200);
+    const t3 = setTimeout(() => detectLightAtLogo(true), 600);
 
     return () => {
       window.removeEventListener("scroll", scheduleUpdate);
@@ -315,6 +346,7 @@ export function SiteHeader() {
         window.__lenis.off("scroll", scheduleUpdate);
       }
       if (rafId) cancelAnimationFrame(rafId);
+      window.clearTimeout(trailTimer);
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);

@@ -97,14 +97,14 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     let animFrameRunning = false;
     let isIntersecting = false;
 
-    const V = isMobileQuery.matches ? 9000 : 16000;
-    const dpr = Math.min(window.devicePixelRatio || 1, isMobileQuery.matches ? 1.6 : 1.75);
+    const V = isMobileQuery.matches ? 4800 : 16000;
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobileQuery.matches ? 1.15 : 1.75);
 
     let renderer: THREE.WebGLRenderer | null = null;
     try {
       renderer = new THREE.WebGLRenderer({
         canvas: glCanvas,
-        antialias: true,
+        antialias: !isMobileQuery.matches,
         alpha: true,
         powerPreference: "high-performance",
       });
@@ -385,7 +385,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         s * (1 + i * (0.55 * Math.sin(3 * ang + d + 2.4 * p) + 0.3 * Math.sin(5 * ang + v - 1.7 * p) + 0.15 * Math.sin(8 * ang + m + 3.1 * p)));
 
       ctx.beginPath();
-      const numPts = 96;
+      const numPts = window.innerWidth <= 900 ? 48 : 96;
       const getPoint = (idx: number): [number, number] => {
         const a = (idx / numPts) * Math.PI * 2;
         const rad = getR(a);
