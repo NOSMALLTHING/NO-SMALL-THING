@@ -42,16 +42,16 @@ test("Demo8Section component structure and semantic markup", () => {
   const compContent = fs.readFileSync(componentFile, "utf-8").replace(/\r\n/g, "\n");
 
   // Section 04 Headlines and labels
-  assert.ok(compContent.includes("( 04 )"), "Must include section indicator ( 04 )");
-  assert.ok(compContent.includes("The full-funnel results"), "Must include 'The full-funnel results'");
+  assert.ok(compContent.includes("RESULTS"), "Must include section indicator RESULTS");
+  assert.ok(compContent.includes("Why you need a website that works"), "Must include 'Why you need a website that works'");
   assert.ok(compContent.includes("Where others failed, we delivered"), "Must include we delivered tag");
-  assert.ok(compContent.includes("Not just more customers."), "Must include main headline first line");
-  assert.ok(compContent.includes("Better ones."), "Must include main headline second line");
+  assert.ok(compContent.includes("Not just easier to find."), "Must include main headline first line");
+  assert.ok(compContent.includes("Easier to trust."), "Must include main headline second line");
 
   // Sticky slot and articles
   assert.ok(compContent.includes('id="slotNum"'), "Must include sticky 3D slot #slotNum");
-  assert.ok(compContent.includes("49%"), "Must include 49% growth");
-  assert.ok(compContent.includes("8X"), "Must include 8X net subscriber growth");
+  assert.ok(compContent.includes("46%"), "Must include 46% credibility metric");
+  assert.ok(compContent.includes("10X"), "Must include 10X SEO metric");
   assert.ok(compContent.includes("$1K → $80K+"), "Must include TikTok Shop GMV metric");
 
   // Section 04.1 (Nine numbers)

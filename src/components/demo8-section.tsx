@@ -830,18 +830,18 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         {/* ============================================================ 04 RESULTS */}
         <section className="results sec" id="results" data-theme="light">
           <header className="sec__head wrap">
-            <p className="tag">( 04 )</p>
-            <p className="tag">The full-funnel results</p>
+            <p className="tag">RESULTS</p>
+            <p className="tag">Why you need a website that works</p>
             <p className="tag tag--r">Where others failed, we delivered</p>
           </header>
 
           <HeadingTag className="display wrap" data-split>
             <span className="ln" style={{ ["--i" as any]: 0 }}>
-              <span className="ln__in">Not just more customers.</span>
+              <span className="ln__in">Not just easier to find.</span>
             </span>{" "}
             <span className="ln" style={{ ["--i" as any]: 1 }}>
               <span className="ln__in">
-                <em>Better ones.</em>
+                <em>Easier to trust.</em>
               </span>
             </span>
           </HeadingTag>
@@ -853,52 +853,52 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
             <div className="nums__list">
               <article className="rs" data-k="0">
                 <div className="slot slot--mini" aria-hidden="true" />
-                <p className="tag">Revenue · Q4</p>
+                <p className="tag">Recognition · gain daily</p>
                 <h3 className="rs__t">
-                  <b>49%</b> Q4 revenue growth, year-over-year
+                  <b>46%</b> People Judged the company by how its website looked
                 </h3>
                 <p className="body">
-                  Broad paid media and blended creative gave way to persona-driven Meta, a Google
-                  account rebuilt from the ground up, and a TikTok Shop that finally scaled.
+                  Stanford asked 2,684 people. The look of a site, and proof a real company stands
+                  behind it, decided whether the business seemed credible.
                 </p>
                 <ul className="rs__rows">
                   <li>
-                    <b>+250%</b>
-                    <span>Standard Shopping growth</span>
+                    <b>+12%</b>
+                    <span>Online sales, year over year</span>
                   </li>
                   <li>
-                    <b>+54%</b>
-                    <span>Google conversions on 47% more spend</span>
+                    <b>+82%</b>
+                    <span>Faster growth than retail overall</span>
                   </li>
                   <li>
-                    <b>−22%</b>
-                    <span>Meta CPA while scaling spend</span>
+                    <b>5x</b>
+                    <span>Popularity n trust of Own-site sales versus a marketplace</span>
                   </li>
                 </ul>
               </article>
 
               <article className="rs" data-k="1">
                 <div className="slot slot--mini" aria-hidden="true" />
-                <p className="tag">Subscription</p>
+                <p className="tag">Google SEO</p>
                 <h3 className="rs__t">
-                  <b>8X</b> net subscriber growth
+                  <b>10X</b> more likely to be clicked
                 </h3>
                 <p className="body">
-                  Subscription LTV was modeled from day one, and spend only scaled where CAC
-                  stayed within a healthy ratio. Growth had to translate to real business value.
+                  Backlinko looked at 4 million Google results. The first organic result is
+                  about ten times more likely to be clicked than the result in tenth place.
                 </p>
                 <ul className="rs__rows">
                   <li>
-                    <b>+220%</b>
-                    <span>Email opt-in rate</span>
+                    <b>+27.6%</b>
+                    <span>Clicks on the first organic result</span>
                   </li>
                   <li>
-                    <b>+31%</b>
-                    <span>Email automation revenue, year-over-year</span>
+                    <b>+32%</b>
+                    <span>More clicks, one position higher</span>
                   </li>
                   <li>
-                    <b>Day 1</b>
-                    <span>Subscription LTV as the North Star</span>
+                    <b>Page 1</b>
+                    <span>Where the clicks actually land</span>
                   </li>
                 </ul>
               </article>
