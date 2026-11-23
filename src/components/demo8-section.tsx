@@ -742,7 +742,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         const nextIdle = glIdle ? uniforms.uVis.value < 0.02 : !particlesVisible;
         if (nextIdle !== glIdle) {
           glIdle = nextIdle;
-          root.classList.toggle("is-gl-idle", glIdle);
+          root?.classList.toggle("is-gl-idle", glIdle);
         }
       }
 
@@ -770,13 +770,13 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
             paintShown = false;
             paintSettled = true;
             lastPaintP = 1;
-            root.classList.add("is-paint-settled");
+            root?.classList.add("is-paint-settled");
           }
         } else if (paintCoversGrid && (!isMobile || Math.abs(p - lastPaintP) > 0.025)) {
           if (paintSettled) {
             paintSettled = false;
             lastPaintP = -1;
-            root.classList.remove("is-paint-settled");
+            root?.classList.remove("is-paint-settled");
           }
           lastPaintP = p;
           paintShown = true;
