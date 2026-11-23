@@ -54,19 +54,6 @@ test("Demo8Section component structure and semantic markup", () => {
   assert.ok(compContent.includes("10X"), "Must include 10X SEO metric");
   assert.ok(compContent.includes("$1K → $80K+"), "Must include TikTok Shop GMV metric");
 
-  // Section 04.1 (Nine numbers)
-  assert.ok(compContent.includes("( 04.1 )"), "Must include ( 04.1 )");
-  assert.ok(compContent.includes("Nine numbers, one system"), "Must include 'Nine numbers, one system'");
-  assert.ok(compContent.includes('data-count="49"'), "Must include data-count=49");
-  assert.ok(compContent.includes('data-count="8"'), "Must include data-count=8");
-  assert.ok(compContent.includes('data-count="28"'), "Must include data-count=28");
-  assert.ok(compContent.includes('data-count="26"'), "Must include data-count=26");
-  assert.ok(compContent.includes('data-count="350"'), "Must include data-count=350");
-  assert.ok(compContent.includes('data-count="22"'), "Must include data-count=22");
-  assert.ok(compContent.includes('data-count="54"'), "Must include data-count=54");
-  assert.ok(compContent.includes('data-count="250"'), "Must include data-count=250");
-  assert.ok(compContent.includes('data-count="31"'), "Must include data-count=31");
-
   // Canvases and WebGL logic
   assert.ok(compContent.includes('ref={paintCanvasRef}'), "Must render paint canvas");
   assert.ok(compContent.includes('ref={glCanvasRef}'), "Must render WebGL gl canvas");
@@ -79,7 +66,6 @@ test("Demo8Section component structure and semantic markup", () => {
   assert.ok(!compContent.includes('id="contact"'), "Must not include obsolete id='contact'");
   assert.ok(!compContent.includes('<main className="demo8-main">'), "Must not render nested <main> landmark tag");
   assert.ok(compContent.includes('<div className="demo8-main">'), "Must render <div className='demo8-main'>");
-  assert.ok(compContent.includes('data-topbar-theme="dark"'), "Grid9 section must declare dark topbar theme");
   assert.ok(compContent.includes('href="#site-footer"'), "CTA button must point to site-footer");
   assert.ok(compContent.includes('(scroll to footer)'), "CTA button must declare accessible screen reader text");
   assert.ok(compContent.includes("alphaToCoverage: true"), "Shader material must declare alphaToCoverage");

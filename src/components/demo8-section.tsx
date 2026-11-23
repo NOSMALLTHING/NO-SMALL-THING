@@ -97,7 +97,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     let animFrameRunning = false;
     let isIntersecting = false;
 
-    const V = isMobileQuery.matches ? 4800 : 16000;
+    const V = isMobileQuery.matches ? 3000 : 16000;
     const dpr = Math.min(window.devicePixelRatio || 1, isMobileQuery.matches ? 1 : 1.75);
 
     let renderer: THREE.WebGLRenderer | null = null;
@@ -234,7 +234,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       uVis: { value: 1 },
       uGS: { value: 1 },
       uMR: { value: 0.75 },
-      uMaxPx: { value: isMobileQuery.matches ? 56 : 72 },
+      uMaxPx: { value: isMobileQuery.matches ? 40 : 72 },
       uSpl: { value: 0 },
       uSplG: { value: -9 },
       uSplA: { value: 0 },
@@ -385,7 +385,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         s * (1 + i * (0.55 * Math.sin(3 * ang + d + 2.4 * p) + 0.3 * Math.sin(5 * ang + v - 1.7 * p) + 0.15 * Math.sin(8 * ang + m + 3.1 * p)));
 
       ctx.beginPath();
-      const numPts = window.innerWidth <= 900 ? 48 : 96;
+      const numPts = window.innerWidth <= 900 ? 24 : 96;
       const getPoint = (idx: number): [number, number] => {
         const a = (idx / numPts) * Math.PI * 2;
         const rad = getR(a);
@@ -570,6 +570,9 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     const ptEuler = new THREE.Euler(0, 0, 0, "XYZ");
     let wasRendered = true;
     let paintShown = false;
+    let paintSettled = false;
+    let glIdle = false;
+    let lastPaintP = -1;
 
     // Cache E0 layout configuration across frames to prevent GC frame drops
     let cachedE0: { shape: number; t: HTMLElement; m: HTMLElement | null; inset: number }[] = [];
@@ -706,7 +709,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
           T === h ? z0(v[F]) * g : 0
         );
 
-      uniforms.uVis.value = J(j(k, 0, 0.45)) * (T === h ? 1 : 1 - 0.55 * Math.sin(Math.PI * w));
+      uniforms.uVis.value = J(j(k, 0, 0.45)) * (isMobile || T === h ? 1 : 1 - 0.55 * Math.sin(Math.PI * w));
 
       // Cursor repel force
       if (B.in) {
@@ -725,7 +728,8 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         uniforms.uMR.value += (0 - uniforms.uMR.value) * decay(0.1);
       }
 
-      if (uniforms.uVis.value < 0.005) {
+      const particlesVisible = uniforms.uVis.value >= 0.005;
+      if (!particlesVisible) {
         if (wasRendered && renderer) {
           renderer.clear();
           wasRendered = false;
@@ -733,6 +737,13 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       } else {
         wasRendered = true;
         if (renderer) renderer.render(scene, camera);
+      }
+      if (isMobile) {
+        const nextIdle = glIdle ? uniforms.uVis.value < 0.02 : !particlesVisible;
+        if (nextIdle !== glIdle) {
+          glIdle = nextIdle;
+          root.classList.toggle("is-gl-idle", glIdle);
+        }
       }
 
       // ----------------------------------------------------
@@ -751,8 +762,23 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         const clipTop = Math.max(0, d);
         const clipBottom = Math.min(viewportHeight, gRect.bottom);
         const clipHeight = clipBottom - clipTop;
+        const paintCoversGrid = p > 0 && clipHeight > 0 && d < viewportHeight && gRect.bottom > 0;
 
-        if (p > 0 && clipHeight > 0 && d < viewportHeight && gRect.bottom > 0) {
+        if (isMobile && p >= 1) {
+          if (!paintSettled) {
+            paintCtx.clearRect(0, 0, canvasPaint.width, canvasPaint.height);
+            paintShown = false;
+            paintSettled = true;
+            lastPaintP = 1;
+            root.classList.add("is-paint-settled");
+          }
+        } else if (paintCoversGrid && (!isMobile || Math.abs(p - lastPaintP) > 0.025)) {
+          if (paintSettled) {
+            paintSettled = false;
+            lastPaintP = -1;
+            root.classList.remove("is-paint-settled");
+          }
+          lastPaintP = p;
           paintShown = true;
           paintCtx.clearRect(0, 0, canvasPaint.width, canvasPaint.height);
           paintCtx.save();
@@ -960,73 +986,6 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
               </article>
             </div>
           </div>
-        </section>
-
-        {/* ============================================================ NINE RESULTS */}
-        <section className="grid9 sec" id="grid" data-theme="green" data-topbar-theme="dark" aria-labelledby="gridH">
-          <header className="sec__head wrap">
-            <p className="tag">( 04.1 )</p>
-            <h2 className="tag" id="gridH">
-              Nine numbers, one system
-            </h2>
-            <p className="tag tag--r">Growth had to translate to real business value</p>
-          </header>
-          <ul className="g9 wrap">
-            <li className="g9__c g9__c--hero">
-              <b data-count="49" data-suf="%">
-                49<span className="u">%</span>
-              </b>
-              <span>Q4 revenue growth, year-over-year</span>
-            </li>
-            <li className="g9__c">
-              <b data-count="8" data-suf="X">
-                8<span className="u">X</span>
-              </b>
-              <span>Net subscriber growth</span>
-            </li>
-            <li className="g9__c">
-              <b data-count="28" data-suf="K+">
-                28<span className="u">K+</span>
-              </b>
-              <span>Orders through TikTok Shop in five months</span>
-            </li>
-            <li className="g9__c">
-              <b data-count="26" data-suf="K+">
-                26<span className="u">K+</span>
-              </b>
-              <span>Net new customers</span>
-            </li>
-            <li className="g9__c">
-              <b data-count="350" data-suf="+">
-                350<span className="u">+</span>
-              </b>
-              <span>Daily orders</span>
-            </li>
-            <li className="g9__c">
-              <b data-count="22" data-pre="−" data-suf="%">
-                <span className="u">−</span>22<span className="u">%</span>
-              </b>
-              <span>Meta CPA while scaling spend</span>
-            </li>
-            <li className="g9__c">
-              <b data-count="54" data-pre="+" data-suf="%">
-                <span className="u">+</span>54<span className="u">%</span>
-              </b>
-              <span>Google conversions on 47% more spend</span>
-            </li>
-            <li className="g9__c">
-              <b data-count="250" data-pre="+" data-suf="%">
-                <span className="u">+</span>250<span className="u">%</span>
-              </b>
-              <span>Standard Shopping growth</span>
-            </li>
-            <li className="g9__c">
-              <b data-count="31" data-pre="+" data-suf="%">
-                <span className="u">+</span>31<span className="u">%</span>
-              </b>
-              <span>Email automation revenue, year-over-year</span>
-            </li>
-          </ul>
         </section>
       </div>
     </div>

@@ -483,6 +483,20 @@
     transition: none;
   }
 
+  .demo8-root.is-gl-idle .gl,
+  .demo8-root.is-paint-settled .paint {
+    visibility: hidden;
+  }
+
+  .demo8-root .grid9,
+  .demo8-root .g9__c {
+    transition: none;
+  }
+
+  .demo8-root.is-paint-settled .grid9 {
+    background: #163f35;
+  }
+
   .demo8-root #results.sec {
     padding-bottom: 40px;
   }
