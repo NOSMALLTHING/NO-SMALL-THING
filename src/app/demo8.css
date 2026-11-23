@@ -481,9 +481,9 @@
   .demo8-root .paint,
   .demo8-root .gl {
     transition: none;
-    transform: translateZ(0);
   }
 
+  .demo8-root.is-gl-idle .gl,
   .demo8-root.is-paint-settled .paint {
     visibility: hidden;
   }
