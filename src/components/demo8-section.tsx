@@ -94,6 +94,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     // ==========================================
     let isDisposed = false;
     let animFrameId = 0;
+    let animFrameRunning = false;
     let isIntersecting = false;
 
     const V = isMobileQuery.matches ? 9000 : 16000;
@@ -485,9 +486,11 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
           if (isIntersecting) {
             glCanvas.classList.add("is-active");
             paintCanvas.classList.add("is-active");
+            startLoop();
           } else {
             glCanvas.classList.remove("is-active");
             paintCanvas.classList.remove("is-active");
+            stopLoop();
             if (renderer) renderer.clear();
             if (paintCtx) paintCtx.clearRect(0, 0, paintCanvas.width, paintCanvas.height);
           }
@@ -582,11 +585,27 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       return cachedE0;
     }
 
+    function startLoop() {
+      if (animFrameRunning || isDisposed) return;
+      animFrameRunning = true;
+      lastTime = performance.now();
+      animFrameId = requestAnimationFrame(renderLoop);
+    }
+
+    function stopLoop() {
+      if (!animFrameRunning) return;
+      animFrameRunning = false;
+      cancelAnimationFrame(animFrameId);
+    }
+
     function renderLoop() {
-      if (isDisposed) return;
+      if (isDisposed || !isIntersecting) {
+        animFrameRunning = false;
+        return;
+      }
       animFrameId = requestAnimationFrame(renderLoop);
 
-      if (!isIntersecting || !shapes.length) return;
+      if (!shapes.length) return;
 
       const now = performance.now();
       const elapsed = (now - startTime) / 1000;
@@ -756,7 +775,9 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       }
     }
 
-    animFrameId = requestAnimationFrame(renderLoop);
+    if (isIntersecting) {
+      startLoop();
+    }
 
     // ==========================================
     // 9. Resize Listener
@@ -776,7 +797,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     // ==========================================
     return () => {
       isDisposed = true;
-      cancelAnimationFrame(animFrameId);
+      stopLoop();
       io.disconnect();
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointerdown", onPointerMove);
@@ -809,18 +830,18 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         {/* ============================================================ 04 RESULTS */}
         <section className="results sec" id="results" data-theme="light">
           <header className="sec__head wrap">
-            <p className="tag">RESULTS</p>
-            <p className="tag">Why you need a website that works</p>
+            <p className="tag">( 04 )</p>
+            <p className="tag">The full-funnel results</p>
             <p className="tag tag--r">Where others failed, we delivered</p>
           </header>
 
           <HeadingTag className="display wrap" data-split>
             <span className="ln" style={{ ["--i" as any]: 0 }}>
-              <span className="ln__in">Not just easier to find.</span>
+              <span className="ln__in">Not just more customers.</span>
             </span>{" "}
             <span className="ln" style={{ ["--i" as any]: 1 }}>
               <span className="ln__in">
-                <em>Easier to trust.</em>
+                <em>Better ones.</em>
               </span>
             </span>
           </HeadingTag>
@@ -832,52 +853,52 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
             <div className="nums__list">
               <article className="rs" data-k="0">
                 <div className="slot slot--mini" aria-hidden="true" />
-                <p className="tag">Recognition · gain daily</p>
+                <p className="tag">Revenue · Q4</p>
                 <h3 className="rs__t">
-                  <b>46%</b> People Judged the company by how its website looked
+                  <b>49%</b> Q4 revenue growth, year-over-year
                 </h3>
                 <p className="body">
-                  Stanford asked 2,684 people. The look of a site, and proof a real company stands
-                  behind it, decided whether the business seemed credible.
+                  Broad paid media and blended creative gave way to persona-driven Meta, a Google
+                  account rebuilt from the ground up, and a TikTok Shop that finally scaled.
                 </p>
                 <ul className="rs__rows">
                   <li>
-                    <b>+12%</b>
-                    <span>Online sales, year over year</span>
+                    <b>+250%</b>
+                    <span>Standard Shopping growth</span>
                   </li>
                   <li>
-                    <b>+82%</b>
-                    <span>Faster growth than retail overall</span>
+                    <b>+54%</b>
+                    <span>Google conversions on 47% more spend</span>
                   </li>
                   <li>
-                    <b>5x</b>
-                    <span>Popularity n trust of Own-site sales versus a marketplace</span>
+                    <b>−22%</b>
+                    <span>Meta CPA while scaling spend</span>
                   </li>
                 </ul>
               </article>
 
               <article className="rs" data-k="1">
                 <div className="slot slot--mini" aria-hidden="true" />
-                <p className="tag">Google SEO</p>
+                <p className="tag">Subscription</p>
                 <h3 className="rs__t">
-                  <b>10X</b> more likely to be clicked
+                  <b>8X</b> net subscriber growth
                 </h3>
                 <p className="body">
-                  Backlinko looked at 4 million Google results. The first organic result is
-                  about ten times more likely to be clicked than the result in tenth place.
+                  Subscription LTV was modeled from day one, and spend only scaled where CAC
+                  stayed within a healthy ratio. Growth had to translate to real business value.
                 </p>
                 <ul className="rs__rows">
                   <li>
-                    <b>+27.6%</b>
-                    <span>Clicks on the first organic result</span>
+                    <b>+220%</b>
+                    <span>Email opt-in rate</span>
                   </li>
                   <li>
-                    <b>+32%</b>
-                    <span>More clicks, one position higher</span>
+                    <b>+31%</b>
+                    <span>Email automation revenue, year-over-year</span>
                   </li>
                   <li>
-                    <b>Page 1</b>
-                    <span>Where the clicks actually land</span>
+                    <b>Day 1</b>
+                    <span>Subscription LTV as the North Star</span>
                   </li>
                 </ul>
               </article>
