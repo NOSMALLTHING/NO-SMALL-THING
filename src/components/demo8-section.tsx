@@ -98,7 +98,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     let isIntersecting = false;
 
     const V = isMobileQuery.matches ? 4800 : 16000;
-    const dpr = Math.min(window.devicePixelRatio || 1, isMobileQuery.matches ? 1.15 : 1.75);
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobileQuery.matches ? 1 : 1.75);
 
     let renderer: THREE.WebGLRenderer | null = null;
     try {
@@ -290,7 +290,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       fragmentShader: At,
       transparent: true,
       depthWrite: false,
-      alphaToCoverage: true,
+      alphaToCoverage: !isMobileQuery.matches,
     });
 
     const pointsMesh = new THREE.Points(geom, mat);
@@ -569,6 +569,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     const le = new THREE.Vector3();
     const ptEuler = new THREE.Euler(0, 0, 0, "XYZ");
     let wasRendered = true;
+    let paintShown = false;
 
     // Cache E0 layout configuration across frames to prevent GC frame drops
     let cachedE0: { shape: number; t: HTMLElement; m: HTMLElement | null; inset: number }[] = [];
@@ -619,13 +620,16 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       B.sy += (B.ny - B.sy) * decay(0.05);
       const isMobile = isMobileQuery.matches;
 
-      // Dynamic viewport height tracking (handles mobile browser address bar collapse without layout thrashing)
-      const curH = window.innerHeight;
-      if (Math.abs(curH - viewportHeight) > (isMobile ? 120 : 1)) {
-        viewportHeight = curH;
-        camera.aspect = window.innerWidth / curH;
-        camera.updateProjectionMatrix();
-        uniforms.uScale.value = (curH * dpr * 0.5) / Math.tan(THREE.MathUtils.degToRad(15));
+      // Address-bar show/hide changes innerHeight while the stories stay put.
+      // Rescaling the camera against that makes the particles jump, so phones keep the layout height.
+      if (!isMobile) {
+        const curH = window.innerHeight;
+        if (Math.abs(curH - viewportHeight) > 1) {
+          viewportHeight = curH;
+          camera.aspect = window.innerWidth / curH;
+          camera.updateProjectionMatrix();
+          uniforms.uScale.value = (curH * dpr * 0.5) / Math.tan(THREE.MathUtils.degToRad(15));
+        }
       }
 
       // ----------------------------------------------------
@@ -740,13 +744,16 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         const p = Math.min(1, Math.max(0, (viewportHeight * 0.95 - d) / (viewportHeight * 0.45)));
 
         const isWet = prefersReducedMotion ? d < viewportHeight * 0.75 : p >= 0.8;
-        gridEl.classList.toggle("is-wet", isWet);
+        if (gridEl.classList.contains("is-wet") !== isWet) {
+          gridEl.classList.toggle("is-wet", isWet);
+        }
 
         const clipTop = Math.max(0, d);
         const clipBottom = Math.min(viewportHeight, gRect.bottom);
         const clipHeight = clipBottom - clipTop;
 
         if (p > 0 && clipHeight > 0 && d < viewportHeight && gRect.bottom > 0) {
+          paintShown = true;
           paintCtx.clearRect(0, 0, canvasPaint.width, canvasPaint.height);
           paintCtx.save();
           paintCtx.beginPath();
@@ -769,8 +776,9 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
             );
           }
           paintCtx.restore();
-        } else {
+        } else if (paintShown) {
           paintCtx.clearRect(0, 0, canvasPaint.width, canvasPaint.height);
+          paintShown = false;
         }
       }
     }
@@ -790,17 +798,13 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       const curH = window.innerHeight;
       const widthChanged = Math.abs(curW - lastW) > 2;
       const isMobile = isMobileQuery.matches;
-      // On mobile, height shifts of <140px are merely browser address bar collapse/expand during scrolling.
-      // Re-allocating WebGL buffers and 2D canvas on every address bar shift causes visible screen flickering.
-      // Only resize canvases on desktop or on genuine orientation / major layout changes.
-      const shouldResizeCanvas = !isMobile || widthChanged || Math.abs(curH - lastH) > 140;
+      // Address-bar show and hide only changes the height. Rebuilding the canvases then makes the particles flash.
+      if (isMobile && !widthChanged) return;
 
-      if (shouldResizeCanvas) {
-        lastW = curW;
-        lastH = curH;
-        resizeGl();
-        resizePaint();
-      }
+      lastW = curW;
+      lastH = curH;
+      resizeGl();
+      resizePaint();
 
       cachedE0 = [];
       if (typeof window !== "undefined" && window.__lenis) {

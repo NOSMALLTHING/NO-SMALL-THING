@@ -475,7 +475,12 @@
   }
 
   .demo8-root .sec:not(.duo) {
-    padding-block: clamp(72px, 10vh, 96px);
+    padding-block: clamp(72px, 10lvh, 96px);
+  }
+
+  .demo8-root .paint,
+  .demo8-root .gl {
+    transition: none;
   }
 
   .demo8-root #results.sec {
@@ -488,53 +493,27 @@
 
   .demo8-root .nums {
     grid-template-columns: 1fr;
-    margin-top: 8px;
+    margin-top: -9lvh;
   }
 
   .demo8-root .nums__stick {
-    display: flex;
-    position: sticky;
-    top: 68px;
-    grid-column: 1;
-    height: 32vh;
-    height: 32svh;
-    align-items: center;
-    justify-content: center;
-    z-index: 4;
-    pointer-events: none;
-    background: #fff;
-  }
-
-  .demo8-root .slot--num {
-    width: min(100%, 560px);
-    height: 26vh;
-    height: 26svh;
+    display: none;
   }
 
   .demo8-root .nums__list {
     grid-column: 1;
-    position: relative;
-    z-index: 3;
   }
 
   .demo8-root .slot--mini {
-    display: none;
+    display: block;
+    height: 34lvh;
+    margin: 4px 0 -4px;
+    pointer-events: none;
   }
 
   .demo8-root .rs {
-    min-height: 68vh;
-    min-height: 68svh;
-    padding-block: 4vh;
-  }
-
-  .demo8-root .gl,
-  .demo8-root .paint {
-    transition: none;
-  }
-
-  .demo8-root .gl {
-    z-index: 6;
-    clip-path: inset(100%);
+    min-height: auto;
+    padding-block: 8lvh;
   }
 
   .demo8-root .g9 {
