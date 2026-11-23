@@ -106,7 +106,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         canvas: glCanvas,
         antialias: !isMobileQuery.matches,
         alpha: true,
-        powerPreference: "high-performance",
+        powerPreference: isMobileQuery.matches ? "default" : "high-performance",
       });
       renderer.setClearColor(0, 0);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -346,9 +346,12 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       }
     }
 
+    const layoutHeight = () => document.documentElement.clientHeight || window.innerHeight;
+
     function resizeGl() {
       const w = window.innerWidth;
-      const h = window.innerHeight;
+      const h = layoutHeight();
+      if (w <= 0 || h <= 0) return;
       viewportHeight = h;
       if (renderer) renderer.setSize(w, h, false);
       canvasGl.style.width = `${w}px`;
@@ -571,7 +574,6 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     let wasRendered = true;
     let paintShown = false;
     let paintSettled = false;
-    let glIdle = false;
     let lastPaintP = -1;
 
     // Cache E0 layout configuration across frames to prevent GC frame drops
@@ -608,7 +610,10 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         return;
       }
       animFrameId = requestAnimationFrame(renderLoop);
+      drawFrame();
+    }
 
+    function drawFrame() {
       if (!shapes.length) return;
 
       const now = performance.now();
@@ -623,16 +628,14 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       B.sy += (B.ny - B.sy) * decay(0.05);
       const isMobile = isMobileQuery.matches;
 
-      // Address-bar show/hide changes innerHeight while the stories stay put.
-      // Rescaling the camera against that makes the particles jump, so phones keep the layout height.
-      if (!isMobile) {
-        const curH = window.innerHeight;
-        if (Math.abs(curH - viewportHeight) > 1) {
-          viewportHeight = curH;
-          camera.aspect = window.innerWidth / curH;
-          camera.updateProjectionMatrix();
-          uniforms.uScale.value = (curH * dpr * 0.5) / Math.tan(THREE.MathUtils.degToRad(15));
-        }
+      // Phones report a changing visual height while the stories stay in layout coordinates.
+      // Follow the layout height so the particles stay on the slots instead of leaving the screen.
+      const curH = isMobile ? layoutHeight() : window.innerHeight;
+      if (curH > 0 && Math.abs(curH - viewportHeight) > 1) {
+        viewportHeight = curH;
+        camera.aspect = window.innerWidth / curH;
+        camera.updateProjectionMatrix();
+        uniforms.uScale.value = (curH * dpr * 0.5) / Math.tan(THREE.MathUtils.degToRad(15));
       }
 
       // ----------------------------------------------------
@@ -738,13 +741,6 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         wasRendered = true;
         if (renderer) renderer.render(scene, camera);
       }
-      if (isMobile) {
-        const nextIdle = glIdle ? uniforms.uVis.value < 0.02 : !particlesVisible;
-        if (nextIdle !== glIdle) {
-          glIdle = nextIdle;
-          root?.classList.toggle("is-gl-idle", glIdle);
-        }
-      }
 
       // ----------------------------------------------------
       // B. Watercolor Paint Bloom Canvas Transition
@@ -813,6 +809,13 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       startLoop();
     }
 
+    const onTouchScroll = () => {
+      if (!isMobileQuery.matches || isDisposed || !isIntersecting) return;
+      if (!animFrameRunning) startLoop();
+      drawFrame();
+    };
+    window.addEventListener("scroll", onTouchScroll, { passive: true });
+
     // ==========================================
     // 9. Resize Listener
     // ==========================================
@@ -846,6 +849,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       isDisposed = true;
       stopLoop();
       io.disconnect();
+      window.removeEventListener("scroll", onTouchScroll);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointerdown", onPointerMove);
       window.removeEventListener("pointermove", onPointerMove);
