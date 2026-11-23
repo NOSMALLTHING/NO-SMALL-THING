@@ -1299,6 +1299,9 @@ body.services-side-entry .services-shell,
   }
 
   .service-card {
+    will-change: auto;
+    transform-style: flat;
+    backface-visibility: visible;
     grid-template-columns: 1fr;
     gap: calc(16 * var(--emb-u));
     min-height: 0;

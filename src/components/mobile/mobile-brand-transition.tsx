@@ -117,9 +117,6 @@ export function MobileBrandTransition({
 
     window.addEventListener("resize", updateMetrics, { passive: true });
     window.addEventListener("orientationchange", handleOrientationChange, { passive: true });
-    if (typeof window !== "undefined" && window.visualViewport) {
-      window.visualViewport.addEventListener("resize", updateMetrics, { passive: true });
-    }
     document.fonts?.ready.then(updateMetrics);
 
     let ro: ResizeObserver | null = null;
@@ -134,9 +131,6 @@ export function MobileBrandTransition({
       timers.forEach((t) => clearTimeout(t));
       window.removeEventListener("resize", updateMetrics);
       window.removeEventListener("orientationchange", handleOrientationChange);
-      if (typeof window !== "undefined" && window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", updateMetrics);
-      }
       ro?.disconnect();
     };
   }, [anchorRef, mounted]);

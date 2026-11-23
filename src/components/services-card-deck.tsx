@@ -400,6 +400,15 @@ export function ServicesCardDeck() {
 
   // Coalesced scroll & resize event updates (No perpetual idle RAF loop)
   useEffect(() => {
+    if (isTouchLayout || reducedMotion) {
+      cardRefs.current.forEach((card) => {
+        if (!card) return;
+        card.style.transform = "";
+        card.classList.remove("is-next", "is-stacked");
+      });
+      return;
+    }
+
     runwayStateRef.current = "init";
     syncMetrics();
     updateServiceCards();
@@ -473,7 +482,7 @@ export function ServicesCardDeck() {
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", handleResize);
     };
-  }, [syncMetrics, updateServiceCards]);
+  }, [isTouchLayout, reducedMotion, syncMetrics, updateServiceCards]);
 
   // Video playback management via IntersectionObserver (plays within 1 screen, pauses when away)
   useEffect(() => {

@@ -12,9 +12,8 @@ declare global {
 }
 
 /**
- * Cinematic smooth scrolling powered by Lenis.
- * The wheel stays close to the picture. A short lerp keeps the handoff scrubbed to the scroll.
- * Automatically bypassed on touch devices and for reduced-motion preferences.
+ * Desktop wheel scrolling stays slightly smoothed.
+ * Phones use the browser's own scroll so the page stays under the finger.
  */
 export function SmoothScroll() {
   const pathname = usePathname();
@@ -22,18 +21,13 @@ export function SmoothScroll() {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    // Respect user motion preferences
     if (reducedMotion) return;
-
-    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
 
     const lenis = new Lenis({
-      lerp: isTouch ? 0.12 : 0.22,
+      lerp: 0.22,
       smoothWheel: true,
-      syncTouch: true,
-      syncTouchLerp: 0.08,
-      touchInertiaExponent: 1.25,
-      touchMultiplier: 0.88,
+      syncTouch: false,
     });
 
     lenisRef.current = lenis;
