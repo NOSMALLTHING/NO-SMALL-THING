@@ -526,7 +526,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
           ];
           lastKey = "";
         })
-        .catch(() => {});
+        .catch(() => { });
     }
 
     // ==========================================
@@ -541,7 +541,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     const z0 = (f: DOMRect) =>
       i0(
         (Math.min(f.bottom, viewportHeight) - Math.max(f.top, 0)) /
-          Math.max(1, Math.min(f.height, viewportHeight))
+        Math.max(1, Math.min(f.height, viewportHeight))
       );
 
     const ke = (f: DOMRect, e: THREE.Vector3) => {
@@ -678,10 +678,10 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       const k = M
         ? (w < 0.5 ? z0(v[y]) * (1 - J(j(w, 0.1, 0.5))) : z0(v[F]) * J(j(w, 0.5, 0.9)))
         : Math.max(
-            z0(v[y]) * (1 - g * 0.999),
-            z0(v[F]) * g,
-            T === h ? z0(v[F]) * g : 0
-          );
+          z0(v[y]) * (1 - g * 0.999),
+          z0(v[F]) * g,
+          T === h ? z0(v[F]) * g : 0
+        );
 
       uniforms.uVis.value = J(j(k, 0, 0.45)) * (T === h ? 1 : 1 - 0.55 * Math.sin(Math.PI * w));
 
@@ -837,10 +837,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
                   <b>46%</b> People Judged the company by how its website looked
                 </h3>
                 <p className="body">
-                  Broad paid media and blended creative gave way to persona-driven Meta, a Google
-                  account rebuilt from the ground up, and a TikTok Shop that finally scaled.
-
-                  Stanford asked 2,684 people. The look of a site, and proof a real company stands 
+                  Stanford asked 2,684 people. The look of a site, and proof a real company stands
                   behind it, decided whether the business seemed credible.
                 </p>
                 <ul className="rs__rows">
@@ -866,10 +863,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
                   <b>10X</b> more likely to be clicked
                 </h3>
                 <p className="body">
-                  Subscription LTV was modeled from day one, and spend only scaled where CAC
-                  stayed within a healthy ratio. Growth had to translate to real business value.
-
-                  Backlinko looked at 4 million Google results. The first organic result is 
+                  Backlinko looked at 4 million Google results. The first organic result is
                   about ten times more likely to be clicked than the result in tenth place.
                 </p>
                 <ul className="rs__rows">
