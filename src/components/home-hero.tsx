@@ -207,6 +207,8 @@ export function HomeHero() {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const isTransitioningRef = useRef(false);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mobileCoveredRef = useRef(false);
+  const currentVideoRef = useRef(0);
 
   useEffect(() => {
     return () => {
@@ -277,6 +279,7 @@ export function HomeHero() {
   }, []);
 
   const advanceVideo = (fromIndex: number) => {
+    if (mobileCoveredRef.current) return;
     if (isTransitioningRef.current) return;
     isTransitioningRef.current = true;
 
@@ -289,6 +292,7 @@ export function HomeHero() {
     }
 
     setCurrentIndex(nextIndex);
+    currentVideoRef.current = nextIndex;
 
     if (transitionTimeoutRef.current !== null) {
       clearTimeout(transitionTimeoutRef.current);
@@ -327,13 +331,58 @@ export function HomeHero() {
       if (!activeVideo) return;
       if (document.hidden) {
         activeVideo.pause();
-      } else {
+      } else if (!mobileCoveredRef.current) {
         activeVideo.play().catch(() => {});
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [currentIndex]);
+
+  // The sticky hero stays mounted underneath the opaque homepage sections.
+  // Stop decoding its hidden videos on phones, resuming the same frame on return.
+  useEffect(() => {
+    const mobile = window.matchMedia("(max-width: 900px)");
+    const cover = document.querySelector<HTMLElement>(".home-over");
+    if (!cover) return;
+    let coveredAt = Infinity;
+
+    const updatePlayback = () => {
+      const covered = mobile.matches && (document.hidden || window.scrollY >= coveredAt);
+      if (covered === mobileCoveredRef.current) return;
+      mobileCoveredRef.current = covered;
+      if (covered) {
+        videoRefs.current.forEach((video) => video?.pause());
+      } else if (!document.hidden) {
+        videoRefs.current[currentVideoRef.current]?.play().catch(() => {});
+      }
+    };
+    const measureCover = () => {
+      coveredAt = cover.getBoundingClientRect().top + window.scrollY;
+      updatePlayback();
+    };
+    const syncMobile = () => {
+      window.removeEventListener("scroll", updatePlayback);
+      window.removeEventListener("resize", measureCover);
+      document.removeEventListener("visibilitychange", updatePlayback);
+      if (mobile.matches) {
+        measureCover();
+        window.addEventListener("scroll", updatePlayback, { passive: true });
+        window.addEventListener("resize", measureCover, { passive: true });
+        document.addEventListener("visibilitychange", updatePlayback);
+      } else {
+        updatePlayback();
+      }
+    };
+    syncMobile();
+    mobile.addEventListener("change", syncMobile);
+    return () => {
+      mobile.removeEventListener("change", syncMobile);
+      window.removeEventListener("scroll", updatePlayback);
+      window.removeEventListener("resize", measureCover);
+      document.removeEventListener("visibilitychange", updatePlayback);
+    };
+  }, []);
 
   return (
     <section className={`${styles.hero} home-hero`} data-theme="dark" aria-labelledby="home-title">

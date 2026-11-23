@@ -506,7 +506,8 @@ export function ServicesCardDeck() {
             }
           });
         },
-        { threshold: 0, rootMargin: "100% 0px" }
+        // Keep a decoding runway on phones without running videos a full screen away.
+        { threshold: 0, rootMargin: window.matchMedia("(max-width: 900px)").matches ? "160px 0px" : "100% 0px" }
       );
 
       videoEls.forEach((video) => observer.observe(video));
