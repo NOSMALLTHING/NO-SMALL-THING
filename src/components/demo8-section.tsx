@@ -537,6 +537,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     // ==========================================
     const articles = [...root.querySelectorAll<HTMLElement>(".rs")];
     const slotNum = root.querySelector<HTMLElement>("#slotNum");
+    const miniSlots = articles.map((a) => a.querySelector<HTMLElement>(".slot--mini"));
     const gridEl = root.querySelector<HTMLElement>("#grid");
 
     // Math & projection helpers directly ported from Demo8 (appca85.js)
@@ -569,17 +570,17 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     const ptEuler = new THREE.Euler(0, 0, 0, "XYZ");
     let wasRendered = true;
 
-    // One sticky stage on every width. The stage stays put while the stories
-    // pass, then releases and slides away with the Results block.
+    // Cache E0 layout configuration across frames to prevent GC frame drops
     let cachedE0: { shape: number; t: HTMLElement; m: HTMLElement | null; inset: number }[] = [];
-    function getE0() {
-      if (cachedE0.length) return cachedE0;
-      const stage = slotNum;
+    let lastIsMobile: boolean | null = null;
+    function getE0(isMobile: boolean) {
+      if (isMobile === lastIsMobile && cachedE0.length) return cachedE0;
+      lastIsMobile = isMobile;
       cachedE0 = articles.map((el, idx) => ({
         shape: idx,
-        t: stage || el,
-        m: el,
-        inset: 0.28,
+        t: (isMobile ? miniSlots[idx] : slotNum) || el,
+        m: isMobile ? null : el,
+        inset: isMobile ? 0 : 0.28,
       }));
       return cachedE0;
     }
@@ -618,16 +619,13 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       B.sy += (B.ny - B.sy) * decay(0.05);
       const isMobile = isMobileQuery.matches;
 
-      // Address-bar show and hide changes innerHeight while the finger is down.
-      // Rescaling the camera mid-gesture is what makes the particles jump.
-      if (!isMobile) {
-        const curH = window.innerHeight;
-        if (Math.abs(curH - viewportHeight) > 1) {
-          viewportHeight = curH;
-          camera.aspect = window.innerWidth / curH;
-          camera.updateProjectionMatrix();
-          uniforms.uScale.value = (curH * dpr * 0.5) / Math.tan(THREE.MathUtils.degToRad(15));
-        }
+      // Dynamic viewport height tracking (handles mobile browser address bar collapse without layout thrashing)
+      const curH = window.innerHeight;
+      if (Math.abs(curH - viewportHeight) > (isMobile ? 120 : 1)) {
+        viewportHeight = curH;
+        camera.aspect = window.innerWidth / curH;
+        camera.updateProjectionMatrix();
+        uniforms.uScale.value = (curH * dpr * 0.5) / Math.tan(THREE.MathUtils.degToRad(15));
       }
 
       // ----------------------------------------------------
@@ -635,7 +633,9 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       // ----------------------------------------------------
       const i = viewportHeight * 0.5;
 
-      const E0 = getE0();
+      // On mobile, Demo8 tracks .slot--mini inside each .rs card with m: null, inset: 0
+      // On desktop, Demo8 tracks sticky #slotNum with m: card, inset: 0.28
+      const E0 = getE0(isMobile);
 
       const d = E0.length;
       const v = E0.map((A) => A.t.getBoundingClientRect());
@@ -685,23 +685,6 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       particleGroup.position.copy(le);
       particleGroup.scale.setScalar(P);
       uniforms.uGS.value = P;
-
-      if (isMobile && slotNum) {
-        const slotRect = v[0];
-        const canvasRect = canvasGl.getBoundingClientRect();
-        const top = slotRect.top - canvasRect.top - 16;
-        const right = canvasRect.right - slotRect.right - 8;
-        const bottom = canvasRect.bottom - slotRect.bottom - 16;
-        const left = slotRect.left - canvasRect.left - 8;
-        const visible = slotRect.width > 8 && slotRect.height > 8 && slotRect.bottom > 0 && slotRect.top < window.innerHeight;
-        const nextClip = visible
-          ? `inset(${top.toFixed(1)}px ${Math.max(0, right).toFixed(1)}px ${Math.max(0, bottom).toFixed(1)}px ${Math.max(0, left).toFixed(1)}px)`
-          : "inset(100%)";
-        if (canvasGl.dataset.clip !== nextClip) {
-          canvasGl.dataset.clip = nextClip;
-          canvasGl.style.clipPath = nextClip;
-        }
-      }
 
       // 3D tilt & gentle organic sway (ported from Demo8 appca85.js)
       const sway = Math.sin(elapsed * 0.35) * 0.08;
@@ -756,44 +739,37 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         const d = gRect.top;
         const p = Math.min(1, Math.max(0, (viewportHeight * 0.95 - d) / (viewportHeight * 0.45)));
 
-        const shouldWet = prefersReducedMotion ? d < viewportHeight * 0.75 : p >= 0.82;
-        const shouldDry = prefersReducedMotion ? d >= viewportHeight * 0.82 : p < 0.74;
-        if (shouldWet && !gridEl.classList.contains("is-wet")) gridEl.classList.add("is-wet");
-        else if (shouldDry && gridEl.classList.contains("is-wet")) gridEl.classList.remove("is-wet");
+        const isWet = prefersReducedMotion ? d < viewportHeight * 0.75 : p >= 0.8;
+        gridEl.classList.toggle("is-wet", isWet);
 
         const clipTop = Math.max(0, d);
         const clipBottom = Math.min(viewportHeight, gRect.bottom);
         const clipHeight = clipBottom - clipTop;
-        const paintKey = `${Math.round(p * 28)}:${Math.round(d / 6)}:${Math.round(clipHeight / 6)}`;
 
         if (p > 0 && clipHeight > 0 && d < viewportHeight && gRect.bottom > 0) {
-          if (gridEl.dataset.paint !== paintKey) {
-            gridEl.dataset.paint = paintKey;
-            paintCtx.clearRect(0, 0, canvasPaint.width, canvasPaint.height);
-            paintCtx.save();
-            paintCtx.beginPath();
-            paintCtx.rect(0, clipTop, canvasPaint.width, clipHeight);
-            paintCtx.clip();
+          paintCtx.clearRect(0, 0, canvasPaint.width, canvasPaint.height);
+          paintCtx.save();
+          paintCtx.beginPath();
+          paintCtx.rect(0, clipTop, canvasPaint.width, clipHeight);
+          paintCtx.clip();
 
-            if (p >= 1) {
-              paintCtx.fillStyle = "#163F35";
-              paintCtx.fillRect(0, clipTop, canvasPaint.width, clipHeight);
-            } else {
-              paintCtx.fillStyle = "#FFFFFF";
-              paintCtx.fillRect(0, clipTop, canvasPaint.width, clipHeight);
-              paintCtx.fillStyle = "#163F35";
-              drawWatercolorBlob(
-                paintCtx,
-                canvasPaint.width / 2,
-                Math.max(0, d + Math.min(viewportHeight * 0.3, gRect.height * 0.5)),
-                Math.hypot(canvasPaint.width / 2, viewportHeight) * 1.04,
-                p
-              );
-            }
-            paintCtx.restore();
+          if (p >= 1) {
+            paintCtx.fillStyle = "#163F35";
+            paintCtx.fillRect(0, clipTop, canvasPaint.width, clipHeight);
+          } else {
+            paintCtx.fillStyle = "#FFFFFF";
+            paintCtx.fillRect(0, clipTop, canvasPaint.width, clipHeight);
+            paintCtx.fillStyle = "#163F35";
+            drawWatercolorBlob(
+              paintCtx,
+              canvasPaint.width / 2,
+              Math.max(0, d + Math.min(viewportHeight * 0.3, gRect.height * 0.5)),
+              Math.hypot(canvasPaint.width / 2, viewportHeight) * 1.04,
+              p
+            );
           }
-        } else if (gridEl.dataset.paint !== "clear") {
-          gridEl.dataset.paint = "clear";
+          paintCtx.restore();
+        } else {
           paintCtx.clearRect(0, 0, canvasPaint.width, canvasPaint.height);
         }
       }
@@ -819,17 +795,13 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       // Only resize canvases on desktop or on genuine orientation / major layout changes.
       const shouldResizeCanvas = !isMobile || widthChanged || Math.abs(curH - lastH) > 140;
 
-      if (!isMobile) {
-        canvasGl.style.clipPath = "";
-        delete canvasGl.dataset.clip;
+      if (shouldResizeCanvas) {
+        lastW = curW;
+        lastH = curH;
+        resizeGl();
+        resizePaint();
       }
 
-      if (!shouldResizeCanvas) return;
-
-      lastW = curW;
-      lastH = curH;
-      resizeGl();
-      resizePaint();
       cachedE0 = [];
       if (typeof window !== "undefined" && window.__lenis) {
         window.__lenis.resize();
