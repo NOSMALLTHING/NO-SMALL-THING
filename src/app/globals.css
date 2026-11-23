@@ -199,6 +199,11 @@ html::-webkit-scrollbar {
   display: none;
 }
 
+html.lenis,
+html.lenis body {
+  scroll-behavior: auto !important;
+}
+
 .home-over {
   position: relative;
   z-index: 2;

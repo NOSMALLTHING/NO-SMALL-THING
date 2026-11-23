@@ -22,14 +22,18 @@ export function SmoothScroll() {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    // Respect user motion preferences and touch/mobile devices
-    const isFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    if (reducedMotion || !isFinePointer) return;
+    // Respect user motion preferences
+    if (reducedMotion) return;
+
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
 
     const lenis = new Lenis({
-      lerp: 0.22,
+      lerp: isTouch ? 0.12 : 0.22,
       smoothWheel: true,
-      syncTouch: false,
+      syncTouch: true,
+      syncTouchLerp: 0.08,
+      touchInertiaExponent: 1.25,
+      touchMultiplier: 0.88,
     });
 
     lenisRef.current = lenis;

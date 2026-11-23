@@ -81,13 +81,25 @@ export function MobileBrandTransition({
         if (oh > 10 && oh < 100) height = oh;
       }
 
-      setMetrics({
-        viewportWidth: vw,
-        viewportHeight: vh,
-        targetLeft: left,
-        targetTop: top,
-        targetWidth: width,
-        targetHeight: height,
+      setMetrics((prev) => {
+        if (
+          prev.viewportWidth === vw &&
+          Math.abs(prev.viewportHeight - vh) < 140 &&
+          prev.targetLeft === left &&
+          prev.targetTop === top &&
+          prev.targetWidth === width &&
+          prev.targetHeight === height
+        ) {
+          return prev;
+        }
+        return {
+          viewportWidth: vw,
+          viewportHeight: vh,
+          targetLeft: left,
+          targetTop: top,
+          targetWidth: width,
+          targetHeight: height,
+        };
       });
     };
 

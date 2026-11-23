@@ -45,7 +45,7 @@ try {
   assert.ok(!sitemap.includes("design-system"));
   assert.ok(!sitemap.includes("/contact"), "Sitemap does not include deleted /contact");
   const rootHtml = await readFile("out/index.html", "utf8");
-  for (const phrase of ["Three minds", "Not just more customers", "The full-funnel results", "what we do best", "creative method"]) assert.ok(rootHtml.includes(phrase), phrase);
+  for (const phrase of ["Three minds", "Not just easier to find", "Why you need a website that works", "what we do best", "creative method"]) assert.ok(rootHtml.includes(phrase), phrase);
   assert.ok(!rootHtml.includes("Have an idea, a challenge, or something worth building"), "No old contact form text");
   assert.ok(!rootHtml.includes("__about-qa") && !rootHtml.includes("__review-qa"));
   console.log(JSON.stringify({ pages: pages.length, assetRequests: assets.size, routeStatus: "passed", headings: "passed", metadata: "passed", conceptDisclosures: "passed", honestContactMode: "passed", fallback404: "passed", unsupportedPost: "405", sitemap: "passed" }));

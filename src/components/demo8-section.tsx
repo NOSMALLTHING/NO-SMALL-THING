@@ -619,9 +619,9 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       B.sy += (B.ny - B.sy) * decay(0.05);
       const isMobile = isMobileQuery.matches;
 
-      // Dynamic viewport height tracking (handles mobile browser address bar collapse)
-      const curH = canvasGl.getBoundingClientRect().height || window.innerHeight;
-      if (Math.abs(curH - viewportHeight) > 1) {
+      // Dynamic viewport height tracking (handles mobile browser address bar collapse without layout thrashing)
+      const curH = window.innerHeight;
+      if (Math.abs(curH - viewportHeight) > (isMobile ? 120 : 1)) {
         viewportHeight = curH;
         camera.aspect = window.innerWidth / curH;
         camera.updateProjectionMatrix();
@@ -782,9 +782,26 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     // ==========================================
     // 9. Resize Listener
     // ==========================================
+    let lastW = window.innerWidth;
+    let lastH = window.innerHeight;
+
     const onResize = () => {
-      resizeGl();
-      resizePaint();
+      const curW = window.innerWidth;
+      const curH = window.innerHeight;
+      const widthChanged = Math.abs(curW - lastW) > 2;
+      const isMobile = isMobileQuery.matches;
+      // On mobile, height shifts of <140px are merely browser address bar collapse/expand during scrolling.
+      // Re-allocating WebGL buffers and 2D canvas on every address bar shift causes visible screen flickering.
+      // Only resize canvases on desktop or on genuine orientation / major layout changes.
+      const shouldResizeCanvas = !isMobile || widthChanged || Math.abs(curH - lastH) > 140;
+
+      if (shouldResizeCanvas) {
+        lastW = curW;
+        lastH = curH;
+        resizeGl();
+        resizePaint();
+      }
+
       cachedE0 = [];
       if (typeof window !== "undefined" && window.__lenis) {
         window.__lenis.resize();
