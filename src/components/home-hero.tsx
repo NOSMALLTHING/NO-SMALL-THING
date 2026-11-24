@@ -279,7 +279,7 @@ export function HomeHero() {
   }, []);
 
   const advanceVideo = (fromIndex: number) => {
-    if (isTransitioningRef.current) return;
+    if (isHeroCoveredRef.current || isTransitioningRef.current) return;
     isTransitioningRef.current = true;
 
     const nextIndex = (fromIndex + 1) % HERO_VIDEOS.length;
@@ -324,16 +324,30 @@ export function HomeHero() {
     }
   };
 
+  // The sticky hero stays mounted underneath the opaque homepage sections.
+  // Pause hidden videos once covered or tabbed away, resuming cleanly on return.
   useEffect(() => {
+    const cover = document.querySelector<HTMLElement>(".home-over");
+    let coveredAt = window.innerHeight * 1.15;
+
+    const measureCover = () => {
+      coveredAt = cover
+        ? cover.getBoundingClientRect().top + window.scrollY
+        : window.innerHeight * 1.15;
+    };
+
     const syncPlayback = () => {
-      const covered = window.scrollY > window.innerHeight * 1.15;
+      const covered = document.hidden || window.scrollY >= coveredAt;
       isHeroCoveredRef.current = covered;
-      const activeVideo = videoRefs.current[currentIndexRef.current];
-      if (!activeVideo) return;
-      if (document.hidden || covered) {
-        if (!activeVideo.paused) activeVideo.pause();
-      } else if (activeVideo.paused) {
-        activeVideo.play().catch(() => {});
+      if (covered) {
+        videoRefs.current.forEach((video) => {
+          if (video && !video.paused) video.pause();
+        });
+      } else {
+        const activeVideo = videoRefs.current[currentIndexRef.current];
+        if (activeVideo && activeVideo.paused) {
+          activeVideo.play().catch(() => {});
+        }
       }
     };
 
@@ -346,12 +360,21 @@ export function HomeHero() {
       });
     };
 
+    const onResize = () => {
+      measureCover();
+      syncPlayback();
+    };
+
+    measureCover();
+    syncPlayback();
     document.addEventListener("visibilitychange", syncPlayback);
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
       document.removeEventListener("visibilitychange", syncPlayback);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 

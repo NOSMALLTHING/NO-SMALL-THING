@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -10,8 +10,24 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const glCanvasRef = useRef<HTMLCanvasElement>(null);
   const paintCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [mobileReady, setMobileReady] = useState(false);
 
   useEffect(() => {
+    if (standalone || !window.matchMedia("(max-width: 900px)").matches) return;
+    const root = rootRef.current;
+    if (!root) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      setMobileReady(true);
+      observer.disconnect();
+    }, { rootMargin: "1500px 0px" });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [standalone]);
+
+  useEffect(() => {
+    const mobilePerformance = !standalone && window.matchMedia("(max-width: 900px)").matches;
+    if (mobilePerformance && !mobileReady) return;
     const root = rootRef.current;
     const glCanvas = glCanvasRef.current;
     const paintCanvas = paintCanvasRef.current;
@@ -520,7 +536,8 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     U0(0, 0);
 
     // Re-sample mesh with verified Neue Haas Display font
-    if (typeof document !== "undefined" && document.fonts) {
+    const mobileFontReady = mobilePerformance && document.fonts?.check('500 400px "Neue Haas Display"');
+    if (typeof document !== "undefined" && document.fonts && !mobileFontReady) {
       Promise.all([
         document.fonts.load('500 400px "Neue Haas Display"'),
         document.fonts.load('400 400px "Neue Haas Display"'),
@@ -714,7 +731,17 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
           T === h ? z0(v[F]) * g : 0
         );
 
-      uniforms.uVis.value = J(j(k, 0, 0.45)) * (isMobile || T === h ? 1 : 1 - 0.55 * Math.sin(Math.PI * w));
+      let visibility = k;
+      if (mobilePerformance) {
+        // Follow the moving cloud, not the two source slots it is travelling between.
+        const movingTop = I(v[y].top, v[F].top, g);
+        const movingHeight = I(v[y].height, v[F].height, g);
+        visibility = i0(
+          (Math.min(movingTop + movingHeight, viewportHeight) - Math.max(movingTop, 0)) /
+          Math.max(1, Math.min(movingHeight, viewportHeight))
+        );
+      }
+      uniforms.uVis.value = J(j(visibility, 0, 0.45)) * (isMobile || T === h ? 1 : 1 - 0.55 * Math.sin(Math.PI * w));
 
       // Cursor repel force
       if (B.in) {
@@ -821,6 +848,12 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       startLoop();
     }
 
+    const onMobileVisibility = () => {
+      if (document.hidden) stopLoop();
+      else if (isIntersecting) startLoop();
+    };
+    if (mobilePerformance) document.addEventListener("visibilitychange", onMobileVisibility);
+
     // ==========================================
     // 9. Resize Listener
     // ==========================================
@@ -854,6 +887,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       isDisposed = true;
       stopLoop();
       io.disconnect();
+      if (mobilePerformance) document.removeEventListener("visibilitychange", onMobileVisibility);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointerdown", onPointerMove);
       window.removeEventListener("pointermove", onPointerMove);
@@ -868,7 +902,7 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
       mat.dispose();
       if (renderer) renderer.dispose();
     };
-  }, []);
+  }, [mobileReady, standalone]);
 
   return (
     <div
