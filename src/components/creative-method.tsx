@@ -4,15 +4,6 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { useReducedMotion } from "motion/react";
 
 const clamp = (val: number, min: number, max: number) => Math.min(max, Math.max(min, val));
-const lerp = (from: number, to: number, amount: number) => from + (to - from) * amount;
-const easeInOut = (t: number) => {
-  const c = clamp(t, 0, 1);
-  return c * c * (3 - 2 * c);
-};
-const easeOutCubic = (t: number) => {
-  const c = clamp(t, 0, 1);
-  return 1 - Math.pow(1 - c, 3);
-};
 
 interface TextSegment {
   type: "text";
@@ -88,6 +79,7 @@ export function CreativeMethod() {
   const [isPhone, setIsPhone] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const copyRef = useRef<HTMLParagraphElement>(null);
+  const charsRef = useRef<HTMLSpanElement[]>([]);
   const lastActiveIndexRef = useRef<number>(-999);
   const reducedMotion = useReducedMotion();
 
@@ -97,6 +89,13 @@ export function CreativeMethod() {
     update();
     query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    const copyEl = copyRef.current;
+    charsRef.current = copyEl
+      ? Array.from(copyEl.querySelectorAll<HTMLSpanElement>(".scroll-char"))
+      : [];
   }, []);
 
   // Floating cursor preview state
@@ -111,7 +110,9 @@ export function CreativeMethod() {
     const copyEl = copyRef.current;
     if (!copyEl) return;
 
-    const chars = Array.from(copyEl.querySelectorAll<HTMLSpanElement>(".scroll-char"));
+    const chars = charsRef.current.length
+      ? charsRef.current
+      : Array.from(copyEl.querySelectorAll<HTMLSpanElement>(".scroll-char"));
     if (!chars.length) return;
 
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
@@ -162,56 +163,63 @@ export function CreativeMethod() {
     lastActiveIndexRef.current = activeIndex;
   }, [reducedMotion]);
 
-  // Mobile scroll is native and event-driven; avoid running an idle RAF loop.
+  // Coalesced event-driven updates across both mobile and desktop (no perpetual idle RAF loop)
   useEffect(() => {
     let rafId = 0;
     let isMounted = true;
 
-    if (isPhone) {
-      const scheduleUpdate = () => {
-        if (rafId) return;
-        rafId = requestAnimationFrame(() => {
-          rafId = 0;
-          updateScrollCopy();
-        });
-      };
+    const scheduleUpdate = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        if (!isMounted) return;
+        updateScrollCopy();
+      });
+    };
 
-      scheduleUpdate();
-      window.addEventListener("scroll", scheduleUpdate, { passive: true });
-      window.addEventListener("resize", scheduleUpdate, { passive: true });
-      return () => {
-        isMounted = false;
-        if (rafId) cancelAnimationFrame(rafId);
-        window.removeEventListener("scroll", scheduleUpdate);
-        window.removeEventListener("resize", scheduleUpdate);
-      };
-    }
-
-    const loop = () => {
+    const onLenisScroll = () => {
       if (!isMounted) return;
       updateScrollCopy();
-      rafId = requestAnimationFrame(loop);
-    };
-    rafId = requestAnimationFrame(loop);
-
-    const scheduleUpdate = () => {
-      updateScrollCopy();
     };
 
+    scheduleUpdate();
     window.addEventListener("scroll", scheduleUpdate, { passive: true });
     window.addEventListener("resize", scheduleUpdate, { passive: true });
 
-    if (window.__lenis) {
-      window.__lenis.on("scroll", scheduleUpdate);
+    let checkLenisTimer: ReturnType<typeof setInterval> | null = null;
+    let stopCheckTimer: ReturnType<typeof setTimeout> | null = null;
+    const attachLenis = () => {
+      if (!isPhone && typeof window !== "undefined" && window.__lenis) {
+        window.__lenis.on("scroll", onLenisScroll);
+        return true;
+      }
+      return false;
+    };
+
+    if (!isPhone && !attachLenis()) {
+      checkLenisTimer = setInterval(() => {
+        if (attachLenis() && checkLenisTimer) {
+          clearInterval(checkLenisTimer);
+          checkLenisTimer = null;
+        }
+      }, 80);
+      stopCheckTimer = setTimeout(() => {
+        if (checkLenisTimer) {
+          clearInterval(checkLenisTimer);
+          checkLenisTimer = null;
+        }
+      }, 2000);
     }
 
     return () => {
       isMounted = false;
       if (rafId) cancelAnimationFrame(rafId);
+      if (checkLenisTimer) clearInterval(checkLenisTimer);
+      if (stopCheckTimer) clearTimeout(stopCheckTimer);
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", scheduleUpdate);
-      if (window.__lenis) {
-        window.__lenis.off("scroll", scheduleUpdate);
+      if (typeof window !== "undefined" && window.__lenis) {
+        window.__lenis.off("scroll", onLenisScroll);
       }
     };
   }, [isPhone, updateScrollCopy]);

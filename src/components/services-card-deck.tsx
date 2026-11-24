@@ -441,6 +441,7 @@ export function ServicesCardDeck() {
     };
 
     let checkLenisTimer: ReturnType<typeof setInterval> | null = null;
+    let stopCheckTimer: ReturnType<typeof setTimeout> | null = null;
     if (!attachLenis()) {
       checkLenisTimer = setInterval(() => {
         if (attachLenis() && checkLenisTimer) {
@@ -448,7 +449,7 @@ export function ServicesCardDeck() {
           checkLenisTimer = null;
         }
       }, 50);
-      setTimeout(() => {
+      stopCheckTimer = setTimeout(() => {
         if (checkLenisTimer) {
           clearInterval(checkLenisTimer);
           checkLenisTimer = null;
@@ -476,6 +477,7 @@ export function ServicesCardDeck() {
       isMounted = false;
       if (rafId) cancelAnimationFrame(rafId);
       if (checkLenisTimer) clearInterval(checkLenisTimer);
+      if (stopCheckTimer) clearTimeout(stopCheckTimer);
       if (typeof window !== "undefined" && window.__lenis) {
         window.__lenis.off("scroll", onLenisScroll);
       }
@@ -583,7 +585,7 @@ export function ServicesCardDeck() {
                       muted
                       loop
                       playsInline
-                      preload="auto"
+                      preload="metadata"
                       poster={project.poster}
                     >
                       <source src={project.videoSrc} type="video/mp4" />

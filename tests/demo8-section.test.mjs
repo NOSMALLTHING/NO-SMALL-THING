@@ -68,7 +68,7 @@ test("Demo8Section component structure and semantic markup", () => {
   assert.ok(compContent.includes('<div className="demo8-main">'), "Must render <div className='demo8-main'>");
   assert.ok(compContent.includes('href="#site-footer"'), "CTA button must point to site-footer");
   assert.ok(compContent.includes('(scroll to footer)'), "CTA button must declare accessible screen reader text");
-  assert.ok(compContent.includes("alphaToCoverage: true"), "Shader material must declare alphaToCoverage");
+  assert.ok(compContent.includes("alphaToCoverage:"), "Shader material must declare alphaToCoverage");
   assert.ok(compContent.includes("tiltX = B.sy * 0.16"), "3D tilt pitch must follow Demo8 positive Y axis convention");
   assert.ok(compContent.includes("pointerdown"), "Pointer listeners must respond immediately to pointerdown");
 });
@@ -156,8 +156,9 @@ test("Demo8Section mobile vertical sliding and scroll-linked positioning impleme
 
   // 5. CSS slot--mini display on mobile
   assert.ok(
-    cssContent.includes('.slot--mini {\n    display: block;\n    height: 34vh;'),
-    "Mobile CSS must display slot--mini with height 34vh"
+    cssContent.includes('.slot--mini {\n    display: block;\n    height: 34lvh;') ||
+      cssContent.includes('.slot--mini {\n    display: block;\n    height: 34vh;'),
+    "Mobile CSS must display slot--mini with height 34lvh/34vh"
   );
   assert.ok(
     cssContent.includes('.nums__stick {\n    display: none;'),

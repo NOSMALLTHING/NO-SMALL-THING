@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useReducedMotion } from "motion/react";
 import { navigation } from "@/lib/site";
 import { MobileBrandTransition } from "./mobile/mobile-brand-transition";
 
@@ -30,7 +29,6 @@ export function SiteHeader() {
   const drawerRef = useRef<HTMLElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const hideTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const reducedMotion = useReducedMotion();
 
   // ── Sync FLIP geometry from Menu button to Drawer ──
   const syncMenuGeometry = useCallback(() => {
@@ -324,11 +322,12 @@ export function SiteHeader() {
     };
 
     let checkLenisTimer: NodeJS.Timeout | null = null;
+    let stopCheckTimer: NodeJS.Timeout | null = null;
     if (!attachLenis()) {
       checkLenisTimer = setInterval(() => {
         if (attachLenis() && checkLenisTimer) clearInterval(checkLenisTimer);
       }, 100);
-      setTimeout(() => {
+      stopCheckTimer = setTimeout(() => {
         if (checkLenisTimer) clearInterval(checkLenisTimer);
       }, 3000);
     }
@@ -342,6 +341,7 @@ export function SiteHeader() {
       window.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", scheduleUpdate);
       if (checkLenisTimer) clearInterval(checkLenisTimer);
+      if (stopCheckTimer) clearTimeout(stopCheckTimer);
       if (window.__lenis) {
         window.__lenis.off("scroll", scheduleUpdate);
       }

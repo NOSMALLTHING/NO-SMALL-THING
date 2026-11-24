@@ -67,15 +67,6 @@ const AI_INFLATE_LETTERS = [
   { char: "I", src: "/marketing-assets/images/text-effects/inflate/i.png", width: 121, height: 186, className: "story-inflate-i", percent: 40.33 },
 ];
 
-const INFLATE_LETTERS = [
-  { char: "b", src: "/marketing-assets/images/text-effects/inflate/b.png", width: 139, height: 187, className: "dSFIkm", percent: 19.6 },
-  { char: "l", src: "/marketing-assets/images/text-effects/inflate/l.png", width: 61, height: 186, className: "hBBHrG", percent: 8.6 },
-  { char: "o", src: "/marketing-assets/images/text-effects/inflate/o.png", width: 133, height: 147, className: "bZXNyl", percent: 18.8 },
-  { char: "c", src: "/marketing-assets/images/text-effects/inflate/c.png", width: 123, height: 149, className: "ipkyZC", percent: 17.4 },
-  { char: "k", src: "/marketing-assets/images/text-effects/inflate/k.png", width: 130, height: 187, className: "PyBAF", percent: 18.4 },
-  { char: "s", src: "/marketing-assets/images/text-effects/inflate/s.png", width: 122, height: 149, className: "jtEPpI", percent: 17.2 },
-];
-
 const TEXT_EFFECT_ITEMS = [
   { id: "inflate", label: "Inflate", image: "/marketing-assets/images/text-effects/inflate.png" },
   { id: "glow", label: "Glow", image: "/marketing-assets/images/text-effects/glow.png" },
@@ -275,7 +266,7 @@ export function ButterServices() {
   // =========================================================================
   const statementContainerRef = useRef<HTMLDivElement>(null);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
-  const statementWrappersRef = useRef<(HTMLDivElement | null)[]>([]);
+  const statementWrappersRef = useRef<(HTMLSpanElement | null)[]>([]);
   const timelineWrappersRef = useRef<(HTMLDivElement | null)[]>([]);
   const blockElementsRef = useRef<(HTMLDivElement | null)[]>([]);
   const isInTimelineRef = useRef(false);
@@ -482,7 +473,7 @@ export function ButterServices() {
               x,
               y,
               duration: 0.5,
-              ease: "power2.out ",
+              ease: "power2.out",
             },
             stagger
           );
@@ -539,7 +530,6 @@ export function ButterServices() {
 
   const futureInflateLettersRef = useRef<(HTMLImageElement | null)[]>([]);
   const aiInflateLettersRef = useRef<(HTMLImageElement | null)[]>([]);
-  const inflateLettersRef = useRef<(HTMLImageElement | null)[]>([]);
   const futureLettersRef = useRef<(HTMLSpanElement | null)[]>([]);
   const aiLettersRef = useRef<(HTMLSpanElement | null)[]>([]);
   const buildingWordRef = useRef<HTMLSpanElement | null>(null);
@@ -808,8 +798,8 @@ export function ButterServices() {
                       className={`index-style__AnimateSlide-sc-8bf3a78c-2 eCzlPx ${tickerInView ? "is-visible" : ""}`}
                       style={{ transitionDelay: `${0.06 * (index % LOGOS.length)}s` }}
                     >
-                      <div className="index-style__TickerSectionLogo-sc-f994884c-4 kUxdkg">
-                        <div className="index-style__ImgMain-sc-2f7799e5-0 fZzdWn">
+                      <span className="index-style__TickerSectionLogo-sc-f994884c-4 kUxdkg">
+                        <span className="index-style__ImgMain-sc-2f7799e5-0 fZzdWn">
                           <img
                             alt={`${logo.name} logo`}
                             loading="lazy"
@@ -819,8 +809,8 @@ export function ButterServices() {
                             style={{ color: "transparent", objectFit: "contain" }}
                             src={logo.src}
                           />
-                        </div>
-                      </div>
+                        </span>
+                      </span>
                     </span>
                   </span>
                 </div>
@@ -842,7 +832,7 @@ export function ButterServices() {
                   </span>
                   <span aria-hidden="true" className="index-style__SplitTextWrapper-sc-6461e2eb-1 hwJVXf">
                     SKIP THE WHOLE THING.
-                    <div
+                    <span
                       data-type="statement-block-wrapper"
                       ref={(el) => {
                         statementWrappersRef.current[0] = el;
@@ -850,7 +840,7 @@ export function ButterServices() {
                       className="index-style__StatementBlockWrapper-sc-87b51a93-3 iTVauV"
                     />{" "}
                     NO SMALL THING specializes in the design and development
-                    <div
+                    <span
                       data-type="statement-block-wrapper"
                       ref={(el) => {
                         statementWrappersRef.current[1] = el;
@@ -858,7 +848,7 @@ export function ButterServices() {
                       className="index-style__StatementBlockWrapper-sc-87b51a93-3 iTVauV"
                     />{" "}
                     of AI n IT Services.
-                    <div
+                    <span
                       data-type="statement-block-wrapper"
                       ref={(el) => {
                         statementWrappersRef.current[2] = el;
@@ -866,7 +856,7 @@ export function ButterServices() {
                       className="index-style__StatementBlockWrapper-sc-87b51a93-3 iTVauV"
                     />{" "}
                     Founded with the mission of driving the future through disruptive technology,
-                    <div
+                    <span
                       data-type="statement-block-wrapper"
                       ref={(el) => {
                         statementWrappersRef.current[3] = el;
@@ -874,7 +864,7 @@ export function ButterServices() {
                       className="index-style__StatementBlockWrapper-sc-87b51a93-3 iTVauV"
                     />{" "}
                     from the initial sketch to the final.
-                    <div
+                    <span
                       data-type="statement-block-wrapper"
                       ref={(el) => {
                         statementWrappersRef.current[4] = el;
@@ -980,9 +970,9 @@ export function ButterServices() {
                     <span aria-hidden="true" className="index-style__SplitTextWrapper-sc-6461e2eb-1 hwJVXf">
                       {renderWord("Building", 0, buildingWordRef)}
                       {" "}
-                      <div className="index-style__StoryOneDecorativeTextWrapper-sc-be78c17d-4 ddmokf story-keyword-wrapper">
+                      <span className="index-style__StoryOneDecorativeTextWrapper-sc-be78c17d-4 ddmokf story-keyword-wrapper">
                         {/* Glow effect radiant aura */}
-                        <div className="index-style__StoryOneGlow-sc-be78c17d-6 iFeYpC story-glow-aura story-glow-future">
+                        <span className="index-style__StoryOneGlow-sc-be78c17d-6 iFeYpC story-glow-aura story-glow-future">
                           <img
                             alt=""
                             loading="lazy"
@@ -992,10 +982,10 @@ export function ButterServices() {
                             style={{ color: "transparent" }}
                             src="/marketing-assets/images/text-effects/word_glow_future.png"
                           />
-                        </div>
+                        </span>
 
                         {/* Inflate effect letters */}
-                        <div className="index-style__StoryOneInflate-sc-be78c17d-7 jICMZH">
+                        <span className="index-style__StoryOneInflate-sc-be78c17d-7 jICMZH">
                           {FUTURE_INFLATE_LETTERS.map((letter, i) => (
                             <img
                               key={`${letter.char}-${i}`}
@@ -1013,7 +1003,7 @@ export function ButterServices() {
                               src={letter.src}
                             />
                           ))}
-                        </div>
+                        </span>
 
                         {/* Interactive keyword letters */}
                         <span className="index-style__StoryOneDecorativeText-sc-be78c17d-5 ktBmdf story-keyword-text story-keyword-future">
@@ -1034,7 +1024,7 @@ export function ButterServices() {
                             );
                           })}
                         </span>
-                      </div>
+                      </span>
                       {" "}
                       {renderWord("where", 16, whereWordRef)}
                       {" "}
@@ -1048,9 +1038,9 @@ export function ButterServices() {
                       {" "}
                       {renderWord("the", 48, theWordRef)}
                       {" "}
-                      <div className="index-style__StoryOneDecorativeTextWrapper-sc-be78c17d-4 ddmokf story-keyword-wrapper">
+                      <span className="index-style__StoryOneDecorativeTextWrapper-sc-be78c17d-4 ddmokf story-keyword-wrapper">
                         {/* Glow effect radiant aura */}
-                        <div className="index-style__StoryOneGlow-sc-be78c17d-6 iFeYpC story-glow-aura story-glow-ai">
+                        <span className="index-style__StoryOneGlow-sc-be78c17d-6 iFeYpC story-glow-aura story-glow-ai">
                           <img
                             alt=""
                             loading="lazy"
@@ -1060,10 +1050,10 @@ export function ButterServices() {
                             style={{ color: "transparent" }}
                             src="/marketing-assets/images/text-effects/word_glow_ai.png"
                           />
-                        </div>
+                        </span>
 
                         {/* Inflate effect letters */}
-                        <div className="index-style__StoryOneInflate-sc-be78c17d-7 jICMZH">
+                        <span className="index-style__StoryOneInflate-sc-be78c17d-7 jICMZH">
                           {AI_INFLATE_LETTERS.map((letter, i) => (
                             <img
                               key={`${letter.char}-${i}`}
@@ -1081,7 +1071,7 @@ export function ButterServices() {
                               src={letter.src}
                             />
                           ))}
-                        </div>
+                        </span>
 
                         {/* Interactive keyword letters */}
                         <span className="index-style__StoryOneDecorativeText-sc-be78c17d-5 ktBmdf story-keyword-text story-keyword-ai">
@@ -1102,7 +1092,7 @@ export function ButterServices() {
                             );
                           })}
                         </span>
-                      </div>
+                      </span>
                       {" "}
                       {renderWord("is", 55, isWordRef)}
                       {" "}

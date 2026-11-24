@@ -204,6 +204,8 @@ const HERO_VIDEOS = [
 
 export function HomeHero() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const currentIndexRef = useRef(0);
+  const isHeroCoveredRef = useRef(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const isTransitioningRef = useRef(false);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -288,6 +290,7 @@ export function HomeHero() {
       nextVideo.play().catch(() => {});
     }
 
+    currentIndexRef.current = nextIndex;
     setCurrentIndex(nextIndex);
 
     if (transitionTimeoutRef.current !== null) {
@@ -322,18 +325,35 @@ export function HomeHero() {
   };
 
   useEffect(() => {
-    const handleVisibility = () => {
-      const activeVideo = videoRefs.current[currentIndex];
+    const syncPlayback = () => {
+      const covered = window.scrollY > window.innerHeight * 1.15;
+      isHeroCoveredRef.current = covered;
+      const activeVideo = videoRefs.current[currentIndexRef.current];
       if (!activeVideo) return;
-      if (document.hidden) {
-        activeVideo.pause();
-      } else {
+      if (document.hidden || covered) {
+        if (!activeVideo.paused) activeVideo.pause();
+      } else if (activeVideo.paused) {
         activeVideo.play().catch(() => {});
       }
     };
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
-  }, [currentIndex]);
+
+    let rafId = 0;
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        syncPlayback();
+      });
+    };
+
+    document.addEventListener("visibilitychange", syncPlayback);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      document.removeEventListener("visibilitychange", syncPlayback);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   return (
     <section className={`${styles.hero} home-hero`} data-theme="dark" aria-labelledby="home-title">

@@ -419,6 +419,11 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     }
 
     function resizePaint() {
+      if (!root?.querySelector("#grid")) {
+        canvasPaint.width = 0;
+        canvasPaint.height = 0;
+        return;
+      }
       canvasPaint.width = window.innerWidth;
       canvasPaint.height = window.innerHeight;
       canvasPaint.style.width = `${window.innerWidth}px`;
@@ -508,8 +513,8 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
     let lastTime = startTime;
 
     // Generate immediate shapes so 3D scene starts without blank delay
-    const s0 = generateTextMesh("49%");
-    const s1 = generateTextMesh("8X");
+    const s0 = generateTextMesh("46%");
+    const s1 = generateTextMesh("10X");
     const s2 = generateTextMesh("$80K+");
     shapes = [s0, s1, s2];
     U0(0, 0);
@@ -523,8 +528,8 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
         .then(() => {
           if (isDisposed) return;
           shapes = [
-            generateTextMesh("49%"),
-            generateTextMesh("8X"),
+            generateTextMesh("46%"),
+            generateTextMesh("10X"),
             generateTextMesh("$80K+"),
           ];
           lastKey = "";
@@ -744,6 +749,9 @@ export function Demo8Section({ standalone = false }: { standalone?: boolean }) {
           glIdle = nextIdle;
           root?.classList.toggle("is-gl-idle", glIdle);
         }
+      } else if (glIdle) {
+        glIdle = false;
+        root?.classList.remove("is-gl-idle");
       }
 
       // ----------------------------------------------------
